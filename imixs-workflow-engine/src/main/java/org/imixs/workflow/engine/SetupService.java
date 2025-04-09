@@ -32,6 +32,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -153,7 +154,7 @@ public class SetupService {
         logger.info("   ____      _");
         logger.info("  /  _/_ _  (_)_ __ ___   Workflow");
         logger.info(" _/ //  ' \\/ /\\ \\ /(_-<   Engine");
-        logger.info("/___/_/_/_/_//_\\_\\/___/   V6.1");
+        logger.info("/___/_/_/_/_//_\\_\\/___/   V6.2");
         logger.info("");
 
         logger.info("├── initializing models...");
@@ -321,63 +322,154 @@ public class SetupService {
 
         String modelData = modelDefaultData.get();
 
-        String[] modelResources = modelData.split(";");
-        for (String modelResource : modelResources) {
-            // try to load the resource file....
-            if (modelResource.endsWith(".bpmn") || modelResource.endsWith(".xml")) {
-                logger.log(Level.INFO, "...uploading default model file: ''{0}''....", modelResource);
-                // if resource starts with '/' then we pickup the file form the filesystem.
-                // otherwise we load it as a resource bundle.
-                InputStream inputStream = null;
-                try {
-                    if (modelResource.startsWith("/")) {
-                        File initialFile = new File(modelResource);
-                        inputStream = new FileInputStream(initialFile);
-                    } else {
-                        inputStream = SetupService.class.getClassLoader().getResourceAsStream(modelResource);
-                        if (inputStream == null) {
-                            throw new IOException("the resource '" + modelResource + "' could not be found!");
-                        }
-                    }
+        // test if the model data is just a directory
+        File modelDirectory = new File(modelData);
+        if (modelDirectory.exists() && modelDirectory.isDirectory()) {
+            logger.log(Level.INFO, "│   ├── scann default model directory ''{0}''....", modelData);
+            // import all files
+            File[] files = modelDirectory.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.isFile()) {
+                        logger.log(Level.INFO, "│   ├── import  file: ''{0}''....", file.getName());
 
-                    // test if it is a bpmn model?
-                    if (modelResource.endsWith(".bpmn")) {
-                        // parse model file....
-                        BPMNModel model = BPMNModelFactory.read(inputStream);
-                        modelService.saveModel(model);
-                    } else {
-                        // read Imixs XML Data Set
-                        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                        int next;
-                        next = inputStream.read();
-                        while (next > -1) {
-                            bos.write(next);
-                            next = inputStream.read();
-                        }
-                        bos.flush();
-                        byte[] result = bos.toByteArray();
-                        importXmlEntityData(result);
-                    }
-
-                    // issue #600 return; // MODEL_INITIALIZED;
-                } catch (IOException | ModelException | BPMNModelException e) {
-                    throw new RuntimeException(
-                            "Failed to load model configuration: " + e.getMessage() + " check 'model.default.data'", e);
-                } finally {
-                    if (inputStream != null) {
+                        FileInputStream inputStream = null;
                         try {
-                            inputStream.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
+                            inputStream = new FileInputStream(file);
+                            if (file.getName().endsWith(".bpmn")) {
+                                logger.log(Level.INFO, "│   ├── import model file: ''{0}''....", file.getName());
+
+                                importModelFromStream(inputStream);
+                            }
+                            if (file.getName().endsWith(".xml")) {
+                                logger.log(Level.INFO, "│   ├── import XML file: ''{0}''....", file.getName());
+
+                                importXMLFromStream(inputStream);
+                            }
+                        } catch (FileNotFoundException e) {
+                            throw new RuntimeException(
+                                    "Failed to load model configuration: " + e.getMessage()
+                                            + " check 'model.default.data'",
+                                    e);
+                        } finally {
+                            if (inputStream != null) {
+                                try {
+                                    inputStream.close();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
                         }
                     }
                 }
-            } else {
-                logger.log(Level.SEVERE, "Wrong model format: ''{0}'' - expected *.bpmn or *.xml", modelResource);
             }
 
+        } else {
+            // alternatively we try to scann the given files form the modelResources
+            String[] modelResources = modelData.split(";");
+            for (String modelResource : modelResources) {
+                // try to load the resource file....
+                if (modelResource.endsWith(".bpmn") || modelResource.endsWith(".xml")) {
+                    logger.log(Level.INFO, "│   ├── import default model file: ''{0}''....", modelResource);
+                    // if resource starts with '/' then we pickup the file form the filesystem.
+                    // otherwise we load it as a resource bundle.
+                    InputStream inputStream = null;
+                    try {
+                        if (modelResource.startsWith("/")) {
+                            File initialFile = new File(modelResource);
+                            inputStream = new FileInputStream(initialFile);
+                        } else {
+                            inputStream = SetupService.class.getClassLoader().getResourceAsStream(modelResource);
+                            if (inputStream == null) {
+                                throw new IOException("the resource '" + modelResource + "' could not be found!");
+                            }
+                        }
+
+                        // test if it is a bpmn model?
+                        if (modelResource.endsWith(".bpmn")) {
+                            importModelFromStream(inputStream);
+                        } else {
+                            importXMLFromStream(inputStream);
+                        }
+
+                        // issue #600 return; // MODEL_INITIALIZED;
+                    } catch (IOException e) {
+                        throw new RuntimeException(
+                                "Failed to load model configuration: " + e.getMessage() + " check 'model.default.data'",
+                                e);
+                    } finally {
+                        if (inputStream != null) {
+                            try {
+                                inputStream.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                } else {
+                    logger.log(Level.SEVERE, "Wrong model format: ''{0}'' - expected *.bpmn or *.xml", modelResource);
+                }
+            }
         }
         // SETUP_OK;
+    }
+
+    /**
+     * Imports a single .bpmn file from a inputStream
+     * 
+     * @param modelResource
+     */
+    public void importModelFromStream(InputStream inputStream) {
+        try {
+            BPMNModel model = BPMNModelFactory.read(inputStream);
+            modelService.saveModel(model);
+        } catch (ModelException | BPMNModelException e) {
+            throw new RuntimeException(
+                    "Failed to load model configuration: " + e.getMessage() + " check 'model.default.data'",
+                    e);
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    /**
+     * Imports a single xml data file from a inputStream
+     * 
+     * @param inputStream
+     */
+    public void importXMLFromStream(InputStream inputStream) {
+        try {
+            // read Imixs XML Data Set
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            int next;
+            next = inputStream.read();
+            while (next > -1) {
+                bos.write(next);
+                next = inputStream.read();
+            }
+            bos.flush();
+            byte[] result = bos.toByteArray();
+            importXmlEntityData(result);
+
+        } catch (IOException e) {
+            throw new RuntimeException(
+                    "Failed to load model configuration: " + e.getMessage() + " check 'model.default.data'",
+                    e);
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     /**
