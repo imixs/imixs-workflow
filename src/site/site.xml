@@ -144,10 +144,11 @@
 				<item name="Concurrency" href="./deployment/concurrency.html" />
 			</item>
 
-			<item name="Sample Application" href="./sampleapplication.html" />
+			<item name="Process Manager" href="./processmanager.html" />
 			<item name="Administration" href="./administration.html" />
 			<item name="Logging" href="./logging.html" />
 			<item name="Testing" href="./testing.html" />
+			<item name="JSF Example" href="./sampleapplication.html" />
 			<item name="Docker" href="./docker.html" />
 			<item name="Maven" href="./maven.html" />
 			<item name="Contribute" href="./contributing.html" />
