@@ -23,6 +23,15 @@ If not yet have Docker installed on your machine, see the [official install guid
 $ docker compose up
 ```
 
+**Note:** The docker-compose.yaml file expects a data directory `./models/` providing the BPMN models to be automatically imported during startup. So just create a directory `models/` together with your docker-compose file.
+
+```
+.
+├── docker-compose.yaml
+└── models/
+    └── ticket-en-1.0.0.bpmn
+```
+
 ### 3. Open the demo application:
 
     http://localhost:8080/app/?modelversion=ticket-en-1.0&taskid=1000
