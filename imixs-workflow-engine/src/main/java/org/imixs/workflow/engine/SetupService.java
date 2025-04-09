@@ -331,19 +331,16 @@ public class SetupService {
             if (files != null) {
                 for (File file : files) {
                     if (file.isFile()) {
-                        logger.log(Level.INFO, "│   ├── import  file: ''{0}''....", file.getName());
-
+                        logger.log(Level.FINE, "│   ├── import  file: ''{0}''....", file.getName());
                         FileInputStream inputStream = null;
                         try {
                             inputStream = new FileInputStream(file);
                             if (file.getName().endsWith(".bpmn")) {
                                 logger.log(Level.INFO, "│   ├── import model file: ''{0}''....", file.getName());
-
                                 importModelFromStream(inputStream);
                             }
                             if (file.getName().endsWith(".xml")) {
                                 logger.log(Level.INFO, "│   ├── import XML file: ''{0}''....", file.getName());
-
                                 importXMLFromStream(inputStream);
                             }
                         } catch (FileNotFoundException e) {
