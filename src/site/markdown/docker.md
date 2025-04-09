@@ -34,16 +34,13 @@ Run start imixs-wokflow with docker-compose run:
 
     $ docker-compose up
 
-
 **Note:** The container is linked to the postgres container providing a database name 'workflow'. See the [docker project home](https://hub.docker.com/r/imixs/imixs-microservice/) for more information.
 
 ## Testing the Imixs-Microservice
 
 Using the command-line tool '[curl](http://curl.haxx.se/)' makes it easy to test the Imixs-Microservice. Here are some examples.
 
-**NOTE**: As Imixs-Workflow is a human-centric Workflow Engine onyl authenticated users (Actors) can interact with the engine. Therefore it is necessary to authenticate against the Imixs-Rest service API. Imixs-Microservice provides a User-Management-Service to register and authenticate users. The default user has the userid 'admin' and the default password 'adminadmin'. This user is used in the following examples. Run the setup url of Imixs-Micorservice to initalize the admin user acount:
-
-    http://localhost:8080/imixs-microservice/setup
+**NOTE**: As Imixs-Workflow is a human-centric Workflow Engine only authenticated users (Actors) can interact with the engine. Therefore it is necessary to authenticate against the Imixs-Rest service API. Imixs-Microservice provides a User-Management-Service to register and authenticate users. The default user has the userid 'admin' and the default password 'adminadmin'. This user is used in the following examples.
 
 ### Deploy a new BPMN model
 
