@@ -4,6 +4,10 @@ Imixs-Forms is a lightweight JavaScript framework that helps you build workflow-
 
 <img src="../images/imixs-forms-01.png" />
 
+## Tutorial
+
+In our [Imixs-Forms Tutorial](../tutorials/tutorial-01.html) you can find a step by step guide how to get started with Imixs-Workflow in a fast and easy way. The tutorial explains different concepts about Imixs-Workflow in general and how to model your own workflow. You can skip the tutorial if you are already familiar with the basic concepts and continue with the section "Quick Start with Docker".
+
 ## Quick Start with Docker
 
 Get started in less than 5 minutes:
@@ -11,8 +15,8 @@ Get started in less than 5 minutes:
 ### 1. Download the demo application:
 
 ```bash
-$ git clone https://github.com/imixs/imixs-forms-demo
-$ cd imixs-forms-demo
+$ git clone --depth=1 https://github.com/imixs/imixs-forms.git my-project
+$ cd my-project && rm -rf .git
 ```
 
 ### 2. Start the Imixs-Workflow Service with Docker.
@@ -42,14 +46,17 @@ To create your own forms, you'll need the Open-BPMN VS Code extension:
 
 1. Install VS Code if you haven't already
 2. Open VS Code and install the 'Open-BPMN' extension from the marketplace
-3. Open the model file `tiket-en-1.0.0.bpmn' or create a new BPMN file and start modeling your workflow
-4. Upload your model using the `curl` command
+3. Open the model file `ticket-en-1.0.0.bpmn' or create a new BPMN file and start modeling your workflow
+
+<img src="../images/imixs-forms-02.png" />
+
+If you restart the server, your models will be automatically updated.
+
+Optional you can also upload your model using the `curl` command
 
 ```bash
    curl --user admin:adminadmin --request POST -Tticket-en-1.0.0.bpmn http://localhost:8080/api/model/bpmn
 ```
-
-<img src="../images/imixs-forms-02.png" />
 
 ### Define Forms in BPMN
 
@@ -71,6 +78,7 @@ Each task in your BPMN model can have its own form definition. Here's how it wor
 
 ## Next Steps
 
+- read the [Tutorial](../tutorials/tutorial-01.html)
 - learn more about [Imixs-Forms Layout](../webforms/forms.html)
 - learn more about [Imixs-Forms XML](../webforms/xml.html)
 - read how the [Imixs Rest API works](../../sub_microservice.html)

@@ -13,6 +13,7 @@
 		<menu name="Documentation">
 			<item name="Overview" href="index.html" collapse="true">
 				<item name="Quick Start" href="quickstart.html" />
+				<item name="Tutorial" href="tutorials/tutorial-01.html" />
 				<item name="How to Model..." href="modelling/howto.html" />
 				<item name="Why should I use it?" href="quickstart/why.html" />
 				<item name="Human Centric" href="quickstart/human.html" />
