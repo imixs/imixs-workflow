@@ -23,8 +23,8 @@
   </module>
   <module name="TreeWalker">
 
-
     <property name="tabWidth" value="4" />
+
     <module name="Indentation">
       <property name="basicOffset" value="4" />
       <property name="braceAdjustment" value="0" />
