@@ -183,7 +183,7 @@ public class TestWorkflowKernelBasic {
 
         ItemCollection workitem = new ItemCollection().model("1.0.0").task(100).event(10);
         assertEquals(3, model.findAllEvents().size());
-        ItemCollection event = this.workflowEngine.getWorkflowKernel().loadEvent(workitem);
+        ItemCollection event = this.workflowEngine.getWorkflowKernel().loadEvent(workitem, model);
         assertNotNull(event);
 
     }

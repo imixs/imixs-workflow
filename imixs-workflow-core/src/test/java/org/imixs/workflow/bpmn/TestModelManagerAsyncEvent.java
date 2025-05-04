@@ -33,11 +33,11 @@ import org.xml.sax.SAXException;
  */
 public class TestModelManagerAsyncEvent {
     BPMNModel model = null;
-    ModelManager openBPMNModelManager = null;
+    ModelManager modelManager = null;
 
     @BeforeEach
     public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-        openBPMNModelManager = new ModelManager();
+        modelManager = new ModelManager();
         try {
 
             model = BPMNModelFactory.read("/bpmn/asyncEventSimple.bpmn");
@@ -64,13 +64,13 @@ public class TestModelManagerAsyncEvent {
             throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
         // test task 100
-        ItemCollection task = openBPMNModelManager.findTaskByID(model, 100);
+        ItemCollection task = modelManager.findTaskByID(model, 100);
         assertNotNull(task);
         assertEquals(100, task.getItemValueInteger("boundaryEvent.targetEvent"));
         assertEquals(1000, task.getItemValueInteger("boundaryEvent.timerEventDefinition.timeDuration"));
 
         // test task 200
-        task = openBPMNModelManager.findTaskByID(model, 200);
+        task = modelManager.findTaskByID(model, 200);
         assertNotNull(task);
         assertEquals(200, task.getItemValueInteger("boundaryEvent.targetEvent"));
         assertEquals(0, task.getItemValueInteger("boundaryEvent.timerEventDefinition.timeDuration"));

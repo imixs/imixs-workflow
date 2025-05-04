@@ -29,11 +29,11 @@ import org.xml.sax.SAXException;
 public class TestModelManager {
 
 	BPMNModel model = null;
-	ModelManager openBPMNModelManager = null;
+	ModelManager modelManager = null;
 
 	@BeforeEach
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		openBPMNModelManager = new ModelManager();
+		modelManager = new ModelManager();
 		try {
 			model = BPMNModelFactory.read("/bpmn/simple.bpmn");
 			assertNotNull(model);
@@ -51,7 +51,7 @@ public class TestModelManager {
 	public void testStartTasks() throws ModelException {
 		try {
 			// find start tasks
-			List<ItemCollection> startTasks = openBPMNModelManager.findStartTasks(model, "Simple");
+			List<ItemCollection> startTasks = modelManager.findStartTasks(model, "Simple");
 			assertNotNull(startTasks);
 			assertEquals(1, startTasks.size());
 			ItemCollection startTask = startTasks.get(0);
@@ -69,14 +69,14 @@ public class TestModelManager {
 			assertNotNull(model);
 
 			// find start tasks
-			List<ItemCollection> startTasks = openBPMNModelManager.findStartTasks(model, "Simple");
+			List<ItemCollection> startTasks = modelManager.findStartTasks(model, "Simple");
 			assertNotNull(startTasks);
 			assertEquals(1, startTasks.size());
 			ItemCollection startTask = startTasks.get(0);
 			assertNotNull(startTask);
 			assertEquals("Task 1", startTask.getItemValueString(BPMNUtil.TASK_ITEM_NAME));
 
-			List<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 1000);
+			List<ItemCollection> events = modelManager.findEventsByTask(model, 1000);
 			assertEquals(3, events.size());
 		} catch (BPMNModelException e) {
 			fail();
@@ -92,7 +92,7 @@ public class TestModelManager {
 	public void testEndTasks() throws ModelException {
 		try {
 			// test End task....
-			List<ItemCollection> endTasks = openBPMNModelManager.findEndTasks(model, "Simple");
+			List<ItemCollection> endTasks = modelManager.findEndTasks(model, "Simple");
 			assertNotNull(endTasks);
 			assertEquals(1, endTasks.size());
 
@@ -112,7 +112,7 @@ public class TestModelManager {
 	public void testFindEvetnsByTasks() throws ModelException {
 
 		// test End task....
-		List<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 1000);
+		List<ItemCollection> events = modelManager.findEventsByTask(model, 1000);
 		assertNotNull(events);
 		assertEquals(2, events.size());
 
@@ -132,7 +132,7 @@ public class TestModelManager {
 	public void testModifyEvent() throws ModelException {
 
 		// test event 1000.20
-		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 20);
+		ItemCollection event = modelManager.findEventByID(model, 1000, 20);
 
 		assertNotNull(event);
 		// assertEquals(1100, activity.getItemValueInteger("numNextProcessID"));
@@ -143,7 +143,7 @@ public class TestModelManager {
 		assertEquals("test", event.getItemValueString("name"));
 
 		// test activity 1000.10 once again - changes should not have any effect!
-		event = openBPMNModelManager.findEventByID(model, 1000, 20);
+		event = modelManager.findEventByID(model, 1000, 20);
 		assertNotNull(event);
 		assertEquals("submit", event.getItemValueString("name"));
 
@@ -163,7 +163,7 @@ public class TestModelManager {
 	public void testModifyTask() throws ModelException {
 
 		// test task 1000
-		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
+		ItemCollection task = modelManager.findTaskByID(model, 1000);
 		assertNotNull(task);
 		assertEquals("Task 1", task.getItemValueString("name"));
 		assertEquals("Some documentation...", task.getItemValueString("documentation"));
@@ -171,7 +171,7 @@ public class TestModelManager {
 		task.replaceItemValue("txtworkflowgroup", "test");
 		assertEquals("test", task.getItemValueString("txtworkflowgroup"));
 		// test task 1000 once again
-		task = openBPMNModelManager.findTaskByID(model, 1000);
+		task = modelManager.findTaskByID(model, 1000);
 		assertNotNull(task);
 		// changes should not have taken effect.
 		assertEquals("", task.getItemValueString("txtworkflowgroup"));
@@ -194,14 +194,14 @@ public class TestModelManager {
 		workitem.model("1.0.0");
 
 		// test definition
-		ItemCollection definition = openBPMNModelManager.loadDefinition(model);
+		ItemCollection definition = modelManager.loadDefinition(model);
 		assertNotNull(definition);
 		assertEquals("1.0.0", definition.getItemValueString("$ModelVersion"));
 		// change name of definition....
 		definition.replaceItemValue("$ModelVersion", "test");
 		assertEquals("test", definition.getItemValueString("$ModelVersion"));
 		// test definition once again
-		definition = openBPMNModelManager.loadDefinition(model);
+		definition = modelManager.loadDefinition(model);
 		assertNotNull(definition);
 		assertEquals("1.0.0", definition.getItemValueString("$ModelVersion"));
 	}
@@ -218,7 +218,7 @@ public class TestModelManager {
 	 */
 	@Test
 	public void testModifyGroups() throws ModelException {
-		Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
+		Set<String> groups = modelManager.findAllGroupsByModel(model);
 		assertNotNull(groups);
 		assertEquals(1, groups.size());
 		// add a new group....
@@ -228,7 +228,7 @@ public class TestModelManager {
 		} catch (UnsupportedOperationException e) {
 			// we expect a UnsupportedOperationException
 			// test groups once again
-			groups = openBPMNModelManager.findAllGroupsByModel(model);
+			groups = modelManager.findAllGroupsByModel(model);
 			assertNotNull(groups);
 			assertEquals(1, groups.size());
 		}

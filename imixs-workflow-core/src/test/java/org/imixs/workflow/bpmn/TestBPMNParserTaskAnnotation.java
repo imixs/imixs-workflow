@@ -32,11 +32,11 @@ import org.xml.sax.SAXException;
  */
 public class TestBPMNParserTaskAnnotation {
 	BPMNModel model = null;
-	ModelManager openBPMNModelManager = null;
+	ModelManager modelManager = null;
 
 	@BeforeEach
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		openBPMNModelManager = new ModelManager();
+		modelManager = new ModelManager();
 		try {
 			model = BPMNModelFactory.read("/bpmn/annotation_example.bpmn");
 			assertNotNull(model);
@@ -58,7 +58,7 @@ public class TestBPMNParserTaskAnnotation {
 		// Test Environment
 		ItemCollection profile;
 		try {
-			profile = openBPMNModelManager.loadDefinition(model);
+			profile = modelManager.loadDefinition(model);
 			assertNotNull(profile);
 			assertEquals(VERSION, profile.getItemValueString("$ModelVersion"));
 		} catch (ModelException e) {
@@ -69,20 +69,14 @@ public class TestBPMNParserTaskAnnotation {
 		assertEquals(3, model.findAllActivities().size());
 
 		// test task 1200
-		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1200);
+		ItemCollection task = modelManager.findTaskByID(model, 1200);
 		assertNotNull(task);
 		assertEquals("<b>inner sample text</b>", task.getItemValueString("rtfdescription"));
 
 		// test Task 1100 (overwrite annotation)
-		task = openBPMNModelManager.findTaskByID(model, 1100);
+		task = modelManager.findTaskByID(model, 1100);
 		assertNotNull(task);
 		assertEquals("<b>custom text task2</b>", task.getItemValueString("rtfdescription"));
-
-		// test Task 1000 (annotation)
-		// task = openBPMNModelManager.findTaskByID(model, 1000);
-		// assertNotNull(task);
-		// assertEquals("<b>sample text1</b>",
-		// task.getItemValueString("rtfdescription"));
 
 	}
 

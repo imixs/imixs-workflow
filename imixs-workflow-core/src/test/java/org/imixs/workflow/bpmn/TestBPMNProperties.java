@@ -29,11 +29,11 @@ import org.xml.sax.SAXException;
  */
 public class TestBPMNProperties {
 	BPMNModel model = null;
-	ModelManager openBPMNModelManager = null;
+	ModelManager modelManager = null;
 
 	@BeforeEach
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		openBPMNModelManager = new ModelManager();
+		modelManager = new ModelManager();
 		try {
 			model = BPMNModelFactory.read("/bpmn/properties.bpmn");
 		} catch (BPMNModelException e) {
@@ -56,7 +56,7 @@ public class TestBPMNProperties {
 		assertNotNull(model);
 
 		// test task 1000
-		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1100);
+		ItemCollection task = modelManager.findTaskByID(model, 1100);
 		assertNotNull(task);
 		// assertEquals("1.0.0", task.getItemValueString("$ModelVersion"));
 		// assertEquals("Simple", task.getItemValueString("txtworkflowgroup"));
@@ -100,7 +100,7 @@ public class TestBPMNProperties {
 		assertNotNull(model);
 
 		// test event 1000,20
-		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 20);
+		ItemCollection event = modelManager.findEventByID(model, 1000, 20);
 		assertNotNull(event);
 
 		assertEquals("submit", event.getItemValueString(BPMNUtil.EVENT_ITEM_NAME));

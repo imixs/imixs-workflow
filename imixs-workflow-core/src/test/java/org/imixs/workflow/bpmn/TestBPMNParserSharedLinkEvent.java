@@ -31,11 +31,11 @@ import org.xml.sax.SAXException;
 public class TestBPMNParserSharedLinkEvent {
 
 	BPMNModel model = null;
-	ModelManager openBPMNModelManager = null;
+	ModelManager modelManager = null;
 
 	@BeforeEach
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		openBPMNModelManager = new ModelManager();
+		modelManager = new ModelManager();
 	}
 
 	/**
@@ -48,24 +48,24 @@ public class TestBPMNParserSharedLinkEvent {
 			assertNotNull(model);
 
 			// Test Environment
-			assertTrue(openBPMNModelManager.findAllGroupsByModel(model).contains("Simple"));
+			assertTrue(modelManager.findAllGroupsByModel(model).contains("Simple"));
 
 			// test count of elements
 			assertEquals(3, model.findAllActivities().size());
 
 			// test task 1000
-			ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
+			ItemCollection task = modelManager.findTaskByID(model, 1000);
 			assertEquals("Task Shared Link Event1", task.getItemValueString("txtName"));
 
 			// test shared events
-			assertEquals(3, openBPMNModelManager.findEventsByTask(model, 1000).size());
+			assertEquals(3, modelManager.findEventsByTask(model, 1000).size());
 
-			ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 99);
+			ItemCollection event = modelManager.findEventByID(model, 1000, 99);
 			assertEquals("cancel", event.getItemValueString("txtName"));
 
 			// test shared events
-			assertEquals(2, openBPMNModelManager.findEventsByTask(model, 1100).size());
-			assertEquals(0, openBPMNModelManager.findEventsByTask(model, 1200).size());
+			assertEquals(2, modelManager.findEventsByTask(model, 1100).size());
+			assertEquals(0, modelManager.findEventsByTask(model, 1200).size());
 		} catch (ModelException | BPMNModelException e) {
 			e.printStackTrace();
 			fail(e.getMessage());

@@ -28,11 +28,11 @@ import org.xml.sax.SAXException;
 public class TestModelManagerParserAdapter {
 
 	BPMNModel model = null;
-	ModelManager openBPMNModelManager = null;
+	ModelManager modelManager = null;
 
 	@BeforeEach
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		openBPMNModelManager = new ModelManager();
+		modelManager = new ModelManager();
 	}
 
 	@Test
@@ -46,7 +46,7 @@ public class TestModelManagerParserAdapter {
 		}
 		assertNotNull(model);
 		// test activity 1000.20 submit
-		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 20);
+		ItemCollection event = modelManager.findEventByID(model, 1000, 20);
 		assertNotNull(event);
 		assertEquals("submit", event.getItemValueString("name"));
 
@@ -68,21 +68,21 @@ public class TestModelManagerParserAdapter {
 		assertNotNull(model);
 
 		// test activity 1000.20 submit
-		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 20);
+		ItemCollection event = modelManager.findEventByID(model, 1000, 20);
 		assertNotNull(event);
 		assertEquals("adapter A", event.getItemValueString("txtname"));
 		// test adapter class.....
 		assertEquals("org.imixs.workflow.adapter.Example", event.getItemValueString("adapter.id"));
 
 		// test activity 1100.10 submit
-		event = openBPMNModelManager.findEventByID(model, 1100, 10);
+		event = modelManager.findEventByID(model, 1100, 10);
 		assertNotNull(event);
 		assertEquals("adapter A", event.getItemValueString("txtname"));
 		// test adapter class.....
 		assertEquals("org.imixs.workflow.adapter.Example", event.getItemValueString("adapter.id"));
 
 		// test activity 1000.20 submit
-		event = openBPMNModelManager.findEventByID(model, 1100, 20);
+		event = modelManager.findEventByID(model, 1100, 20);
 		assertNotNull(event);
 		assertEquals("adapter B", event.getItemValueString("txtname"));
 		// test adapter class.....

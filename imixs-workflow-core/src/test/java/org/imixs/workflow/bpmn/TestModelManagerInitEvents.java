@@ -25,11 +25,11 @@ import org.openbpmn.bpmn.util.BPMNModelFactory;
 public class TestModelManagerInitEvents {
 
 	BPMNModel model = null;
-	ModelManager openBPMNModelManager = null;
+	ModelManager modelManager = null;
 
 	@BeforeEach
 	public void setup() {
-		openBPMNModelManager = new ModelManager();
+		modelManager = new ModelManager();
 		try {
 			model = BPMNModelFactory.read("/bpmn/startevent_followup.bpmn");
 			assertNotNull(model);
@@ -47,8 +47,8 @@ public class TestModelManagerInitEvents {
 	public void testStartEvents() {
 		try {
 			// test start task....
-			openBPMNModelManager.findStartTasks(model, "Simple");
-			List<ItemCollection> startEvents = openBPMNModelManager.findEventsByTask(model, 1000);
+			modelManager.findStartTasks(model, "Simple");
+			List<ItemCollection> startEvents = modelManager.findEventsByTask(model, 1000);
 			assertNotNull(startEvents);
 			assertEquals(3, startEvents.size());
 
@@ -74,7 +74,7 @@ public class TestModelManagerInitEvents {
 		// test start task....
 		List<ItemCollection> startTasks;
 		try {
-			startTasks = openBPMNModelManager.findStartTasks(model, "Simple");
+			startTasks = modelManager.findStartTasks(model, "Simple");
 			assertNotNull(startTasks);
 			assertEquals(1, startTasks.size());
 			ItemCollection startTask = startTasks.get(0);
@@ -93,7 +93,7 @@ public class TestModelManagerInitEvents {
 		// test start task....
 		try {
 			List<ItemCollection> endTasks;
-			endTasks = openBPMNModelManager.findEndTasks(model, "Simple");
+			endTasks = modelManager.findEndTasks(model, "Simple");
 			assertNotNull(endTasks);
 			assertEquals(1, endTasks.size());
 			ItemCollection endTask = endTasks.get(0);

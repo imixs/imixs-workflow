@@ -30,11 +30,11 @@ import org.xml.sax.SAXException;
  */
 public class TestBPMNParserGroups {
 	BPMNModel model = null;
-	ModelManager openBPMNModelManager = null;
+	ModelManager modelManager = null;
 
 	@BeforeEach
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		openBPMNModelManager = new ModelManager();
+		modelManager = new ModelManager();
 	}
 
 	/**
@@ -51,11 +51,10 @@ public class TestBPMNParserGroups {
 
 		try {
 			model = BPMNModelFactory.read("/bpmn/link-event-basic.bpmn");
-			// openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/link-event-basic.bpmn"));
-			// model = openBPMNModelManager.getModel("1.0.0");
+
 			assertNotNull(model);
 			// Test Groups
-			Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
+			Set<String> groups = modelManager.findAllGroupsByModel(model);
 			assertTrue(groups.contains("Simple"));
 		} catch (ModelException | BPMNModelException e) {
 			e.printStackTrace();
@@ -81,7 +80,7 @@ public class TestBPMNParserGroups {
 			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		try {
-			// openBPMNModelManager.addModel();
+
 			model = BPMNModelFactory.read("/bpmn/multi-groups.bpmn");
 			assertNotNull(model);
 
@@ -90,7 +89,7 @@ public class TestBPMNParserGroups {
 		}
 
 		// Test Groups
-		Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
+		Set<String> groups = modelManager.findAllGroupsByModel(model);
 		assertEquals(2, groups.size());
 		assertTrue(groups.contains("Protokoll"));
 		assertTrue(groups.contains("Protokollpunkt"));

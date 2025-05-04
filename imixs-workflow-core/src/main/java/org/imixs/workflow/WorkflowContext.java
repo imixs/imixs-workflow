@@ -42,14 +42,14 @@ import org.openbpmn.bpmn.BPMNModel;
 
 public interface WorkflowContext {
 
-    /**
-     * This method loads a BPMNModel instance.
-     * 
-     * @param modelRegex - valid model version
-     * @return an instance of a BPMNModel
-     * @throws ModelException
-     */
-    public BPMNModel loadModel(String version) throws ModelException;
+    // /**
+    // * This method loads a BPMNModel instance.
+    // *
+    // * @param modelRegex - valid model version
+    // * @return an instance of a BPMNModel
+    // * @throws ModelException
+    // */
+    // public BPMNModel loadModel(String version) throws ModelException;
 
     /**
      * This method returns the highest version matching a given regular expression.

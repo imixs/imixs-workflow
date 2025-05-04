@@ -31,12 +31,12 @@ import org.xml.sax.SAXException;
 public class TestBPMNParserTicket {
 
 	BPMNModel model = null;
-	ModelManager openBPMNModelManager = null;
+	ModelManager modelManager = null;
 
 	@BeforeEach
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
 		try {
-			openBPMNModelManager = new ModelManager();
+			modelManager = new ModelManager();
 			model = BPMNModelFactory.read("/bpmn/ticket.bpmn");
 			assertNotNull(model);
 		} catch (BPMNModelException e) {
@@ -57,7 +57,7 @@ public class TestBPMNParserTicket {
 
 		String VERSION = "1.0.0";
 		// Test Environment
-		ItemCollection profile = openBPMNModelManager.loadDefinition(model);
+		ItemCollection profile = modelManager.loadDefinition(model);
 		assertNotNull(profile);
 		assertEquals("environment.profile",
 				profile.getItemValueString("name"));
@@ -73,41 +73,41 @@ public class TestBPMNParserTicket {
 		assertEquals("org.imixs.workflow.plugins.HistoryPlugin", plugins.get(2));
 		assertEquals("org.imixs.workflow.plugins.ResultPlugin", plugins.get(3));
 
-		Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
+		Set<String> groups = modelManager.findAllGroupsByModel(model);
 		assertTrue(groups.contains("Ticket"));
 
 		// test task 1000
-		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
+		ItemCollection task = modelManager.findTaskByID(model, 1000);
 		assertNotNull(task);
 
 		assertEquals("<b>Create</b> a new ticket",
 				task.getItemValueString(BPMNUtil.TASK_ITEM_DOCUMENTATION));
 
 		// test activity 1000.10 submit
-		ItemCollection activity = openBPMNModelManager.findEventByID(model, 1000, 10);
+		ItemCollection activity = modelManager.findEventByID(model, 1000, 10);
 		assertNotNull(activity);
 
 		assertEquals("<b>Submitt</b> new ticket",
 				activity.getItemValueString(BPMNUtil.EVENT_ITEM_DOCUMENTATION));
 
 		// test activity 1100.20 accept
-		activity = openBPMNModelManager.findEventByID(model, 1100, 20);
+		activity = modelManager.findEventByID(model, 1100, 20);
 		assertNotNull(activity);
 
 		assertEquals("accept", activity.getItemValueString(BPMNUtil.TASK_ITEM_NAME));
 
 		// test activity 1200.20 - follow-up activity solve =>40
-		activity = openBPMNModelManager.findEventByID(model, 1200, 20);
+		activity = modelManager.findEventByID(model, 1200, 20);
 		assertNotNull(activity);
 
 		assertEquals("reopen", activity.getItemValueString(BPMNUtil.TASK_ITEM_NAME));
 
 		// test activity 1200.40 - follow-up activity should not be returned
-		activity = openBPMNModelManager.findEventByID(model, 1200, 40);
+		activity = modelManager.findEventByID(model, 1200, 40);
 		assertNull(activity);
 
 		// test activity 100.10
-		activity = openBPMNModelManager.findEventByID(model, 1000, 10);
+		activity = modelManager.findEventByID(model, 1000, 10);
 		assertNotNull(activity);
 
 		assertEquals("submit", activity.getItemValueString(BPMNUtil.TASK_ITEM_NAME));
@@ -136,7 +136,7 @@ public class TestBPMNParserTicket {
 
 		String VERSION = "1.0.0";
 		// Test Environment
-		ItemCollection profile = openBPMNModelManager.loadDefinition(model);
+		ItemCollection profile = modelManager.loadDefinition(model);
 		assertNotNull(profile);
 		assertEquals("environment.profile",
 				profile.getItemValueString("txtname"));
@@ -152,41 +152,41 @@ public class TestBPMNParserTicket {
 		assertEquals("org.imixs.workflow.plugins.HistoryPlugin", plugins.get(2));
 		assertEquals("org.imixs.workflow.plugins.ResultPlugin", plugins.get(3));
 
-		Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
+		Set<String> groups = modelManager.findAllGroupsByModel(model);
 		assertTrue(groups.contains("Ticket"));
 
 		// test task 1000
-		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
+		ItemCollection task = modelManager.findTaskByID(model, 1000);
 		assertNotNull(task);
 
 		assertEquals("<b>Create</b> a new ticket",
 				task.getItemValueString("rtfdescription"));
 
 		// test activity 1000.10 submit
-		ItemCollection activity = openBPMNModelManager.findEventByID(model, 1000, 10);
+		ItemCollection activity = modelManager.findEventByID(model, 1000, 10);
 		assertNotNull(activity);
 
 		assertEquals("<b>Submitt</b> new ticket",
 				activity.getItemValueString("rtfdescription"));
 
 		// test activity 1100.20 accept
-		activity = openBPMNModelManager.findEventByID(model, 1100, 20);
+		activity = modelManager.findEventByID(model, 1100, 20);
 		assertNotNull(activity);
 
 		assertEquals("accept", activity.getItemValueString("txtName"));
 
 		// test activity 1200.20 - follow-up activity solve =>40
-		activity = openBPMNModelManager.findEventByID(model, 1200, 20);
+		activity = modelManager.findEventByID(model, 1200, 20);
 		assertNotNull(activity);
 
 		assertEquals("reopen", activity.getItemValueString("txtName"));
 
 		// test activity 1200.40 - follow-up activity should not be returned
-		activity = openBPMNModelManager.findEventByID(model, 1200, 40);
+		activity = modelManager.findEventByID(model, 1200, 40);
 		assertNull(activity);
 
 		// test activity 100.10
-		activity = openBPMNModelManager.findEventByID(model, 1000, 10);
+		activity = modelManager.findEventByID(model, 1000, 10);
 		assertNotNull(activity);
 
 		assertEquals("submit", activity.getItemValueString("txtName"));

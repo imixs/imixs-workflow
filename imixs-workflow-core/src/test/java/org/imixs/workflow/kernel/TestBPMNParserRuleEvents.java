@@ -52,10 +52,10 @@ public class TestBPMNParserRuleEvents {
 	public void testModelElements() {
 
 		// load default model
-		ModelManager openBPMNModelManager = new ModelManager();
+		ModelManager modelManager = new ModelManager();
 		try {
 			model = BPMNModelFactory.read("/bpmn/event_rules.bpmn");
-			// openBPMNModelManager.addModel(model);
+
 		} catch (BPMNModelException e) {
 			e.printStackTrace();
 			fail();
@@ -81,13 +81,13 @@ public class TestBPMNParserRuleEvents {
 			assertNotNull(task);
 
 			// test activity for task 1000
-			List<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 1000);
+			List<ItemCollection> events = modelManager.findEventsByTask(model, 1000);
 
 			assertNotNull(events);
 			assertEquals(1, events.size());
 
 			// test activity 1000.10 submit
-			ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 10);
+			ItemCollection event = modelManager.findEventByID(model, 1000, 10);
 			assertNotNull(event);
 			assertEquals("submit", event.getItemValueString("txtname"));
 		} catch (ModelException e) {

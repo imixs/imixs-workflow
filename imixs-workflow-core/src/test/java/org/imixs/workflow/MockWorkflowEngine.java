@@ -49,7 +49,13 @@ public class MockWorkflowEngine implements WorkflowContext {
         workflowKernel.registerPlugin(mokPlugin);
     }
 
-    @Override
+    /**
+     * Helper method to load a model from internal cache (not thread save)
+     * 
+     * @param version
+     * @return
+     * @throws ModelException
+     */
     public BPMNModel loadModel(String version) throws ModelException {
 
         return modelStore.get(version);

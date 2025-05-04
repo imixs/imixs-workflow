@@ -31,13 +31,13 @@ import org.xml.sax.SAXException;
  */
 public class TestModelManagerCollaboration {
 	BPMNModel model = null;
-	ModelManager openBPMNModelManager = null;
+	ModelManager modelManager = null;
 
 	@BeforeEach
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		openBPMNModelManager = new ModelManager();
+		modelManager = new ModelManager();
 		try {
-			// openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/collaboration.bpmn"));
+
 			model = BPMNModelFactory.read("/bpmn/collaboration.bpmn");
 			assertNotNull(model);
 		} catch (BPMNModelException e) {
@@ -51,13 +51,13 @@ public class TestModelManagerCollaboration {
 			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		// Test Environment
-		ItemCollection profile = openBPMNModelManager.loadDefinition(model);
+		ItemCollection profile = modelManager.loadDefinition(model);
 		assertNotNull(profile);
 		assertEquals("environment.profile", profile.getItemValueString("txtname"));
 		assertEquals("WorkflowEnvironmentEntity", profile.getItemValueString("type"));
 		assertEquals("1.0.0", profile.getItemValueString("$ModelVersion"));
 
-		Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
+		Set<String> groups = modelManager.findAllGroupsByModel(model);
 		// List<String> groups = model.getGroups();
 		// Test Groups
 		assertFalse(groups.contains("Collaboration"));
@@ -68,16 +68,16 @@ public class TestModelManagerCollaboration {
 		// assertEquals(2, model.findAllTasks().size());
 
 		// test task 1000
-		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
+		ItemCollection task = modelManager.findTaskByID(model, 1000);
 		assertNotNull(task);
 
 		// test activity 1000.10 submit
-		ItemCollection activity = openBPMNModelManager.findEventByID(model, 1000, 10);
+		ItemCollection activity = modelManager.findEventByID(model, 1000, 10);
 		assertNotNull(activity);
 		assertEquals("submit", activity.getItemValueString("txtname"));
 
 		// test task 1100
-		task = openBPMNModelManager.findTaskByID(model, 2000);
+		task = modelManager.findTaskByID(model, 2000);
 		assertNotNull(task);
 
 	}

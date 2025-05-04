@@ -60,38 +60,19 @@ public class ModelManager {
      * 
      */
     public ModelManager() {
-        ruleEngine = new RuleEngine();
     }
 
     /**
-     * Returns the internal ModelStore holding all BPMNModels by version.
+     * Lazy loading for rule engine
      * 
      * @return
      */
-    // public Map<String, BPMNModel> getModelStore() {
-    // return modelStore;
-    // }
-
-    /**
-     * Returns a BPMNModel by its version from the local model store
-     * 
-     * @param version - a bpmn model version ($modelVersion)
-     * @return a BPMNModel instance.
-     */
-    // public BPMNModel getModel(String version) throws ModelException {
-    // return modelStore.get(version);
-    // }
-
-    // /**
-    // * Returns a List with all BPMNModel instances
-    // *
-    // * @return
-    // */
-    // public List<BPMNModel> getAllModels() {
-    // List<BPMNModel> result = new ArrayList<>();
-    // result.addAll(modelStore.values());
-    // return result;
-    // }
+    private RuleEngine getRuleEngine() {
+        if (ruleEngine == null) {
+            ruleEngine = new RuleEngine();
+        }
+        return ruleEngine;
+    }
 
     /**
      * Returns the BPMN Definition entity associated with a given workitem, based on
@@ -170,6 +151,52 @@ public class ModelManager {
                     "task " + workitem.getTaskID() + " not defined in model '" + workitem.getModelVersion() + "'");
         }
         return task;
+    }
+
+    /**
+     * Returns the BPMN Event entity associated with a given workitem, based on its
+     * attributes "$modelVersion", "$taskID" and "$eventID".
+     * <p>
+     * The method throws a {@link ModelException} if no Event can be resolved based
+     * on the given model information.
+     * <p>
+     * The method is called by the {@link WorkflowKernel} to start the processing
+     * life cycle.
+     * <p>
+     * A Event is typically connected with a Task by outgoing SequenceFlows.
+     * A special case is a Start event followed by one or more Events connected with
+     * a Task (Start-Task) element.
+     * 
+     * @param workitem
+     * @return BPMN Event entity - {@link ItemCollection}
+     * @throws ModelException if no event was found
+     */
+    public ItemCollection loadEvent(ItemCollection workitem, BPMNModel model) throws ModelException {
+
+        // logger.info("...loadEvent " + workitem.getTaskID() + "." +
+        // workitem.getEventID());
+        ItemCollection event = findEventByID(model, workitem.getTaskID(), workitem.getEventID());
+        // verify if the event is a valid processing event?
+        if (event != null) {
+            List<ItemCollection> allowedEvents = findEventsByTask(model, workitem.getTaskID());
+            boolean found = false;
+            for (ItemCollection allowedEvent : allowedEvents) {
+                // logger.info("verify event : " + allowedEvent.getItemValueString("id"));
+                if (allowedEvent.getItemValueString("id").equals(event.getItemValueString("id"))) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                event = null;
+            }
+        }
+        // If we still did not find the event we throw a ModelException....
+        if (event == null) {
+            throw new ModelException(ModelException.UNDEFINED_MODEL_ENTRY, "Event " + workitem.getTaskID() + "."
+                    + workitem.getEventID() + " is not callable in model '" + workitem.getModelVersion() + "'");
+        }
+        return event;
     }
 
     /**
@@ -597,7 +624,7 @@ public class ModelManager {
      */
     public boolean evaluateCondition(String expression, ItemCollection workitem) {
         try {
-            return ruleEngine.evaluateBooleanExpression(expression, workitem);
+            return getRuleEngine().evaluateBooleanExpression(expression, workitem);
         } catch (PluginException e) {
             e.printStackTrace();
             logger.severe("Failed to evaluate Condition: " + e.getMessage());
@@ -631,8 +658,7 @@ public class ModelManager {
                 String condition = outFlow.getConditionExpression();
                 if (condition != null && !condition.isEmpty()) {
                     try {
-                        // RuleEngine ruleEngine = new RuleEngine();
-                        boolean conditionResult = ruleEngine.evaluateBooleanExpression(condition, workitem);
+                        boolean conditionResult = getRuleEngine().evaluateBooleanExpression(condition, workitem);
                         if (conditionResult == true) {
                             return true;
                         }

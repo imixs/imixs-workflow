@@ -34,7 +34,6 @@ import java.util.logging.Logger;
 
 import org.imixs.workflow.Adapter;
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.AccessDeniedException;
@@ -490,10 +489,9 @@ public class WorkflowService {
         }
 
         // Lookup current model. If not found update model by regex
-        BPMNModel model = modelService.findModelByWorkitem(workitem);
-        ItemCollection profile = modelService.getModelManager().loadDefinition(model);// model.getDefinition();
-
+        BPMNModel model = workflowContextService.findModelByWorkitem(workitem);
         WorkflowKernel workflowkernel = new WorkflowKernel(workflowContextService);
+        ItemCollection profile = workflowkernel.getModelManager().loadDefinition(model);
         // register plugins...
         registerPlugins(workflowkernel, profile);
         // register adapters.....
@@ -604,15 +602,15 @@ public class WorkflowService {
         documentService.remove(aworkitem);
     }
 
-    /**
-     * This Method returns the modelManager Instance. The current ModelVersion is
-     * automatically updated during the Method updateProfileEntity which is called
-     * from the processWorktiem method.
-     * 
-     */
-    public ModelManager getModelManager() {
-        return modelService.getModelManager();
-    }
+    // /**
+    // * This Method returns the modelManager Instance. The current ModelVersion is
+    // * automatically updated during the Method updateProfileEntity which is called
+    // * from the processWorktiem method.
+    // *
+    // */
+    // public ModelManager getModelManager() {
+    // return modelService.getModelManager();
+    // }
 
     /**
      * Returns an instance of the EJB session context.

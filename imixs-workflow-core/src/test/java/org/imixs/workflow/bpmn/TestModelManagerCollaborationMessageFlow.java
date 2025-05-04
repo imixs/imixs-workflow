@@ -33,11 +33,11 @@ import org.xml.sax.SAXException;
 public class TestModelManagerCollaborationMessageFlow {
 
 	BPMNModel model = null;
-	ModelManager openBPMNModelManager = null;
+	ModelManager modelManager = null;
 
 	@BeforeEach
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		openBPMNModelManager = new ModelManager();
+		modelManager = new ModelManager();
 	}
 
 	/**
@@ -63,15 +63,15 @@ public class TestModelManagerCollaborationMessageFlow {
 		assertEquals(2, model.findAllActivities().size());
 
 		// test task 1000
-		ItemCollection task1 = openBPMNModelManager.findTaskByID(model, 1000);
+		ItemCollection task1 = modelManager.findTaskByID(model, 1000);
 
 		assertNotNull(task1);
-		Collection<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 1000);
+		Collection<ItemCollection> events = modelManager.findEventsByTask(model, 1000);
 		assertNotNull(events);
 		assertEquals(1, events.size());
 
 		// load event 1000.10 and test the message flow
-		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 10);
+		ItemCollection event = modelManager.findEventByID(model, 1000, 10);
 		assertNotNull(event);
 		assertEquals("submit", event.getItemValueString(BPMNUtil.EVENT_ITEM_NAME));
 		BPMNElementNode eventElement = (BPMNElementNode) model.findElementById(event.getItemValueString("id"));
@@ -84,7 +84,7 @@ public class TestModelManagerCollaborationMessageFlow {
 		BPMNElementNode target = messageFlows.iterator().next().getTargetElement();
 		assertNotNull(target);
 		// we expect the Task 2
-		ItemCollection task2 = openBPMNModelManager.findTaskByID(model, 1100);
+		ItemCollection task2 = modelManager.findTaskByID(model, 1100);
 		assertEquals(target.getId(), task2.getItemValueString("id"));
 
 	}
@@ -107,14 +107,14 @@ public class TestModelManagerCollaborationMessageFlow {
 		assertEquals(4, model.findAllActivities().size());
 
 		// test task 1000
-		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
+		ItemCollection task = modelManager.findTaskByID(model, 1000);
 		assertNotNull(task);
-		Collection<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 1000);
+		Collection<ItemCollection> events = modelManager.findEventsByTask(model, 1000);
 		assertNotNull(events);
 		assertEquals(2, events.size());
 
 		// load activity 1000.20
-		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 20);
+		ItemCollection event = modelManager.findEventByID(model, 1000, 20);
 		assertNotNull(event);
 		assertEquals("submit", event.getItemValueString(BPMNUtil.EVENT_ITEM_NAME));
 
@@ -128,7 +128,7 @@ public class TestModelManagerCollaborationMessageFlow {
 		BPMNElementNode target = messageFlows.iterator().next().getTargetElement();
 		assertNotNull(target);
 		// we expect the target Event 2000.5
-		ItemCollection eventTarget = openBPMNModelManager.findEventByID(model, 2000, 5);
+		ItemCollection eventTarget = modelManager.findEventByID(model, 2000, 5);
 		assertEquals(target.getId(), eventTarget.getItemValueString("id"));
 
 	}

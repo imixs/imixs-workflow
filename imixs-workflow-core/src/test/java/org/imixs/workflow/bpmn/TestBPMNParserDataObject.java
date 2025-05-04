@@ -32,12 +32,12 @@ import org.xml.sax.SAXException;
  */
 public class TestBPMNParserDataObject {
 	BPMNModel model = null;
-	ModelManager openBPMNModelManager = null;
+	ModelManager modelManager = null;
 
 	@BeforeEach
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
 		try {
-			openBPMNModelManager = new ModelManager();
+			modelManager = new ModelManager();
 			model = BPMNModelFactory.read("/bpmn/dataobject_example1.bpmn");
 			assertNotNull(model);
 		} catch (BPMNModelException e) {
@@ -53,7 +53,7 @@ public class TestBPMNParserDataObject {
 			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		// test task 1000
-		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
+		ItemCollection task = modelManager.findTaskByID(model, 1000);
 		assertNotNull(task);
 		List<?> dataObjects = task.getItemValue("dataObjects");
 		assertNotNull(dataObjects);
@@ -72,7 +72,7 @@ public class TestBPMNParserDataObject {
 			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		// test event 1000.10
-		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 10);
+		ItemCollection event = modelManager.findEventByID(model, 1000, 10);
 		assertNotNull(event);
 
 		List<?> dataObjects = event.getItemValue("dataObjects");
@@ -100,7 +100,7 @@ public class TestBPMNParserDataObject {
 			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		// test event 1000.10
-		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 10);
+		ItemCollection event = modelManager.findEventByID(model, 1000, 10);
 		assertNotNull(event);
 
 		BPMNElementNode bpmnElementNode = model.findElementNodeById(event.getItemValueString("id"));

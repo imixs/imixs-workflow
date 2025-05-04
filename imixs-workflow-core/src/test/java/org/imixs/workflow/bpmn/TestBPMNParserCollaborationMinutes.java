@@ -34,11 +34,11 @@ import org.xml.sax.SAXException;
 public class TestBPMNParserCollaborationMinutes {
 
 	BPMNModel model = null;
-	ModelManager openBPMNModelManager = null;
+	ModelManager modelManager = null;
 
 	@BeforeEach
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		openBPMNModelManager = new ModelManager();
+		modelManager = new ModelManager();
 		try {
 			model = BPMNModelFactory.read("/bpmn/minutes.bpmn");
 
@@ -52,7 +52,7 @@ public class TestBPMNParserCollaborationMinutes {
 
 		assertNotNull(model);
 
-		Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
+		Set<String> groups = modelManager.findAllGroupsByModel(model);
 		// Test Groups
 		assertFalse(groups.contains("Collaboration"));
 		assertTrue(groups.contains("Protokoll"));

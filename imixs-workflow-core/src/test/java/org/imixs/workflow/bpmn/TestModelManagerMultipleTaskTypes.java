@@ -28,11 +28,11 @@ import org.xml.sax.SAXException;
 public class TestModelManagerMultipleTaskTypes {
 
 	BPMNModel model = null;
-	ModelManager openBPMNModelManager = null;
+	ModelManager modelManager = null;
 
 	@BeforeEach
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		openBPMNModelManager = new ModelManager();
+		modelManager = new ModelManager();
 		try {
 			model = BPMNModelFactory.read("/bpmn/simple-multiple-tasktypes.bpmn");
 			assertNotNull(model);
@@ -51,7 +51,7 @@ public class TestModelManagerMultipleTaskTypes {
 		try {
 
 			// find start tasks
-			List<ItemCollection> startTasks = openBPMNModelManager.findStartTasks(model, "Simple");
+			List<ItemCollection> startTasks = modelManager.findStartTasks(model, "Simple");
 			assertNotNull(startTasks);
 			assertEquals(1, startTasks.size());
 			ItemCollection startTask = startTasks.get(0);
@@ -69,14 +69,14 @@ public class TestModelManagerMultipleTaskTypes {
 			assertNotNull(model);
 
 			// find start tasks
-			List<ItemCollection> startTasks = openBPMNModelManager.findStartTasks(model, "Simple");
+			List<ItemCollection> startTasks = modelManager.findStartTasks(model, "Simple");
 			assertNotNull(startTasks);
 			assertEquals(1, startTasks.size());
 			ItemCollection startTask = startTasks.get(0);
 			assertNotNull(startTask);
 			assertEquals("Task 1", startTask.getItemValueString(BPMNUtil.TASK_ITEM_NAME));
 
-			List<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 1000);
+			List<ItemCollection> events = modelManager.findEventsByTask(model, 1000);
 			assertEquals(3, events.size());
 		} catch (BPMNModelException e) {
 			fail();
@@ -92,7 +92,7 @@ public class TestModelManagerMultipleTaskTypes {
 	public void testEndTasks() throws ModelException {
 		try {
 			// test End task....
-			List<ItemCollection> endTasks = openBPMNModelManager.findEndTasks(model, "Simple");
+			List<ItemCollection> endTasks = modelManager.findEndTasks(model, "Simple");
 			assertNotNull(endTasks);
 			assertEquals(1, endTasks.size());
 
@@ -112,7 +112,7 @@ public class TestModelManagerMultipleTaskTypes {
 	public void testFindEvetnsByTasks() throws ModelException {
 
 		// test End task....
-		List<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 1000);
+		List<ItemCollection> events = modelManager.findEventsByTask(model, 1000);
 		assertNotNull(events);
 		assertEquals(2, events.size());
 
@@ -132,7 +132,7 @@ public class TestModelManagerMultipleTaskTypes {
 	public void testModifyTask() throws ModelException {
 
 		// test task 1000
-		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
+		ItemCollection task = modelManager.findTaskByID(model, 1000);
 		assertNotNull(task);
 		assertEquals("Task 1", task.getItemValueString("name"));
 		assertEquals("Some documentation...", task.getItemValueString("documentation"));
@@ -140,7 +140,7 @@ public class TestModelManagerMultipleTaskTypes {
 		task.replaceItemValue("txtworkflowgroup", "test");
 		assertEquals("test", task.getItemValueString("txtworkflowgroup"));
 		// test task 1000 once again
-		task = openBPMNModelManager.findTaskByID(model, 1000);
+		task = modelManager.findTaskByID(model, 1000);
 		assertNotNull(task);
 		// changes should not have taken effect.
 		assertEquals("", task.getItemValueString("txtworkflowgroup"));
@@ -157,7 +157,7 @@ public class TestModelManagerMultipleTaskTypes {
 		try {
 
 			// find start tasks
-			List<ItemCollection> allTasks = openBPMNModelManager.findTasks(model, "Simple");
+			List<ItemCollection> allTasks = modelManager.findTasks(model, "Simple");
 			assertNotNull(allTasks);
 			assertEquals(8, allTasks.size());
 

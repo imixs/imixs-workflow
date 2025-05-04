@@ -18,6 +18,7 @@ import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.openbpmn.bpmn.BPMNModel;
 
 /**
  * Test class for IntervalPlugin
@@ -31,7 +32,7 @@ public class TestIntervalPlugin {
     protected WorkflowMockEnvironment workflowEnvironment;
     ItemCollection workitem = null;
     ItemCollection documentContext;
-    ItemCollection documentActivity;
+    ItemCollection event;
 
     @BeforeEach
     public void setUp() throws PluginException, ModelException {
@@ -44,7 +45,7 @@ public class TestIntervalPlugin {
         // prepare plugin
         intervalPlugin = new IntervalPlugin();
         try {
-            intervalPlugin.init(workflowEnvironment.getWorkflowService());
+            intervalPlugin.init(workflowEnvironment.getWorkflowContextService());
         } catch (PluginException e) {
             fail(e.getMessage());
         }
@@ -66,9 +67,12 @@ public class TestIntervalPlugin {
         logger.log(Level.INFO, "------------------ Ref Date   ={0}", documentContext.getItemValueDate("reminder"));
         try {
             workitem.event(99);
-            documentActivity = workflowEnvironment.getModelService().loadEvent(workitem); // workflowMockEnvironment.getModel().getEvent(100,
+
+            BPMNModel model = workflowEnvironment.getWorkflowContextService().findModelByWorkitem(workitem);
+
+            event = workflowEnvironment.getModelService().getModelManager().loadEvent(workitem, model);
             // // 99);
-            intervalPlugin.run(documentContext, documentActivity);
+            intervalPlugin.run(documentContext, event);
         } catch (PluginException | ModelException e) {
             e.printStackTrace();
             fail();

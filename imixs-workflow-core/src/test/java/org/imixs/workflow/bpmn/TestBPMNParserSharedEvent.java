@@ -28,11 +28,11 @@ import org.xml.sax.SAXException;
 public class TestBPMNParserSharedEvent {
 
 	BPMNModel model = null;
-	ModelManager openBPMNModelManager = null;
+	ModelManager modelManager = null;
 
 	@BeforeEach
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		openBPMNModelManager = new ModelManager();
+		modelManager = new ModelManager();
 
 	}
 
@@ -52,16 +52,16 @@ public class TestBPMNParserSharedEvent {
 		}
 
 		// test task 1000
-		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
+		ItemCollection task = modelManager.findTaskByID(model, 1000);
 		assertNotNull(task);
 
 		// test activity for task 1000
-		List<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 1000);
+		List<ItemCollection> events = modelManager.findEventsByTask(model, 1000);
 		assertNotNull(events);
 		assertEquals(2, events.size());
 
 		// test activity for task 1100
-		events = openBPMNModelManager.findEventsByTask(model, 1100);
+		events = modelManager.findEventsByTask(model, 1100);
 		assertNotNull(events);
 		assertEquals(1, events.size());
 
@@ -82,14 +82,14 @@ public class TestBPMNParserSharedEvent {
 		}
 
 		// test task 2000
-		ItemCollection task = openBPMNModelManager.findTaskByID(model, 2000);
+		ItemCollection task = modelManager.findTaskByID(model, 2000);
 		assertNotNull(task);
-		List<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 2000);
+		List<ItemCollection> events = modelManager.findEventsByTask(model, 2000);
 		assertNotNull(events);
 		assertEquals(2, events.size());
 
 		// test activity for task 2100
-		events = openBPMNModelManager.findEventsByTask(model, 2100);
+		events = modelManager.findEventsByTask(model, 2100);
 		assertNotNull(events);
 		assertEquals(1, events.size());
 
@@ -110,23 +110,23 @@ public class TestBPMNParserSharedEvent {
 			fail(e.getMessage());
 		}
 		// test task 3000
-		ItemCollection task = openBPMNModelManager.findTaskByID(model, 3000);
+		ItemCollection task = modelManager.findTaskByID(model, 3000);
 		assertNotNull(task);
-		List<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 3000);
+		List<ItemCollection> events = modelManager.findEventsByTask(model, 3000);
 		assertNotNull(events);
 		assertEquals(2, events.size());
 
 		// test task 3100
-		task = openBPMNModelManager.findTaskByID(model, 3100);
+		task = modelManager.findTaskByID(model, 3100);
 		assertNotNull(task);
-		events = openBPMNModelManager.findEventsByTask(model, 3100);
+		events = modelManager.findEventsByTask(model, 3100);
 		assertNotNull(events);
 		assertEquals(1, events.size());
 
 		// test task 3200
-		task = openBPMNModelManager.findTaskByID(model, 3200);
+		task = modelManager.findTaskByID(model, 3200);
 		assertNotNull(task);
-		events = openBPMNModelManager.findEventsByTask(model, 3200);
+		events = modelManager.findEventsByTask(model, 3200);
 		assertNotNull(events);
 		assertEquals(0, events.size());
 
@@ -148,19 +148,19 @@ public class TestBPMNParserSharedEvent {
 		}
 
 		// test task 2000
-		ItemCollection task = openBPMNModelManager.findTaskByID(model, 2000);
+		ItemCollection task = modelManager.findTaskByID(model, 2000);
 		assertNotNull(task);
-		List<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 2000);
+		List<ItemCollection> events = modelManager.findEventsByTask(model, 2000);
 		assertNotNull(events);
 		// there are 3 events....
 		assertEquals(2, events.size());
-		assertNotNull(openBPMNModelManager.findEventByID(model, 2000, 10)); // save
-		assertNotNull(openBPMNModelManager.findEventByID(model, 2000, 90)); // follow up
+		assertNotNull(modelManager.findEventByID(model, 2000, 10)); // save
+		assertNotNull(modelManager.findEventByID(model, 2000, 90)); // follow up
 
 		// test task 2100
-		task = openBPMNModelManager.findTaskByID(model, 2100);
+		task = modelManager.findTaskByID(model, 2100);
 		assertNotNull(task);
-		events = openBPMNModelManager.findEventsByTask(model, 2100);
+		events = modelManager.findEventsByTask(model, 2100);
 		assertNotNull(events);
 		// there are no events....
 		assertEquals(0, events.size());
@@ -183,23 +183,23 @@ public class TestBPMNParserSharedEvent {
 		}
 
 		// test task 2000
-		ItemCollection task = openBPMNModelManager.findTaskByID(model, 2000);
+		ItemCollection task = modelManager.findTaskByID(model, 2000);
 		assertNotNull(task);
-		List<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 2000);
+		List<ItemCollection> events = modelManager.findEventsByTask(model, 2000);
 		assertNotNull(events);
 		// there are 3 events....
 		assertEquals(2, events.size());
-		assertNotNull(openBPMNModelManager.findEventByID(model, 2000, 10)); // save
-		assertNotNull(openBPMNModelManager.findEventByID(model, 2000, 90)); // follow up
+		assertNotNull(modelManager.findEventByID(model, 2000, 10)); // save
+		assertNotNull(modelManager.findEventByID(model, 2000, 90)); // follow up
 
 		// test task 2100
-		task = openBPMNModelManager.findTaskByID(model, 2100);
+		task = modelManager.findTaskByID(model, 2100);
 		assertNotNull(task);
-		events = openBPMNModelManager.findEventsByTask(model, 2100);
+		events = modelManager.findEventsByTask(model, 2100);
 		assertNotNull(events);
 		// there are 2 events....
 		assertEquals(1, events.size());
-		assertNotNull(openBPMNModelManager.findEventByID(model, 2100, 80)); // archive
+		assertNotNull(modelManager.findEventByID(model, 2100, 80)); // archive
 
 	}
 

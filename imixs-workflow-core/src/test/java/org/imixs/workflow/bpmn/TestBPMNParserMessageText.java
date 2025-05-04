@@ -29,11 +29,11 @@ import org.xml.sax.SAXException;
  */
 public class TestBPMNParserMessageText {
 	BPMNModel model = null;
-	ModelManager openBPMNModelManager = null;
+	ModelManager modelManager = null;
 
 	@BeforeEach
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		openBPMNModelManager = new ModelManager();
+		modelManager = new ModelManager();
 		try {
 			model = BPMNModelFactory.read("/bpmn/message_example.bpmn");
 		} catch (BPMNModelException e) {
@@ -45,26 +45,26 @@ public class TestBPMNParserMessageText {
 	public void testSimple() throws ParseException,
 			ParserConfigurationException, SAXException, IOException, ModelException {
 
-		Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
+		Set<String> groups = modelManager.findAllGroupsByModel(model);
 		assertTrue(groups.contains("Message Example"));
 
 		// test count of elements
 		assertEquals(2, model.findAllActivities().size());
 
 		// test task 1000
-		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
+		ItemCollection task = modelManager.findTaskByID(model, 1000);
 		assertNotNull(task);
 
 		// test activity for task 1000
 		List<ItemCollection> events;
 
-		events = openBPMNModelManager.findEventsByTask(model, 1000);
+		events = modelManager.findEventsByTask(model, 1000);
 
 		assertNotNull(events);
 		assertEquals(1, events.size());
 
 		// test event 1000.10 submit
-		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 10);
+		ItemCollection event = modelManager.findEventByID(model, 1000, 10);
 		assertNotNull(event);
 
 		assertEquals("Some MessageMessage-Text",

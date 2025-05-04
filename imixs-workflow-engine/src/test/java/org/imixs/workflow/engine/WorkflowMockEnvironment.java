@@ -74,16 +74,16 @@ public class WorkflowMockEnvironment {
 		return modelService;
 	}
 
-	// public WorkflowContextMock getWorkflowContext() {
-	// return workflowContext;
-	// }
-
 	public DocumentService getDocumentService() {
 		return documentService;
 	}
 
 	public WorkflowService getWorkflowService() {
 		return workflowService;
+	}
+
+	public WorkflowContextService getWorkflowContextService() {
+		return workflowContextService;
 	}
 
 	/**
