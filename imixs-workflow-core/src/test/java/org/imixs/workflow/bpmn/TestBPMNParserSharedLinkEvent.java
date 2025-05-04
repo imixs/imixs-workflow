@@ -43,10 +43,8 @@ public class TestBPMNParserSharedLinkEvent {
 	 */
 	@Test
 	public void testLinkEventSimple() {
-
 		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/shared-link-event.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
+			model = BPMNModelFactory.read("/bpmn/shared-link-event.bpmn");
 			assertNotNull(model);
 
 			// Test Environment

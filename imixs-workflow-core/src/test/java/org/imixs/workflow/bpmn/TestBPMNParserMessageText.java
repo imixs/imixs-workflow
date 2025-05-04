@@ -34,20 +34,16 @@ public class TestBPMNParserMessageText {
 	@BeforeEach
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
 		openBPMNModelManager = new ModelManager();
+		try {
+			model = BPMNModelFactory.read("/bpmn/message_example.bpmn");
+		} catch (BPMNModelException e) {
+			fail(e);
+		}
 	}
 
 	@Test
 	public void testSimple() throws ParseException,
 			ParserConfigurationException, SAXException, IOException, ModelException {
-
-		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/message_example.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
-			assertNotNull(model);
-		} catch (ModelException | BPMNModelException e) {
-			e.printStackTrace();
-			fail();
-		}
 
 		Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
 		assertTrue(groups.contains("Message Example"));

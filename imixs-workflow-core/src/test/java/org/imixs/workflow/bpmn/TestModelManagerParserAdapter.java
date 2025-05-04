@@ -25,7 +25,7 @@ import org.xml.sax.SAXException;
  * 
  * @author rsoika
  */
-public class TestBPMNParserAdapter {
+public class TestModelManagerParserAdapter {
 
 	BPMNModel model = null;
 	ModelManager openBPMNModelManager = null;
@@ -39,9 +39,8 @@ public class TestBPMNParserAdapter {
 	public void testEventAdapter()
 			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/adapter.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
-		} catch (ModelException | BPMNModelException e) {
+			model = BPMNModelFactory.read("/bpmn/adapter.bpmn");
+		} catch (BPMNModelException e) {
 			e.printStackTrace();
 			fail();
 		}
@@ -59,11 +58,9 @@ public class TestBPMNParserAdapter {
 	@Test
 	public void testEventMulitAdapter()
 			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
-
 		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/adapter_multi.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
-		} catch (ModelException | BPMNModelException e) {
+			model = BPMNModelFactory.read("/bpmn/adapter_multi.bpmn");
+		} catch (BPMNModelException e) {
 			e.printStackTrace();
 			fail();
 		}

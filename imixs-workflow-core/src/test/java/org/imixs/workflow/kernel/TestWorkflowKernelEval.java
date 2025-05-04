@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Test class for testing the eval method of the workflow kernel
- * The method loads a test model and the MockWorkflowContext
+ * The method loads a test model
  * 
  * @author rsoika
  */
@@ -31,7 +31,7 @@ public class TestWorkflowKernelEval {
 	public void setup() throws PluginException {
 		workflowEngine = new MockWorkflowEngine();
 		// load default model
-		workflowEngine.loadBPMNModel("/bpmn/workflowkernel_eval.bpmn");
+		workflowEngine.loadBPMNModelFromFile("/bpmn/workflowkernel_eval.bpmn");
 	}
 
 	@Test
@@ -82,7 +82,7 @@ public class TestWorkflowKernelEval {
 	 */
 	@Test
 	public void testParallelGateway() {
-		workflowEngine.loadBPMNModel("/bpmn/workflowkernel_eval_parallelgateway.bpmn");
+		workflowEngine.loadBPMNModelFromFile("/bpmn/workflowkernel_eval_parallelgateway.bpmn");
 
 		long l = System.currentTimeMillis();
 		ItemCollection workitem = new ItemCollection();

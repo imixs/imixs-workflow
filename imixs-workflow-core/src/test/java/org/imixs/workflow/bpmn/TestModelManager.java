@@ -26,7 +26,7 @@ import org.xml.sax.SAXException;
  * 
  * @author rsoika
  */
-public class TestBPMNModelBasic {
+public class TestModelManager {
 
 	BPMNModel model = null;
 	ModelManager openBPMNModelManager = null;
@@ -35,10 +35,9 @@ public class TestBPMNModelBasic {
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
 		openBPMNModelManager = new ModelManager();
 		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/simple.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
+			model = BPMNModelFactory.read("/bpmn/simple.bpmn");
 			assertNotNull(model);
-		} catch (ModelException | BPMNModelException e) {
+		} catch (BPMNModelException e) {
 			fail(e.getMessage());
 		}
 	}
@@ -51,7 +50,6 @@ public class TestBPMNModelBasic {
 	@Test
 	public void testStartTasks() throws ModelException {
 		try {
-
 			// find start tasks
 			List<ItemCollection> startTasks = openBPMNModelManager.findStartTasks(model, "Simple");
 			assertNotNull(startTasks);
@@ -67,9 +65,7 @@ public class TestBPMNModelBasic {
 	@Test
 	public void testStartTasksComplex() throws ModelException {
 		try {
-
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/simple-startevent.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
+			model = BPMNModelFactory.read("/bpmn/simple-startevent.bpmn");
 			assertNotNull(model);
 
 			// find start tasks
@@ -235,31 +231,6 @@ public class TestBPMNModelBasic {
 			groups = openBPMNModelManager.findAllGroupsByModel(model);
 			assertNotNull(groups);
 			assertEquals(1, groups.size());
-		}
-	}
-
-	/**
-	 * Test case testing a kind of corrupted model file
-	 * 
-	 * Model Manager is unable to load event 20
-	 * 
-	 * @throws ModelException
-	 */
-	@Test
-	public void testRecursiveBug() throws ModelException {
-		try {
-
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/recursive_issue1.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
-			assertNotNull(model);
-
-			ItemCollection workitem = new ItemCollection().model("1.0.0").task(100).event(10);
-			assertEquals(3, model.findAllEvents().size());
-			ItemCollection event = openBPMNModelManager.loadEvent(workitem);
-			assertNotNull(event);
-
-		} catch (BPMNModelException e) {
-			fail();
 		}
 	}
 

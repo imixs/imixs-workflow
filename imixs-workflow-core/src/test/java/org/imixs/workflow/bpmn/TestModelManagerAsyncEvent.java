@@ -31,7 +31,7 @@ import org.xml.sax.SAXException;
  * 
  * @author rsoika
  */
-public class TestBPMNParserAsyncEvent {
+public class TestModelManagerAsyncEvent {
     BPMNModel model = null;
     ModelManager openBPMNModelManager = null;
 
@@ -39,10 +39,11 @@ public class TestBPMNParserAsyncEvent {
     public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
         openBPMNModelManager = new ModelManager();
         try {
-            openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/asyncEventSimple.bpmn"));
-            model = openBPMNModelManager.getModel("1.0.0");
+
+            model = BPMNModelFactory.read("/bpmn/asyncEventSimple.bpmn");
             assertNotNull(model);
-        } catch (ModelException | BPMNModelException e) {
+            assertEquals("1.0.0", BPMNUtil.getVersion(model));
+        } catch (BPMNModelException e) {
             e.printStackTrace();
             fail();
         }

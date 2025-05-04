@@ -38,10 +38,9 @@ public class TestBPMNParserDataObject {
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
 		try {
 			openBPMNModelManager = new ModelManager();
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/dataobject_example1.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
+			model = BPMNModelFactory.read("/bpmn/dataobject_example1.bpmn");
 			assertNotNull(model);
-		} catch (ModelException | BPMNModelException e) {
+		} catch (BPMNModelException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}

@@ -29,7 +29,6 @@
 package org.imixs.workflow;
 
 import org.imixs.workflow.exceptions.PluginException;
-import org.openbpmn.bpmn.BPMNModel;
 
 /**
  * A Plugin defines the interface between the WorkflowKernel and the
@@ -55,7 +54,7 @@ public interface Plugin {
      *              instance is not thread save!)
      *
      */
-    public void init(BPMNModel model) throws PluginException;
+    public void init(WorkflowContext ctx) throws PluginException;
 
     /**
      * @param document the workitem to be processed

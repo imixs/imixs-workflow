@@ -29,7 +29,7 @@ public class TestWorkflowKernelLoop {
 	public void setup() throws PluginException {
 		workflowEngine = new MockWorkflowEngine();
 		// load default model
-		workflowEngine.loadBPMNModel("/bpmn/loop-event.bpmn");
+		workflowEngine.loadBPMNModelFromFile("/bpmn/loop-event.bpmn");
 	}
 
 	/**

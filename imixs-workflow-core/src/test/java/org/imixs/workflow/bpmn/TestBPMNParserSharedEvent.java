@@ -12,7 +12,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ModelManager;
-import org.imixs.workflow.exceptions.ModelException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
@@ -45,10 +44,9 @@ public class TestBPMNParserSharedEvent {
 	public void testSharedEvent() {
 
 		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/shared_event1.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
+			model = BPMNModelFactory.read("/bpmn/shared_event1.bpmn");
 			assertNotNull(model);
-		} catch (ModelException | BPMNModelException e) {
+		} catch (BPMNModelException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
@@ -75,12 +73,10 @@ public class TestBPMNParserSharedEvent {
 	 */
 	@Test
 	public void testSharedEventWithFollowUp() {
-
 		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/shared_event2.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
+			model = BPMNModelFactory.read("/bpmn/shared_event2.bpmn");
 			assertNotNull(model);
-		} catch (ModelException | BPMNModelException e) {
+		} catch (BPMNModelException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
@@ -107,10 +103,9 @@ public class TestBPMNParserSharedEvent {
 	public void testSharedLinkedEventWithFollowUp() {
 
 		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/shared_event3.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
+			model = BPMNModelFactory.read("/bpmn/shared_event3.bpmn");
 			assertNotNull(model);
-		} catch (ModelException | BPMNModelException e) {
+		} catch (BPMNModelException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
@@ -145,10 +140,9 @@ public class TestBPMNParserSharedEvent {
 	public void testSharedEvent_Case4() {
 
 		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/shared_event4.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
+			model = BPMNModelFactory.read("/bpmn/shared_event4.bpmn");
 			assertNotNull(model);
-		} catch (ModelException | BPMNModelException e) {
+		} catch (BPMNModelException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
@@ -181,10 +175,9 @@ public class TestBPMNParserSharedEvent {
 	public void testSharedEvent_Case5() {
 
 		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/shared_event5.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
+			model = BPMNModelFactory.read("/bpmn/shared_event5.bpmn");
 			assertNotNull(model);
-		} catch (ModelException | BPMNModelException e) {
+		} catch (BPMNModelException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}

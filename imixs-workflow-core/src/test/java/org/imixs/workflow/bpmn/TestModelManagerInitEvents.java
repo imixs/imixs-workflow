@@ -22,7 +22,7 @@ import org.openbpmn.bpmn.util.BPMNModelFactory;
  * 
  * @author rsoika
  */
-public class TestBPMNModelInitEvents {
+public class TestModelManagerInitEvents {
 
 	BPMNModel model = null;
 	ModelManager openBPMNModelManager = null;
@@ -31,10 +31,9 @@ public class TestBPMNModelInitEvents {
 	public void setup() {
 		openBPMNModelManager = new ModelManager();
 		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/startevent_followup.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
+			model = BPMNModelFactory.read("/bpmn/startevent_followup.bpmn");
 			assertNotNull(model);
-		} catch (ModelException | BPMNModelException e) {
+		} catch (BPMNModelException e) {
 			fail();
 		}
 	}

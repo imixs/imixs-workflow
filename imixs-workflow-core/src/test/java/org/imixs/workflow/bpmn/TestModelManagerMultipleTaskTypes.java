@@ -25,7 +25,7 @@ import org.xml.sax.SAXException;
  * 
  * @author rsoika
  */
-public class TestBPMNModelBasicMultipleTasktypes {
+public class TestModelManagerMultipleTaskTypes {
 
 	BPMNModel model = null;
 	ModelManager openBPMNModelManager = null;
@@ -34,10 +34,9 @@ public class TestBPMNModelBasicMultipleTasktypes {
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
 		openBPMNModelManager = new ModelManager();
 		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/simple-multiple-tasktypes.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
+			model = BPMNModelFactory.read("/bpmn/simple-multiple-tasktypes.bpmn");
 			assertNotNull(model);
-		} catch (ModelException | BPMNModelException e) {
+		} catch (BPMNModelException e) {
 			fail(e.getMessage());
 		}
 	}
@@ -66,9 +65,7 @@ public class TestBPMNModelBasicMultipleTasktypes {
 	@Test
 	public void testStartTasksComplex() throws ModelException {
 		try {
-
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/simple-startevent.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
+			model = BPMNModelFactory.read("/bpmn/simple-startevent.bpmn");
 			assertNotNull(model);
 
 			// find start tasks

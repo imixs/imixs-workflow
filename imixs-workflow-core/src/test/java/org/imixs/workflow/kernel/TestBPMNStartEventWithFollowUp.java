@@ -26,15 +26,13 @@ public class TestBPMNStartEventWithFollowUp {
 	private MockWorkflowEngine workflowEngine;
 
 	@BeforeEach
-	public void setup() throws PluginException {
+	public void setup() throws PluginException, ModelException {
 		workflowEngine = new MockWorkflowEngine();
-		workflowEngine.loadBPMNModel("/bpmn/startevent_followup.bpmn");
-		try {
-			model = workflowEngine.getModelManager().getModel("1.0.0");
-			assertNotNull(model);
-		} catch (ModelException e) {
-			fail(e.getMessage());
-		}
+
+		// load test models
+		workflowEngine.loadBPMNModelFromFile("/bpmn/startevent_followup.bpmn");
+		BPMNModel model = workflowEngine.loadModel("1.0.0");
+		assertNotNull(model);
 	}
 
 	/**

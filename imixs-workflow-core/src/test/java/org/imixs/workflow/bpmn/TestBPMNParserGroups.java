@@ -50,8 +50,9 @@ public class TestBPMNParserGroups {
 	public void testSingleGroup() {
 
 		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/link-event-basic.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
+			model = BPMNModelFactory.read("/bpmn/link-event-basic.bpmn");
+			// openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/link-event-basic.bpmn"));
+			// model = openBPMNModelManager.getModel("1.0.0");
 			assertNotNull(model);
 			// Test Groups
 			Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
@@ -80,11 +81,11 @@ public class TestBPMNParserGroups {
 			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/multi-groups.bpmn"));
-			model = openBPMNModelManager.getModel("protokoll-de-1.0.0");
+			// openBPMNModelManager.addModel();
+			model = BPMNModelFactory.read("/bpmn/multi-groups.bpmn");
 			assertNotNull(model);
 
-		} catch (ModelException | BPMNModelException e) {
+		} catch (BPMNModelException e) {
 			fail();
 		}
 

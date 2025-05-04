@@ -25,6 +25,7 @@ import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.imixs.workflow.exceptions.WorkflowException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.openbpmn.bpmn.BPMNModel;
 
 /**
  * Test class for Imixs WorkflowKernel using a static default model. The test
@@ -43,7 +44,7 @@ public class TestWorkflowKernelBasic {
     public void setup() throws PluginException {
         workflowEngine = new MockWorkflowEngine();
         // load default model
-        workflowEngine.loadBPMNModel("/bpmn/simple.bpmn");
+        workflowEngine.loadBPMNModelFromFile("/bpmn/simple.bpmn");
     }
 
     /**
@@ -163,6 +164,27 @@ public class TestWorkflowKernelBasic {
             e.printStackTrace();
             fail();
         }
+
+    }
+
+    /**
+     * Test case testing a kind of corrupted model file
+     * 
+     * Model Manager is unable to load event 20
+     * 
+     * @throws ModelException
+     */
+    @Test
+    public void testRecursiveBug() throws ModelException {
+
+        workflowEngine.loadBPMNModelFromFile("/bpmn/recursive_issue1.bpmn");
+        BPMNModel model = workflowEngine.loadModel("1.0.0");
+        assertNotNull(model);
+
+        ItemCollection workitem = new ItemCollection().model("1.0.0").task(100).event(10);
+        assertEquals(3, model.findAllEvents().size());
+        ItemCollection event = this.workflowEngine.getWorkflowKernel().loadEvent(workitem);
+        assertNotNull(event);
 
     }
 
@@ -298,7 +320,7 @@ public class TestWorkflowKernelBasic {
     public void testFollowup() {
 
         // load followup model
-        workflowEngine.loadBPMNModel("/bpmn/followup_001.bpmn");
+        workflowEngine.loadBPMNModelFromFile("/bpmn/followup_001.bpmn");
         ItemCollection workItem = new ItemCollection();
         workItem.replaceItemValue("txtTitel", "Hello");
         workItem.model("1.0.0")
@@ -333,7 +355,7 @@ public class TestWorkflowKernelBasic {
     public void testFollowupMultipleGateways() {
 
         // load followup model
-        workflowEngine.loadBPMNModel("/bpmn/followup_002.bpmn");
+        workflowEngine.loadBPMNModelFromFile("/bpmn/followup_002.bpmn");
         ItemCollection workItem = new ItemCollection();
         workItem.replaceItemValue("txtTitel", "Hello");
         workItem.model("1.0.0")

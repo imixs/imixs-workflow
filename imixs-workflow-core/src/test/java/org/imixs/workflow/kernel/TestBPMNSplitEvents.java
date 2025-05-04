@@ -35,7 +35,7 @@ public class TestBPMNSplitEvents {
 	@BeforeEach
 	public void setup() throws PluginException {
 		workflowEngine = new MockWorkflowEngine();
-		workflowEngine.loadBPMNModel("/bpmn/split_event_with_condition.bpmn");
+		workflowEngine.loadBPMNModelFromFile("/bpmn/split_event_with_condition.bpmn");
 	}
 
 	/**

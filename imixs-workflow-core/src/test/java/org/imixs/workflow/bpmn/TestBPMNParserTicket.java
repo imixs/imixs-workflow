@@ -37,10 +37,9 @@ public class TestBPMNParserTicket {
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
 		try {
 			openBPMNModelManager = new ModelManager();
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/ticket.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
+			model = BPMNModelFactory.read("/bpmn/ticket.bpmn");
 			assertNotNull(model);
-		} catch (ModelException | BPMNModelException e) {
+		} catch (BPMNModelException e) {
 			fail(e.getMessage());
 		}
 

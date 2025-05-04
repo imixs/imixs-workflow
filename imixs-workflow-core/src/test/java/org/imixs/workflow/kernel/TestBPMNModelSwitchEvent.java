@@ -29,8 +29,8 @@ public class TestBPMNModelSwitchEvent {
 	@BeforeEach
 	public void setup() throws PluginException {
 		workflowEngine = new MockWorkflowEngine();
-		workflowEngine.loadBPMNModel("/bpmn/model-switch-source.bpmn");
-		workflowEngine.loadBPMNModel("/bpmn/model-switch-target.bpmn");
+		workflowEngine.loadBPMNModelFromFile("/bpmn/model-switch-source.bpmn");
+		workflowEngine.loadBPMNModelFromFile("/bpmn/model-switch-target.bpmn");
 	}
 
 	/**
@@ -41,7 +41,7 @@ public class TestBPMNModelSwitchEvent {
 	@Test
 	public void testSimpleSwitch() throws ModelException {
 
-		BPMNModel model = workflowEngine.getModelManager().getModel("source-1.0.0");
+		BPMNModel model = workflowEngine.loadModel("source-1.0.0");
 		assertNotNull(model);
 
 		// Test Environment
@@ -70,8 +70,9 @@ public class TestBPMNModelSwitchEvent {
 	@Test
 	public void testRegexSwitch() throws ModelException {
 
-		BPMNModel model = workflowEngine.getModelManager().getModel("source-1.0.0");
-
+		// load test models
+		workflowEngine.loadBPMNModelFromFile("/bpmn/link-event-basic.bpmn");
+		BPMNModel model = workflowEngine.loadModel("source-1.0.0");
 		assertNotNull(model);
 
 		// Test Environment

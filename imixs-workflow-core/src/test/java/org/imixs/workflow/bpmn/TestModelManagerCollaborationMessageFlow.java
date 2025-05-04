@@ -30,7 +30,7 @@ import org.xml.sax.SAXException;
  * 
  * @author rsoika
  */
-public class TestBPMNParserCollaborationMessageFlow {
+public class TestModelManagerCollaborationMessageFlow {
 
 	BPMNModel model = null;
 	ModelManager openBPMNModelManager = null;
@@ -38,7 +38,6 @@ public class TestBPMNParserCollaborationMessageFlow {
 	@BeforeEach
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
 		openBPMNModelManager = new ModelManager();
-
 	}
 
 	/**
@@ -54,10 +53,9 @@ public class TestBPMNParserCollaborationMessageFlow {
 	public void testSimple() {
 
 		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/collaboration_messageflow.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
+			model = BPMNModelFactory.read("/bpmn/collaboration_messageflow.bpmn");
 			assertNotNull(model);
-		} catch (ModelException | BPMNModelException e) {
+		} catch (BPMNModelException e) {
 			e.printStackTrace();
 			fail();
 		}
@@ -98,12 +96,10 @@ public class TestBPMNParserCollaborationMessageFlow {
 	 */
 	@Test
 	public void testComplex() {
-
 		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/collaboration_messageflow_complex.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
+			model = BPMNModelFactory.read("/bpmn/collaboration_messageflow_complex.bpmn");
 			assertNotNull(model);
-		} catch (ModelException | BPMNModelException e) {
+		} catch (BPMNModelException e) {
 			e.printStackTrace();
 			fail();
 		}

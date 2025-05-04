@@ -35,9 +35,8 @@ public class TestBPMNProperties {
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
 		openBPMNModelManager = new ModelManager();
 		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/properties.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
-		} catch (ModelException | BPMNModelException e) {
+			model = BPMNModelFactory.read("/bpmn/properties.bpmn");
+		} catch (BPMNModelException e) {
 			e.printStackTrace();
 			fail();
 		}

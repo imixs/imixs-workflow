@@ -29,7 +29,7 @@ import org.xml.sax.SAXException;
  * 
  * @author rsoika
  */
-public class TestBPMNParserCollaboration {
+public class TestModelManagerCollaboration {
 	BPMNModel model = null;
 	ModelManager openBPMNModelManager = null;
 
@@ -37,10 +37,10 @@ public class TestBPMNParserCollaboration {
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
 		openBPMNModelManager = new ModelManager();
 		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/collaboration.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
+			// openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/collaboration.bpmn"));
+			model = BPMNModelFactory.read("/bpmn/collaboration.bpmn");
 			assertNotNull(model);
-		} catch (ModelException | BPMNModelException e) {
+		} catch (BPMNModelException e) {
 			e.printStackTrace();
 			fail();
 		}

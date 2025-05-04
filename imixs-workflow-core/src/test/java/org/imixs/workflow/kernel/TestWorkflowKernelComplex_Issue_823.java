@@ -41,7 +41,7 @@ public class TestWorkflowKernelComplex_Issue_823 {
 	public void setup() throws PluginException {
 		workflowEngine = new MockWorkflowEngine();
 		// load default model
-		workflowEngine.loadBPMNModel("/bpmn/conditional_complex_event0.bpmn");
+		workflowEngine.loadBPMNModelFromFile("/bpmn/conditional_complex_event0.bpmn");
 	}
 
 	/**

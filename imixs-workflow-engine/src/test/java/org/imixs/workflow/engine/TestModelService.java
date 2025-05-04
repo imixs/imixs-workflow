@@ -59,7 +59,7 @@ public class TestModelService {
 	@Test
 	public void testGetDataObject() throws ModelException {
 		workitem.event(20);
-		ItemCollection event = this.workflowEngine.getModelService().getModelManager().loadEvent(workitem);
+		ItemCollection event = this.workflowEngine.getModelManager().loadEvent(workitem);
 
 		assertNotNull(event);
 

@@ -42,7 +42,7 @@ public class TestWorkflowKernelModels {
 	@Test
 	public void testSimpleModel() {
 		try {
-			workflowEngine.loadBPMNModel("/bpmn/simple.bpmn");
+			workflowEngine.loadBPMNModelFromFile("/bpmn/simple.bpmn");
 
 			ItemCollection itemCollection = new ItemCollection();
 			itemCollection.replaceItemValue("txtTitel", "Hello");
@@ -51,13 +51,13 @@ public class TestWorkflowKernelModels {
 
 			itemCollection.replaceItemValue("$modelversion", "1.0.0");
 
-			itemCollection = workflowEngine.getWorkflowKernel().process(itemCollection);
+			itemCollection = workflowEngine.process(itemCollection);
 			assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
 			assertEquals("workitem", itemCollection.getItemValueString("type"));
 			assertEquals(1000, itemCollection.getTaskID());
 
 			itemCollection.event(20);
-			itemCollection = workflowEngine.getWorkflowKernel().process(itemCollection);
+			itemCollection = workflowEngine.process(itemCollection);
 			assertEquals("workitemarchive", itemCollection.getItemValueString("type"));
 			assertEquals(1100, itemCollection.getTaskID());
 
@@ -75,7 +75,7 @@ public class TestWorkflowKernelModels {
 	@Test
 	public void testTicketModel() {
 		try {
-			workflowEngine.loadBPMNModel("/bpmn/ticket.bpmn");
+			workflowEngine.loadBPMNModelFromFile("/bpmn/ticket.bpmn");
 
 			ItemCollection itemCollection = new ItemCollection();
 			itemCollection.replaceItemValue("txtTitel", "Hello");
@@ -108,7 +108,7 @@ public class TestWorkflowKernelModels {
 	@Test
 	public void testConditionalEventModel1() {
 		try {
-			workflowEngine.loadBPMNModel("/bpmn/conditional_event1.bpmn");
+			workflowEngine.loadBPMNModelFromFile("/bpmn/conditional_event1.bpmn");
 
 			// test Condition 1
 			ItemCollection itemCollection = new ItemCollection();
@@ -154,7 +154,7 @@ public class TestWorkflowKernelModels {
 	@Test
 	public void testConditionalEventModel2() {
 		try {
-			workflowEngine.loadBPMNModel("/bpmn/conditional_event2.bpmn");
+			workflowEngine.loadBPMNModelFromFile("/bpmn/conditional_event2.bpmn");
 
 			// test Condition 1
 			ItemCollection itemCollection = new ItemCollection();
@@ -196,7 +196,7 @@ public class TestWorkflowKernelModels {
 	@Test
 	public void testSplitEventModel1() {
 		try {
-			workflowEngine.loadBPMNModel("/bpmn/split_event1.bpmn");
+			workflowEngine.loadBPMNModelFromFile("/bpmn/split_event1.bpmn");
 
 			// test Condition 1
 			ItemCollection itemCollection = new ItemCollection();
@@ -250,7 +250,7 @@ public class TestWorkflowKernelModels {
 	@Test
 	public void testSplitEventInvalidModelMissingEvent() {
 
-		workflowEngine.loadBPMNModel("/bpmn/split_event_invalid_1.bpmn");
+		workflowEngine.loadBPMNModelFromFile("/bpmn/split_event_invalid_1.bpmn");
 
 		// test Condition 1
 		ItemCollection workItem = new ItemCollection();
@@ -279,7 +279,7 @@ public class TestWorkflowKernelModels {
 	@Test
 	public void testSplitEventInvalidModelMissingTask() {
 
-		workflowEngine.loadBPMNModel("/bpmn/split_event_invalid_2.bpmn");
+		workflowEngine.loadBPMNModelFromFile("/bpmn/split_event_invalid_2.bpmn");
 
 		// test Condition 1
 		ItemCollection workItem = new ItemCollection();
@@ -309,7 +309,7 @@ public class TestWorkflowKernelModels {
 	@Test
 	public void testSplitEventConditionalFlowsWithEvents() {
 
-		workflowEngine.loadBPMNModel("/bpmn/split_event_invalid_3.bpmn");
+		workflowEngine.loadBPMNModelFromFile("/bpmn/split_event_invalid_3.bpmn");
 
 		// test Condition 1
 		ItemCollection workItem = new ItemCollection();

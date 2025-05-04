@@ -44,27 +44,26 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jakarta.annotation.security.DeclareRoles;
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.core.MediaType;
-
-import jakarta.xml.bind.JAXBException;
+import javax.xml.transform.TransformerException;
 
 import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ItemCollectionComparator;
-import org.imixs.workflow.engine.plugins.AbstractPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.QueryException;
 import org.imixs.workflow.util.XMLParser;
 import org.imixs.workflow.xml.XSLHandler;
-import javax.xml.transform.TransformerException;
+
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ejb.Stateless;
-import java.util.logging.Level;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.xml.bind.JAXBException;
 
 /**
  * The ReportService supports methods to create, process and find report
@@ -98,7 +97,7 @@ public class ReportService {
     DocumentService documentService;
 
     @Inject
-    WorkflowService workflowService;
+    WorkflowContextService workflowContextService;
 
     /**
      * Returns a Report Entity by its identifier. The identifier can either be the
@@ -239,14 +238,15 @@ public class ReportService {
                 // test if key is contained in query
                 if (query.indexOf("{" + sKeyName + "}") > -1) {
                     query = query.replace("{" + sKeyName + "}", sParamValue);
-                    logger.log(Level.FINEST, "......executeReport set param {0}={1}", new Object[]{sKeyName, sParamValue});
+                    logger.log(Level.FINEST, "......executeReport set param {0}={1}",
+                            new Object[] { sKeyName, sParamValue });
                 } else {
                     // support old param format
                     if (query.indexOf("?" + sKeyName) > -1) {
                         query = query.replace("?" + sKeyName, sParamValue);
                         logger.log(Level.WARNING, "......query definition in Report ''{0}'' is deprecated!"
                                 + " Please replace the param ''?{1}'' with '''{'{2}'}'''",
-                                new Object[]{reportEntity.getItemValueString("txtname"), sKeyName, sKeyName});
+                                new Object[] { reportEntity.getItemValueString("txtname"), sKeyName, sKeyName });
                     }
                 }
 
@@ -287,7 +287,7 @@ public class ReportService {
             }
         }
         logger.log(Level.FINE, "...executed report ''{0}'' in {1}ms",
-                new Object[]{reportEntity.getItemValueString("txtname"), System.currentTimeMillis() - l});
+                new Object[] { reportEntity.getItemValueString("txtname"), System.currentTimeMillis() - l });
         return clonedResult;
 
     }
@@ -649,7 +649,7 @@ public class ReportService {
                     double d = Double.parseDouble(o.toString());
                     singleValue = customNumberFormat(format, locale, d);
                 } catch (IllegalArgumentException e) {
-                    logger.log(Level.WARNING, "Format Error ({0}) = {1}", new Object[]{format, e.getMessage()});
+                    logger.log(Level.WARNING, "Format Error ({0}) = {1}", new Object[] { format, e.getMessage() });
                     singleValue = "0";
                 }
 
@@ -690,7 +690,7 @@ public class ReportService {
             try {
                 logger.log(Level.FINEST, "......converter = {0}", converter);
                 // adapt the value list...
-                adaptedValueList = workflowService.adaptTextList(converter, itemcol);
+                adaptedValueList = workflowContextService.adaptTextList(converter, itemcol);
             } catch (PluginException e) {
                 logger.log(Level.WARNING, "Unable to adapt text converter: {0}", converter);
             }

@@ -28,6 +28,7 @@
 
 package org.imixs.workflow;
 
+import org.imixs.workflow.exceptions.ModelException;
 import org.openbpmn.bpmn.BPMNModel;
 
 /**
@@ -44,8 +45,37 @@ public interface WorkflowContext {
     /**
      * This method loads a BPMNModel instance.
      * 
+     * @param modelRegex - valid model version
      * @return an instance of a BPMNModel
+     * @throws ModelException
      */
-    public BPMNModel loadModel(String version);
+    public BPMNModel loadModel(String version) throws ModelException;
+
+    /**
+     * This method returns the highest version matching a given regular expression.
+     * 
+     * @param modelRegex - regular expression
+     * @return version matching the regex
+     * @throws ModelException
+     */
+    public String findVersionByRegEx(String modelRegex) throws ModelException;
+
+    /**
+     * Returns returns the hightest version matching a given workflow group.
+     * 
+     * @param group - name of the workflow group
+     * @return version matching the group
+     * @throws ModelException
+     */
+    public String findVersionByGroup(String group) throws ModelException;
+
+    /**
+     * Returns a Model matching the $modelVersion of a given workitem.
+     * 
+     * @param group - name of the workflow group
+     * @return version matching the params of the given workitem
+     * @throws ModelException
+     **/
+    public BPMNModel findModelByWorkitem(ItemCollection workitem) throws ModelException;
 
 }

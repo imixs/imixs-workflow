@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,7 +16,6 @@ import org.imixs.workflow.Adapter;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.WorkflowKernel;
-import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -29,6 +29,7 @@ import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.exceptions.BPMNModelException;
 import org.openbpmn.bpmn.util.BPMNModelFactory;
 
+import jakarta.ejb.SessionContext;
 import jakarta.enterprise.event.Event;
 import jakarta.enterprise.inject.Instance;
 
@@ -51,6 +52,7 @@ import jakarta.enterprise.inject.Instance;
 public class WorkflowMockEnvironment {
 	protected final static Logger logger = Logger.getLogger(WorkflowMockEnvironment.class.getName());
 
+	protected SessionContext ctx = null;
 	protected Map<String, ItemCollection> database = null;
 
 	@Mock
@@ -62,16 +64,19 @@ public class WorkflowMockEnvironment {
 	@InjectMocks
 	protected WorkflowService workflowService; // Injects mocks into WorkflowService
 
-	protected WorkflowContextMock workflowContext = null;
+	@InjectMocks
+	protected WorkflowContextService workflowContextService; // Injects mocks into WorkflowService
+
+	// protected WorkflowContextMock workflowContext = null;
 	protected List<Adapter> adapterList = new ArrayList<>();
 
 	public ModelService getModelService() {
 		return modelService;
 	}
 
-	public WorkflowContextMock getWorkflowContext() {
-		return workflowContext;
-	}
+	// public WorkflowContextMock getWorkflowContext() {
+	// return workflowContext;
+	// }
 
 	public DocumentService getDocumentService() {
 		return documentService;
@@ -107,13 +112,19 @@ public class WorkflowMockEnvironment {
 		// Set up test environment
 		createTestDatabase();
 
+		ctx = Mockito.mock(SessionContext.class);
+		setupSessionContext();
+
 		// Link modelService to workflowServiceMock
 		workflowService.modelService = modelService;
+		workflowService.workflowContextService = workflowContextService;
+		workflowContextService.modelService = modelService;
 		modelService.modelManager = new ModelManager();
 		assertNotNull(modelService.getModelManager());
 
-		workflowContext = new WorkflowContextMock();
-		workflowService.ctx = workflowContext.getSessionContext();
+		// workflowContext = new WorkflowContextMock();
+		workflowService.ctx = ctx; // workflowContext.getSessionContext();
+		workflowContextService.ctx = ctx;
 
 		// Mock Database Service with a in-memory database...
 		when(documentService.load(Mockito.anyString())).thenAnswer(new Answer<ItemCollection>() {
@@ -160,7 +171,7 @@ public class WorkflowMockEnvironment {
 			return null;
 		}).when(mockTextEvents).fire(Mockito.any(TextEvent.class));
 		// Inject the mocked Event<TextEvent> into the workflowService
-		injectMockIntoField(workflowService, "textEvents", mockTextEvents);
+		injectMockIntoField(workflowContextService, "textEvents", mockTextEvents);
 
 		/*
 		 * Mock Instance<Adapter> for adapters field
@@ -183,8 +194,8 @@ public class WorkflowMockEnvironment {
 	public void loadBPMNModel(String modelPath) {
 		try {
 			BPMNModel model = BPMNModelFactory.read(modelPath);
-			modelService.getModelManager().addModel(model);
-		} catch (BPMNModelException | ModelException e) {
+			modelService.addModel(model);
+		} catch (BPMNModelException e) {
 			e.printStackTrace();
 			fail();
 		}
@@ -228,6 +239,15 @@ public class WorkflowMockEnvironment {
 		} catch (NoSuchFieldException | IllegalAccessException e) {
 			throw new RuntimeException("Failed to inject mock into field: " + fieldName, e);
 		}
+	}
+
+	/**
+	 * Creates a Mock for a Session Context with a test principal 'manfred'
+	 */
+	private void setupSessionContext() {
+		Principal principal = Mockito.mock(Principal.class);
+		when(principal.getName()).thenReturn("manfred");
+		when(ctx.getCallerPrincipal()).thenReturn(principal);
 	}
 
 	// /**

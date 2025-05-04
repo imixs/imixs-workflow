@@ -43,7 +43,6 @@ public class TestBPMNParserRuleEvents {
 	@BeforeEach
 	public void setup() throws PluginException {
 		workflowEngine = new MockWorkflowEngine();
-
 	}
 
 	/**
@@ -56,7 +55,7 @@ public class TestBPMNParserRuleEvents {
 		ModelManager openBPMNModelManager = new ModelManager();
 		try {
 			model = BPMNModelFactory.read("/bpmn/event_rules.bpmn");
-			openBPMNModelManager.addModel(model);
+			// openBPMNModelManager.addModel(model);
 		} catch (BPMNModelException e) {
 			e.printStackTrace();
 			fail();
@@ -67,7 +66,7 @@ public class TestBPMNParserRuleEvents {
 			// Test Environment
 			ItemCollection workitem = new ItemCollection();
 			workitem.model("1.0.0").task(1000);
-			ItemCollection profile = openBPMNModelManager.loadDefinition(model);
+			ItemCollection profile = workflowEngine.getWorkflowKernel().getModelManager().loadDefinition(model);
 			assertNotNull(profile);
 
 			// test count of task elements
@@ -77,7 +76,7 @@ public class TestBPMNParserRuleEvents {
 			// test task 1000
 			ItemCollection task;
 
-			task = workflowEngine.getModelManager().loadTask(workitem);
+			task = workflowEngine.getWorkflowKernel().getModelManager().loadTask(workitem, model);
 
 			assertNotNull(task);
 
@@ -109,16 +108,17 @@ public class TestBPMNParserRuleEvents {
 	@Test
 	public void testFollowUp() {
 
-		workflowEngine.loadBPMNModel("/bpmn/event_rules.bpmn");
 		try {
-			model = workflowEngine.getModelManager().getModel("1.0.0");
 
+			// load test models
+			workflowEngine.loadBPMNModelFromFile("/bpmn/event_rules.bpmn");
+			BPMNModel model = workflowEngine.loadModel("1.0.0");
 			assertNotNull(model);
 
 			// Test Environment
 			ItemCollection workItem = new ItemCollection();
 			workItem.model("1.0.0").task(2000).event(10);
-			ItemCollection profile = workflowEngine.getModelManager().loadDefinition(model);
+			ItemCollection profile = workflowEngine.getWorkflowKernel().getModelManager().loadDefinition(model);
 			assertNotNull(profile);
 
 			/* Test 2000.10 - FollowUp Event */
@@ -140,9 +140,13 @@ public class TestBPMNParserRuleEvents {
 	@Test
 	public void testSimpleAmbiguousSequenceFlow() {
 
-		workflowEngine.loadBPMNModel("/bpmn/event_rules.bpmn");
 		try {
-			model = workflowEngine.getModelManager().getModel("1.0.0");
+
+			// load test models
+			workflowEngine.loadBPMNModelFromFile("/bpmn/event_rules.bpmn");
+			BPMNModel model = workflowEngine.loadModel("1.0.0");
+			assertNotNull(model);
+
 			ItemCollection workItem = new ItemCollection();
 			workItem.model("1.0.0").task(3000).event(10);
 			assertNotNull(model);

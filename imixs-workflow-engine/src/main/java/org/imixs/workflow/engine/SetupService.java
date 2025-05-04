@@ -162,7 +162,7 @@ public class SetupService {
         // Load existing models
         initModels();
         // if no models are loaded scan for default models
-        List<String> models = modelService.getModelManager().getVersions();
+        List<String> models = modelService.getVersions();
         if (models.isEmpty() || modelDefaultDataOverwrite == true) {
             scanDefaultModels();
         }
@@ -215,7 +215,7 @@ public class SetupService {
                     BPMNModel model = BPMNModelFactory.read(bpmnInputStream);
                     String version = BPMNUtil.getVersion(model);
                     // test if model is a deprecated duplicate entry!
-                    if (modelService.getModelManager().getModelStore().containsKey(version)) {
+                    if (modelService.getModelStore().containsKey(version)) {
                         logger.warning("│   ├── duplicated Model Entity found (" + modelEntity.getUniqueID()
                                 + ") for model version '" + version
                                 + "' - entity will be removed!");
@@ -225,7 +225,7 @@ public class SetupService {
                                 BPMNUtil.getVersion(model) });
                         // Add the model into the ModelManger and put the model into the ModelService
                         // model store
-                        modelService.getModelManager().addModel(model);
+                        modelService.addModel(model);
                         modelService.getModelEntityStore().put(version, modelEntity);
                     }
                 } catch (BPMNModelException e) {
@@ -249,7 +249,7 @@ public class SetupService {
      * @return
      */
     public int getModelVersionCount() {
-        return modelService.getModelManager().getVersions().size();
+        return modelService.getVersions().size();
     }
 
     /**

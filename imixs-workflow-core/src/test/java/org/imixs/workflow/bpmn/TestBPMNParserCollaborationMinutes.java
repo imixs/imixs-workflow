@@ -40,8 +40,9 @@ public class TestBPMNParserCollaborationMinutes {
 	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
 		openBPMNModelManager = new ModelManager();
 		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/minutes.bpmn"));
-		} catch (ModelException | BPMNModelException e) {
+			model = BPMNModelFactory.read("/bpmn/minutes.bpmn");
+
+		} catch (BPMNModelException e) {
 			fail(e.getMessage());
 		}
 	}
@@ -49,7 +50,6 @@ public class TestBPMNParserCollaborationMinutes {
 	@Test
 	public void testSimple() throws ModelException {
 
-		BPMNModel model = openBPMNModelManager.getModel("1.0.0");
 		assertNotNull(model);
 
 		Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);

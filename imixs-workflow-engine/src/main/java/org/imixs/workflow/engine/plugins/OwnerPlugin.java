@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -102,6 +103,9 @@ public class OwnerPlugin extends AbstractPlugin {
             // this.getWorkflowService().evalNextTask(adocumentContext,
             // adocumentActivity);
             documentNextProcessEntity = this.getWorkflowService().evalNextTask(adocumentContext);
+
+            // documentNextProcessEntity =
+            // this.getWorkflowContext().evalNextTask(adocumentContext);
         } catch (ModelException e) {
             throw new PluginException(OwnerPlugin.class.getSimpleName(), e.getErrorCode(), e.getMessage());
         }

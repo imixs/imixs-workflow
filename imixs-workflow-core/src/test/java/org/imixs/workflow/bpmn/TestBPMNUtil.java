@@ -32,8 +32,7 @@ public class TestBPMNUtil {
 		openBPMNModelManager = new ModelManager();
 		try {
 			model = BPMNModelFactory.read("/bpmn/simple.bpmn");
-			openBPMNModelManager.addModel(model);
-		} catch (BPMNModelException | ModelException e) {
+		} catch (BPMNModelException e) {
 			e.printStackTrace();
 			fail();
 		}
