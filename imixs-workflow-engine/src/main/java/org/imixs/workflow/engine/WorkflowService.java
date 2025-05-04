@@ -45,7 +45,6 @@ import java.util.regex.Pattern;
 import org.imixs.workflow.Adapter;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ItemCollectionComparator;
-import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.WorkflowKernel;
@@ -589,9 +588,10 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
         // Lookup current model. If not found update model by regex
         BPMNModel model = modelService.getModelManager().findModelByWorkitem(workitem);
+
         WorkflowKernel workflowkernel = new WorkflowKernel(this);
         // register plugins...
-        registerPlugins(workflowkernel, model);
+        registerPlugins(workflowkernel);
         // register adapters.....
         registerAdapters(workflowkernel);
         // udpate workitem metadata...

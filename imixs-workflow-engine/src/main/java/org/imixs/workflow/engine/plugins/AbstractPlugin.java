@@ -31,11 +31,12 @@ package org.imixs.workflow.engine.plugins;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
-import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.PluginException;
+import org.openbpmn.bpmn.BPMNModel;
 
 /**
  * This abstract class implements different helper methods used by subclasses
@@ -50,19 +51,22 @@ public abstract class AbstractPlugin implements Plugin {
     public static final String INVALID_ITEMVALUE_FORMAT = "INVALID_ITEMVALUE_FORMAT";
     public static final String INVALID_PROPERTYVALUE_FORMAT = "INVALID_PROPERTYVALUE_FORMAT";
 
-    private WorkflowContext ctx;
+    // private WorkflowContext ctx;
     private WorkflowService workflowService;
+    private BPMNModel model;
 
     /**
      * Initialize Plugin and get an instance of the EJB Session Context
      */
-    public void init(WorkflowContext actx) throws PluginException {
-        ctx = actx;
-        // get WorkflowService by check for an instance of WorkflowService
-        if (actx instanceof WorkflowService) {
-            // yes we are running in a WorkflowService EJB
-            workflowService = (WorkflowService) actx;
-        }
+    public void init(BPMNModel model) throws PluginException {
+        this.model = model;
+        // ctx = actx;
+        // // get WorkflowService by check for an instance of WorkflowService
+        // if (actx instanceof WorkflowService) {
+        // // yes we are running in a WorkflowService EJB
+        // workflowService = (WorkflowService) actx;
+
+        // }
     }
 
     @Override
@@ -70,9 +74,9 @@ public abstract class AbstractPlugin implements Plugin {
 
     }
 
-    public WorkflowContext getCtx() {
-        return ctx;
-    }
+    // public WorkflowContext getCtx() {
+    // return ctx;
+    // }
 
     /**
      * Returns an instance of the WorkflowService EJB.

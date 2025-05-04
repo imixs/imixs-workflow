@@ -28,12 +28,11 @@
 
 package org.imixs.workflow;
 
+import org.openbpmn.bpmn.BPMNModel;
+
 /**
- * This WorkflowContext provides the {@link WorkflowKernel} with a runtime
- * environment for the processing life cycle of a workitem.
- * A Workflow Engine implements this Interface to provide a {@link ModelManger}
- * and the session context to execute {@link Plugin} and {@link Adapter}
- * classes.
+ * This WorkflowContext provides the {@link WorkflowKernel} methods to load a
+ * BPMNModel instance.
  * 
  * @author imixs.com
  * @version 1.0
@@ -43,19 +42,10 @@ package org.imixs.workflow;
 public interface WorkflowContext {
 
     /**
-     * This methode returns the Runtime environment for a workflow Implementation
-     * used to execute {@link Plugin} and {@link Adapter} classes.
+     * This method loads a BPMNModel instance.
      * 
-     * @return a Session Object
+     * @return an instance of a BPMNModel
      */
-    public Object getSessionContext();
-
-    /**
-     * This method returns an instance of the {@link ModelManager} to access model
-     * information form a BPMN model.
-     * 
-     * @return ModelManager
-     */
-    public ModelManager getModelManager();
+    public BPMNModel loadModel(String version);
 
 }

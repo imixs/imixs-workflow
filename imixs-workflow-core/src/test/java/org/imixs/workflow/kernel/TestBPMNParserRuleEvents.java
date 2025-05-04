@@ -57,7 +57,7 @@ public class TestBPMNParserRuleEvents {
 		try {
 			model = BPMNModelFactory.read("/bpmn/event_rules.bpmn");
 			openBPMNModelManager.addModel(model);
-		} catch (BPMNModelException | ModelException e) {
+		} catch (BPMNModelException e) {
 			e.printStackTrace();
 			fail();
 		}

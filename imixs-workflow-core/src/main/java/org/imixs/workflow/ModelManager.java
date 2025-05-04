@@ -43,7 +43,7 @@ import org.w3c.dom.Element;
  * BPMN Model.
  * 
  */
-public class ModelManager {
+class ModelManager {
 
     private Logger logger = Logger.getLogger(ModelManager.class.getName());
 
@@ -59,12 +59,16 @@ public class ModelManager {
     private final Map<String, BPMNElement> bpmnElementCache = new ConcurrentHashMap<>();
     private final Map<String, Set<String>> groupCache = new ConcurrentHashMap<>();
 
+    private WorkflowContext context;
     private RuleEngine ruleEngine = null;
 
     /**
-     * Private constructor to prevent instantiation
+     * Constructor sets the WorkflowContext which is used by the ModelManager to
+     * load an instance of a BPMNModel
+     * 
      */
-    public ModelManager() {
+    public ModelManager(final WorkflowContext context) {
+        this.context = context;
         ruleEngine = new RuleEngine();
     }
 
@@ -80,7 +84,7 @@ public class ModelManager {
     /**
      * Adds a new model into the local model store
      */
-    public void addModel(BPMNModel model) throws ModelException {
+    public void addModel(BPMNModel model) {
         String version = BPMNUtil.getVersion(model);
         modelStore.put(version, model);
         clearCache();

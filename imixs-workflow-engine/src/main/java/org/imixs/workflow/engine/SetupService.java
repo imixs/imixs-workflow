@@ -228,7 +228,7 @@ public class SetupService {
                         modelService.getModelManager().addModel(model);
                         modelService.getModelEntityStore().put(version, modelEntity);
                     }
-                } catch (BPMNModelException | ModelException e) {
+                } catch (BPMNModelException e) {
                     logger.log(Level.WARNING, "Failed to load model ''{0}'' : {1}",
                             new Object[] { file.getName(), e.getMessage() });
                 }

@@ -32,17 +32,18 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.List;
-import java.util.logging.Logger;
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.Marshaller;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
 import org.imixs.workflow.xml.XSLHandler;
+
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Marshaller;
 
 /**
  * This DocumentComposer Plugin creates html output stored in a item. The
@@ -68,12 +69,12 @@ public class DocumentComposerPlugin extends AbstractPlugin {
 
     private static final Logger logger = Logger.getLogger(DocumentComposerPlugin.class.getName());
 
-    @Override
-    public void init(WorkflowContext actx) throws PluginException {
+    // @Override
+    // public void init(WorkflowContext actx) throws PluginException {
 
-        super.init(actx);
+    // super.init(actx);
 
-    }
+    // }
 
     /**
      * This method adds the attachments of the blob workitem to the MimeMessage
@@ -89,7 +90,7 @@ public class DocumentComposerPlugin extends AbstractPlugin {
             throw new PluginException(DocumentComposerPlugin.class.getSimpleName(), e.getErrorCode(), e.getMessage());
         }
 
-        ItemCollection evalItemCollection = this.getWorkflowService().evalWorkflowResult(event,"item",
+        ItemCollection evalItemCollection = this.getWorkflowService().evalWorkflowResult(event, "item",
                 documentContext);
 
         // find the data object
