@@ -2,26 +2,18 @@ package org.imixs.workflow.bpmn;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.IOException;
-import java.text.ParseException;
-
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
-import org.openbpmn.bpmn.exceptions.BPMNModelException;
-import org.openbpmn.bpmn.util.BPMNModelFactory;
-import org.xml.sax.SAXException;
 
 /**
- * Test class test the Imixs BPMNParser.
+ * Test class to test the behavior of the ModelManager.
  * 
  * This test verifies the linking an imixs-event with an imixs-task using a
  * intermediate catch and intermediate throw link-event.
@@ -32,10 +24,12 @@ public class TestBPMNParserSharedLinkEvent {
 
 	BPMNModel model = null;
 	ModelManager modelManager = null;
+	MockWorkflowContext workflowContext;
 
 	@BeforeEach
-	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		modelManager = new ModelManager();
+	public void setup() {
+		workflowContext = new MockWorkflowContext();
+		modelManager = new ModelManager(workflowContext);
 	}
 
 	/**
@@ -44,32 +38,30 @@ public class TestBPMNParserSharedLinkEvent {
 	@Test
 	public void testLinkEventSimple() {
 		try {
-			model = BPMNModelFactory.read("/bpmn/shared-link-event.bpmn");
+			workflowContext.loadBPMNModelFromFile("/bpmn/shared-link-event.bpmn");
+			model = workflowContext.fetchModel("1.0.0");
 			assertNotNull(model);
-
-			// Test Environment
-			assertTrue(modelManager.findAllGroupsByModel(model).contains("Simple"));
-
-			// test count of elements
-			assertEquals(3, model.findAllActivities().size());
-
-			// test task 1000
-			ItemCollection task = modelManager.findTaskByID(model, 1000);
-			assertEquals("Task Shared Link Event1", task.getItemValueString("txtName"));
-
-			// test shared events
-			assertEquals(3, modelManager.findEventsByTask(model, 1000).size());
-
-			ItemCollection event = modelManager.findEventByID(model, 1000, 99);
-			assertEquals("cancel", event.getItemValueString("txtName"));
-
-			// test shared events
-			assertEquals(2, modelManager.findEventsByTask(model, 1100).size());
-			assertEquals(0, modelManager.findEventsByTask(model, 1200).size());
-		} catch (ModelException | BPMNModelException e) {
+		} catch (ModelException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
+
+		// test count of elements
+		assertEquals(3, model.findAllActivities().size());
+
+		// test task 1000
+		ItemCollection task = modelManager.findTaskByID(model, 1000);
+		assertEquals("Task Shared Link Event1", task.getItemValueString("txtName"));
+
+		// test shared events
+		assertEquals(3, modelManager.findEventsByTask(model, 1000).size());
+
+		ItemCollection event = modelManager.findEventByID(model, 1000, 99);
+		assertEquals("cancel", event.getItemValueString("txtName"));
+
+		// test shared events
+		assertEquals(2, modelManager.findEventsByTask(model, 1100).size());
+		assertEquals(0, modelManager.findEventsByTask(model, 1200).size());
 
 	}
 

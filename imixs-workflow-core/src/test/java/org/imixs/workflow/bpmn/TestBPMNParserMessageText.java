@@ -13,31 +13,38 @@ import java.util.Set;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
-import org.openbpmn.bpmn.exceptions.BPMNModelException;
-import org.openbpmn.bpmn.util.BPMNModelFactory;
 import org.xml.sax.SAXException;
 
 /**
+ * Test class to test the behavior of the ModelManager.
+ * 
  * Test class testing message elements
  * 
  * @author rsoika
  */
 public class TestBPMNParserMessageText {
+
 	BPMNModel model = null;
 	ModelManager modelManager = null;
+	MockWorkflowContext workflowContext;
 
 	@BeforeEach
-	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		modelManager = new ModelManager();
+	public void setup() {
 		try {
-			model = BPMNModelFactory.read("/bpmn/message_example.bpmn");
-		} catch (BPMNModelException e) {
-			fail(e);
+			workflowContext = new MockWorkflowContext();
+			modelManager = new ModelManager(workflowContext);
+			workflowContext.loadBPMNModelFromFile("/bpmn/message_example.bpmn");
+			model = workflowContext.fetchModel("1.0.0");
+			assertNotNull(model);
+
+		} catch (ModelException e) {
+			fail(e.getMessage());
 		}
 	}
 

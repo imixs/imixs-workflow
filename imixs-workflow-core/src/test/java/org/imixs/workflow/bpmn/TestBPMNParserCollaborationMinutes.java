@@ -6,27 +6,20 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.IOException;
-import java.text.ParseException;
 import java.util.Set;
 
-import javax.xml.parsers.ParserConfigurationException;
-
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
-import org.openbpmn.bpmn.exceptions.BPMNModelException;
-import org.openbpmn.bpmn.util.BPMNModelFactory;
-import org.xml.sax.SAXException;
 
 /**
- * Test class
+ * Test class to test the behavior of the ModelManager.
  * 
  * Special cases with collaboration diagram containing two workflow groups
  * (participants) with different workflow models.
- * 
  * 
  * 
  * @author rsoika
@@ -35,22 +28,24 @@ public class TestBPMNParserCollaborationMinutes {
 
 	BPMNModel model = null;
 	ModelManager modelManager = null;
+	MockWorkflowContext workflowContext;
 
 	@BeforeEach
-	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		modelManager = new ModelManager();
+	public void setup() {
 		try {
-			model = BPMNModelFactory.read("/bpmn/minutes.bpmn");
+			workflowContext = new MockWorkflowContext();
+			modelManager = new ModelManager(workflowContext);
+			workflowContext.loadBPMNModelFromFile("/bpmn/minutes.bpmn");
+			model = workflowContext.fetchModel("1.0.0");
+			assertNotNull(model);
 
-		} catch (BPMNModelException e) {
+		} catch (ModelException e) {
 			fail(e.getMessage());
 		}
 	}
 
 	@Test
 	public void testSimple() throws ModelException {
-
-		assertNotNull(model);
 
 		Set<String> groups = modelManager.findAllGroupsByModel(model);
 		// Test Groups
@@ -60,7 +55,6 @@ public class TestBPMNParserCollaborationMinutes {
 
 		// test count of elements
 		assertEquals(8, model.findAllActivities().size());
-
 	}
 
 }

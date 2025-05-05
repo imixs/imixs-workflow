@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.imixs.workflow.MockPlugin;
 import org.imixs.workflow.MockPluginNull;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.MockWorkflowEngine;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowKernel;
@@ -24,11 +25,18 @@ import org.junit.jupiter.api.Test;
  */
 public class TestWorkflowKernelPluginRegistration {
 
-	private MockWorkflowEngine workflowEngine;
+	MockWorkflowContext workflowContext;
+	MockWorkflowEngine workflowEngine;
 
 	@BeforeEach
-	public void setup() throws PluginException {
-		workflowEngine = new MockWorkflowEngine();
+	public void setup() {
+		try {
+			workflowContext = new MockWorkflowContext();
+			workflowEngine = new MockWorkflowEngine(workflowContext);
+
+		} catch (PluginException e) {
+			fail(e.getMessage());
+		}
 	}
 
 	/**
@@ -38,7 +46,7 @@ public class TestWorkflowKernelPluginRegistration {
 	@Test
 	public void testKernel() {
 
-		WorkflowKernel kernel = new WorkflowKernel(workflowEngine);
+		WorkflowKernel kernel = new WorkflowKernel(workflowContext);
 		// We expect that no plugin is registered
 		List<Plugin> pluginRegistry = kernel.getPluginRegistry();
 		assertNotNull(pluginRegistry);
@@ -68,7 +76,7 @@ public class TestWorkflowKernelPluginRegistration {
 	 */
 	@Test
 	public void testInit() {
-		WorkflowKernel kernel = new WorkflowKernel(workflowEngine);
+		WorkflowKernel kernel = new WorkflowKernel(workflowContext);
 		// Now we register a Pluign
 		MockPlugin mockPlugin = new MockPlugin();
 		try {
@@ -100,7 +108,7 @@ public class TestWorkflowKernelPluginRegistration {
 	 */
 	@Test
 	public void testPluginRegistration() {
-		WorkflowKernel kernel = new WorkflowKernel(workflowEngine);
+		WorkflowKernel kernel = new WorkflowKernel(workflowContext);
 		// Now we register a Pluign
 		MockPlugin mockPlugin = new MockPlugin();
 		try {

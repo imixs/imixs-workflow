@@ -4,23 +4,21 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.IOException;
-import java.text.ParseException;
 import java.util.List;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.ModelManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.exceptions.BPMNModelException;
 import org.openbpmn.bpmn.util.BPMNModelFactory;
-import org.xml.sax.SAXException;
 
 /**
- * Test class test the Imixs BPMNParser in case of shared events (one event used
+ * Test class to test the behavior of the ModelManager.
+ * 
+ * Test class test shared events (one event used
  * by two different task elements)
  * 
  * @author rsoika
@@ -29,11 +27,12 @@ public class TestBPMNParserSharedEvent {
 
 	BPMNModel model = null;
 	ModelManager modelManager = null;
+	MockWorkflowContext workflowContext;
 
 	@BeforeEach
-	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		modelManager = new ModelManager();
-
+	public void setup() {
+		workflowContext = new MockWorkflowContext();
+		modelManager = new ModelManager(workflowContext);
 	}
 
 	/**

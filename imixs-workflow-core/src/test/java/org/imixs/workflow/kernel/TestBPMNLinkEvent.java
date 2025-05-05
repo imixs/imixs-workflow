@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.util.Set;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.MockWorkflowEngine;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -24,11 +25,17 @@ import org.openbpmn.bpmn.exceptions.BPMNModelException;
  */
 public class TestBPMNLinkEvent {
 
-	private MockWorkflowEngine workflowEngine;
+	MockWorkflowContext workflowContext;
+	MockWorkflowEngine workflowEngine;
 
 	@BeforeEach
-	public void setup() throws PluginException {
-		workflowEngine = new MockWorkflowEngine();
+	public void setup() {
+		try {
+			workflowContext = new MockWorkflowContext();
+			workflowEngine = new MockWorkflowEngine(workflowContext);
+		} catch (PluginException e) {
+			fail(e.getMessage());
+		}
 	}
 
 	/**
@@ -41,9 +48,7 @@ public class TestBPMNLinkEvent {
 			throws ModelException {
 
 		// load test models
-		workflowEngine.loadBPMNModelFromFile("/bpmn/link-event-basic.bpmn");
-		BPMNModel model = workflowEngine.loadModel("1.0.0");
-		assertNotNull(model);
+		workflowContext.loadBPMNModelFromFile("/bpmn/link-event-basic.bpmn");
 
 		// Test Environment
 		ItemCollection workItem = new ItemCollection();
@@ -70,9 +75,7 @@ public class TestBPMNLinkEvent {
 			throws ModelException {
 
 		// load test models
-		workflowEngine.loadBPMNModelFromFile("/bpmn/link-event-followup.bpmn");
-		BPMNModel model = workflowEngine.loadModel("1.0.0");
-		assertNotNull(model);
+		workflowContext.loadBPMNModelFromFile("/bpmn/link-event-followup.bpmn");
 
 		// Test Environment
 		ItemCollection workItem = new ItemCollection();
@@ -100,8 +103,8 @@ public class TestBPMNLinkEvent {
 	public void testLinkEventComplex() throws ModelException {
 
 		// load test models
-		workflowEngine.loadBPMNModelFromFile("/bpmn/link-event-complex.bpmn");
-		BPMNModel model = workflowEngine.loadModel("1.0.0");
+		workflowContext.loadBPMNModelFromFile("/bpmn/link-event-complex.bpmn");
+		BPMNModel model = workflowContext.fetchModel("1.0.0");
 		assertNotNull(model);
 		try {
 			Set<? extends BPMNElementNode> endEvents = model.findProcessByName("Simple")

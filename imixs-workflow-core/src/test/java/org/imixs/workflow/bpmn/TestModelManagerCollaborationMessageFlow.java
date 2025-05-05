@@ -12,6 +12,7 @@ import java.util.Set;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,8 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.elements.MessageFlow;
 import org.openbpmn.bpmn.elements.core.BPMNElementNode;
-import org.openbpmn.bpmn.exceptions.BPMNModelException;
-import org.openbpmn.bpmn.util.BPMNModelFactory;
 import org.xml.sax.SAXException;
 
 /**
@@ -34,10 +33,12 @@ public class TestModelManagerCollaborationMessageFlow {
 
 	BPMNModel model = null;
 	ModelManager modelManager = null;
+	MockWorkflowContext workflowContext;
 
 	@BeforeEach
-	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		modelManager = new ModelManager();
+	public void setup() {
+		workflowContext = new MockWorkflowContext();
+		modelManager = new ModelManager(workflowContext);
 	}
 
 	/**
@@ -51,14 +52,15 @@ public class TestModelManagerCollaborationMessageFlow {
 	 */
 	@Test
 	public void testSimple() {
-
 		try {
-			model = BPMNModelFactory.read("/bpmn/collaboration_messageflow.bpmn");
+			workflowContext.loadBPMNModelFromFile("/bpmn/collaboration_messageflow.bpmn");
+			model = workflowContext.fetchModel("1.0.0");
 			assertNotNull(model);
-		} catch (BPMNModelException e) {
+		} catch (ModelException e) {
 			e.printStackTrace();
-			fail();
+			fail(e.getMessage());
 		}
+
 		// test count of elements
 		assertEquals(2, model.findAllActivities().size());
 
@@ -97,12 +99,14 @@ public class TestModelManagerCollaborationMessageFlow {
 	@Test
 	public void testComplex() {
 		try {
-			model = BPMNModelFactory.read("/bpmn/collaboration_messageflow_complex.bpmn");
+			workflowContext.loadBPMNModelFromFile("/bpmn/collaboration_messageflow_complex.bpmn");
+			model = workflowContext.fetchModel("1.0.0");
 			assertNotNull(model);
-		} catch (BPMNModelException e) {
+		} catch (ModelException e) {
 			e.printStackTrace();
-			fail();
+			fail(e.getMessage());
 		}
+
 		// test count of elements
 		assertEquals(4, model.findAllActivities().size());
 

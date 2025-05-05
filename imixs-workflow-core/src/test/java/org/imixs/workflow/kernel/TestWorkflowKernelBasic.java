@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.MockPlugin;
 import org.imixs.workflow.MockPluginNull;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.MockWorkflowEngine;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.ModelException;
@@ -38,13 +39,20 @@ public class TestWorkflowKernelBasic {
 
     private static final Logger logger = Logger.getLogger(TestWorkflowKernelBasic.class.getName());
 
-    private MockWorkflowEngine workflowEngine;
+    MockWorkflowContext workflowContext;
+    MockWorkflowEngine workflowEngine;
 
     @BeforeEach
-    public void setup() throws PluginException {
-        workflowEngine = new MockWorkflowEngine();
-        // load default model
-        workflowEngine.loadBPMNModelFromFile("/bpmn/simple.bpmn");
+    public void setup() {
+        try {
+            workflowContext = new MockWorkflowContext();
+            workflowEngine = new MockWorkflowEngine(workflowContext);
+            workflowContext.loadBPMNModelFromFile("/bpmn/simple.bpmn");
+            BPMNModel model = workflowContext.fetchModel("1.0.0");
+            assertNotNull(model);
+        } catch (PluginException | ModelException e) {
+            fail(e.getMessage());
+        }
     }
 
     /**
@@ -177,8 +185,8 @@ public class TestWorkflowKernelBasic {
     @Test
     public void testRecursiveBug() throws ModelException {
 
-        workflowEngine.loadBPMNModelFromFile("/bpmn/recursive_issue1.bpmn");
-        BPMNModel model = workflowEngine.loadModel("1.0.0");
+        workflowContext.loadBPMNModelFromFile("/bpmn/recursive_issue1.bpmn");
+        BPMNModel model = workflowContext.fetchModel("1.0.0");
         assertNotNull(model);
 
         ItemCollection workitem = new ItemCollection().model("1.0.0").task(100).event(10);
@@ -318,19 +326,27 @@ public class TestWorkflowKernelBasic {
      */
     @Test
     public void testFollowup() {
-
-        // load followup model
-        workflowEngine.loadBPMNModelFromFile("/bpmn/followup_001.bpmn");
-        ItemCollection workItem = new ItemCollection();
-        workItem.replaceItemValue("txtTitel", "Hello");
-        workItem.model("1.0.0")
-                .task(1000)
-                .event(10);
-
-        assertEquals(workItem.getItemValueString("txttitel"), "Hello");
-
         try {
+            // load followup model
+            workflowContext.loadBPMNModelFromFile("/bpmn/followup_001.bpmn");
+            BPMNModel model = workflowContext.fetchModel("1.0.0");
+            assertNotNull(model);
+
+            ItemCollection workItem = new ItemCollection();
+            workItem.replaceItemValue("txtTitel", "Hello");
+            workItem.model("1.0.0")
+                    .task(1000)
+                    .event(10);
+
+            assertEquals(workItem.getItemValueString("txttitel"), "Hello");
+
             workItem = workflowEngine.getWorkflowKernel().process(workItem);
+
+            // runs should be 2
+            assertEquals(2, workItem.getItemValueInteger("runs"));
+            // test next state
+            assertEquals(1100, workItem.getTaskID());
+
         } catch (WorkflowException e) {
             fail();
             e.printStackTrace();
@@ -339,10 +355,6 @@ public class TestWorkflowKernelBasic {
             e.printStackTrace();
         }
 
-        // runs should be 2
-        assertEquals(2, workItem.getItemValueInteger("runs"));
-        // test next state
-        assertEquals(1100, workItem.getTaskID());
     }
 
     /**
@@ -353,19 +365,26 @@ public class TestWorkflowKernelBasic {
      */
     @Test
     public void testFollowupMultipleGateways() {
-
-        // load followup model
-        workflowEngine.loadBPMNModelFromFile("/bpmn/followup_002.bpmn");
-        ItemCollection workItem = new ItemCollection();
-        workItem.replaceItemValue("txtTitel", "Hello");
-        workItem.model("1.0.0")
-                .task(1000)
-                .event(10);
-
-        assertEquals(workItem.getItemValueString("txttitel"), "Hello");
-
         try {
+            // load followup model
+            workflowContext.loadBPMNModelFromFile("/bpmn/followup_002.bpmn");
+            BPMNModel model = workflowContext.fetchModel("1.0.0");
+            assertNotNull(model);
+
+            ItemCollection workItem = new ItemCollection();
+            workItem.replaceItemValue("txtTitel", "Hello");
+            workItem.model("1.0.0")
+                    .task(1000)
+                    .event(10);
+
+            assertEquals(workItem.getItemValueString("txttitel"), "Hello");
+
             workItem = workflowEngine.getWorkflowKernel().process(workItem);
+
+            // runs should be 2
+            assertEquals(2, workItem.getItemValueInteger("runs"));
+            // test next state
+            assertEquals(1100, workItem.getTaskID());
         } catch (WorkflowException e) {
             fail();
             e.printStackTrace();
@@ -374,10 +393,6 @@ public class TestWorkflowKernelBasic {
             e.printStackTrace();
         }
 
-        // runs should be 2
-        assertEquals(2, workItem.getItemValueInteger("runs"));
-        // test next state
-        assertEquals(1100, workItem.getTaskID());
     }
 
     @Test

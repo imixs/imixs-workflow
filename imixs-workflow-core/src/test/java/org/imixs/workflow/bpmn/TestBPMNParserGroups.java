@@ -12,6 +12,7 @@ import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,21 +21,33 @@ import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.elements.Activity;
 import org.openbpmn.bpmn.elements.BPMNProcess;
 import org.openbpmn.bpmn.exceptions.BPMNModelException;
-import org.openbpmn.bpmn.util.BPMNModelFactory;
 import org.xml.sax.SAXException;
 
 /**
+ * Test class to test the behavior of the ModelManager.
+ * 
  * Test class test the Imixs BPMNParser group resolution
  * 
  * @author rsoika
  */
 public class TestBPMNParserGroups {
+
 	BPMNModel model = null;
 	ModelManager modelManager = null;
+	MockWorkflowContext workflowContext;
 
 	@BeforeEach
-	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		modelManager = new ModelManager();
+	public void setup() {
+		try {
+			workflowContext = new MockWorkflowContext();
+			modelManager = new ModelManager(workflowContext);
+			workflowContext.loadBPMNModelFromFile("/bpmn/dataobject_example1.bpmn");
+			model = workflowContext.fetchModel("1.0.0");
+			assertNotNull(model);
+
+		} catch (ModelException e) {
+			fail(e.getMessage());
+		}
 	}
 
 	/**
@@ -48,15 +61,15 @@ public class TestBPMNParserGroups {
 	 */
 	@Test
 	public void testSingleGroup() {
-
 		try {
-			model = BPMNModelFactory.read("/bpmn/link-event-basic.bpmn");
+			workflowContext.loadBPMNModelFromFile("/bpmn/link-event-basic.bpmn");
+			model = workflowContext.fetchModel("1.0.0");
 
 			assertNotNull(model);
 			// Test Groups
 			Set<String> groups = modelManager.findAllGroupsByModel(model);
 			assertTrue(groups.contains("Simple"));
-		} catch (ModelException | BPMNModelException e) {
+		} catch (ModelException e) {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
@@ -80,11 +93,12 @@ public class TestBPMNParserGroups {
 			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		try {
+			workflowContext.loadBPMNModelFromFile("/bpmn/multi-groups.bpmn");
+			model = workflowContext.fetchModel("protokoll-de-1.0.0");
 
-			model = BPMNModelFactory.read("/bpmn/multi-groups.bpmn");
 			assertNotNull(model);
 
-		} catch (BPMNModelException e) {
+		} catch (ModelException e) {
 			fail();
 		}
 

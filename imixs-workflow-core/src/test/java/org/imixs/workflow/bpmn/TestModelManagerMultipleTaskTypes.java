@@ -4,13 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.IOException;
-import java.text.ParseException;
 import java.util.List;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.exceptions.BPMNModelException;
 import org.openbpmn.bpmn.util.BPMNModelFactory;
-import org.xml.sax.SAXException;
 
 /**
  * Test class test the Imixs BPMNModel behavior.
@@ -29,14 +25,18 @@ public class TestModelManagerMultipleTaskTypes {
 
 	BPMNModel model = null;
 	ModelManager modelManager = null;
+	MockWorkflowContext workflowContext;
 
 	@BeforeEach
-	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		modelManager = new ModelManager();
+	public void setup() {
 		try {
-			model = BPMNModelFactory.read("/bpmn/simple-multiple-tasktypes.bpmn");
+			workflowContext = new MockWorkflowContext();
+			modelManager = new ModelManager(workflowContext);
+			workflowContext.loadBPMNModelFromFile("/bpmn/simple-multiple-tasktypes.bpmn");
+			model = workflowContext.fetchModel("1.0.0");
 			assertNotNull(model);
-		} catch (BPMNModelException e) {
+
+		} catch (ModelException e) {
 			fail(e.getMessage());
 		}
 	}

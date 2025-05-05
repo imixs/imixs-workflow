@@ -136,7 +136,7 @@ public class WorkflowKernel {
     private List<Plugin> pluginRegistry = null;
     private Map<String, Adapter> adapterRegistry = null;
 
-    private final ModelManager modelManager = new ModelManager();
+    private ModelManager modelManager = null;
     private WorkflowContext context = null;
 
     private List<ItemCollection> splitWorkitems = null;
@@ -155,6 +155,7 @@ public class WorkflowKernel {
         }
 
         this.context = context;
+        modelManager = new ModelManager(context);
         pluginRegistry = new ArrayList<Plugin>();
         adapterRegistry = new HashMap<String, Adapter>();
         splitWorkitems = new ArrayList<ItemCollection>();
@@ -403,8 +404,8 @@ public class WorkflowKernel {
         workitem.removeItem(ADAPTER_ERROR_PARAMS);
         workitem.removeItem(ADAPTER_ERROR_MESSAGE);
 
-        // Load Model
-        BPMNModel model = this.context.findModelByWorkitem(workitem);// .getModel(workitem.getModelVersion());
+        // fetch Model instance
+        BPMNModel model = modelManager.getModelByWorkitem(workitem);
 
         // Iterate through all events in the process flow
         splitWorkitems = new ArrayList<ItemCollection>();
@@ -487,8 +488,6 @@ public class WorkflowKernel {
      */
     private ItemCollection processEvent(ItemCollection workitem, ItemCollection event, BPMNModel model)
             throws ModelException, PluginException {
-
-        // BPMNModel model = this.modelManager.getModel(workitem.getModelVersion());
 
         // Update the intermediate processing status
         updateIntermediateEvent(workitem, event);
@@ -659,8 +658,8 @@ public class WorkflowKernel {
 
         // clone the workitem to avoid pollution of the origin workitem
         ItemCollection workitem = (ItemCollection) _workitem.clone();
-        BPMNModel model = context.findModelByWorkitem(workitem);
-        // this.modelManager.getModel(workitem.getModelVersion());
+        // fetch Model instance
+        BPMNModel model = modelManager.getModelByWorkitem(workitem);
 
         // check $TaskID
         if (workitem.getTaskID() <= 0)
@@ -803,10 +802,10 @@ public class WorkflowKernel {
         workitem.model(version).event(iNextEvent);
 
         if (iTask > 0) {
-            // optional
+            // optional - test if we can load the target task...
             workitem.task(iTask);
-            // test if we can load the target task...
-            BPMNModel model = context.findModelByWorkitem(workitem);
+            // fetch Model instance
+            BPMNModel model = modelManager.getModelByWorkitem(workitem);
             ItemCollection itemColNextTask = this.modelManager.loadTask(workitem, model);
             if (itemColNextTask != null) {
                 updateWorkflowStatus(workitem, itemColNextTask, model);

@@ -4,20 +4,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.IOException;
-import java.text.ParseException;
-
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.ModelManager;
-import org.imixs.workflow.exceptions.ModelException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.exceptions.BPMNModelException;
 import org.openbpmn.bpmn.util.BPMNModelFactory;
-import org.xml.sax.SAXException;
 
 /**
  * Test class test the Imixs BPMNParser with an Adapter definition in a Event
@@ -29,21 +23,24 @@ public class TestModelManagerParserAdapter {
 
 	BPMNModel model = null;
 	ModelManager modelManager = null;
+	MockWorkflowContext workflowContext;
 
 	@BeforeEach
-	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		modelManager = new ModelManager();
+	public void setup() {
+		workflowContext = new MockWorkflowContext();
+		modelManager = new ModelManager(workflowContext);
 	}
 
 	@Test
-	public void testEventAdapter()
-			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
+	public void testEventAdapter() {
 		try {
 			model = BPMNModelFactory.read("/bpmn/adapter.bpmn");
+			assertNotNull(model);
 		} catch (BPMNModelException e) {
 			e.printStackTrace();
-			fail();
+			fail(e.getMessage());
 		}
+
 		assertNotNull(model);
 		// test activity 1000.20 submit
 		ItemCollection event = modelManager.findEventByID(model, 1000, 20);
@@ -56,13 +53,13 @@ public class TestModelManagerParserAdapter {
 	}
 
 	@Test
-	public void testEventMulitAdapter()
-			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
+	public void testEventMulitAdapter() {
 		try {
 			model = BPMNModelFactory.read("/bpmn/adapter_multi.bpmn");
+			assertNotNull(model);
 		} catch (BPMNModelException e) {
 			e.printStackTrace();
-			fail();
+			fail(e.getMessage());
 		}
 
 		assertNotNull(model);

@@ -14,6 +14,7 @@ import java.util.Set;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,17 +33,20 @@ public class TestBPMNParserTicket {
 
 	BPMNModel model = null;
 	ModelManager modelManager = null;
+	MockWorkflowContext workflowContext;
 
 	@BeforeEach
-	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
+	public void setup() {
 		try {
-			modelManager = new ModelManager();
-			model = BPMNModelFactory.read("/bpmn/ticket.bpmn");
+			workflowContext = new MockWorkflowContext();
+			modelManager = new ModelManager(workflowContext);
+			workflowContext.loadBPMNModelFromFile("/bpmn/ticket.bpmn");
+			model = workflowContext.fetchModel("1.0.0");
 			assertNotNull(model);
-		} catch (BPMNModelException e) {
+
+		} catch (ModelException e) {
 			fail(e.getMessage());
 		}
-
 	}
 
 	/**

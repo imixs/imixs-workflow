@@ -11,6 +11,7 @@ import java.util.List;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.MockWorkflowEngine;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -30,20 +31,25 @@ import org.xml.sax.SAXException;
  */
 public class TestBPMNParserConditionalEvents {
 
-	private MockWorkflowEngine workflowEngine;
+	MockWorkflowContext workflowContext;
+	MockWorkflowEngine workflowEngine;
 
 	@BeforeEach
-	public void setup() throws PluginException {
-		workflowEngine = new MockWorkflowEngine();
-
+	public void setup() {
+		try {
+			workflowContext = new MockWorkflowContext();
+			workflowEngine = new MockWorkflowEngine(workflowContext);
+		} catch (PluginException e) {
+			fail(e.getMessage());
+		}
 	}
 
 	@Test
 	public void testSimple() throws ModelException, BPMNModelException {
 
 		// load test models
-		workflowEngine.loadBPMNModelFromFile("/bpmn/conditional_event1.bpmn");
-		BPMNModel model = workflowEngine.loadModel("1.0.0");
+		workflowContext.loadBPMNModelFromFile("/bpmn/conditional_event1.bpmn");
+		BPMNModel model = workflowContext.fetchModel("1.0.0");
 		assertNotNull(model);
 		// test count of elements
 		assertEquals(3, model.findAllActivities().size());
@@ -82,8 +88,8 @@ public class TestBPMNParserConditionalEvents {
 			throws ModelException {
 
 		// load test models
-		workflowEngine.loadBPMNModelFromFile("/bpmn/conditional_event_default.bpmn");
-		BPMNModel model = workflowEngine.loadModel("1.0.0");
+		workflowContext.loadBPMNModelFromFile("/bpmn/conditional_event_default.bpmn");
+		BPMNModel model = workflowContext.fetchModel("1.0.0");
 		assertNotNull(model);
 
 		// test activity 1000.10 submit
@@ -108,8 +114,8 @@ public class TestBPMNParserConditionalEvents {
 	public void testSimpleWithSimpleTask()
 			throws ModelException {
 		// load test model
-		workflowEngine.loadBPMNModelFromFile("/bpmn/conditional_event3.bpmn");
-		BPMNModel model = workflowEngine.loadModel("1.0.0");
+		workflowContext.loadBPMNModelFromFile("/bpmn/conditional_event3.bpmn");
+		BPMNModel model = workflowContext.fetchModel("1.0.0");
 		assertNotNull(model);
 
 		// test activity 1000.10 submit
@@ -130,8 +136,8 @@ public class TestBPMNParserConditionalEvents {
 	public void testFollowUp()
 			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 		// load test model
-		workflowEngine.loadBPMNModelFromFile("/bpmn/conditional_event2.bpmn");
-		BPMNModel model = workflowEngine.loadModel("1.0.0");
+		workflowContext.loadBPMNModelFromFile("/bpmn/conditional_event2.bpmn");
+		BPMNModel model = workflowContext.fetchModel("1.0.0");
 		assertNotNull(model);
 
 		// test count of elements
@@ -163,8 +169,8 @@ public class TestBPMNParserConditionalEvents {
 	public void testConditionalSplitEvent() throws ModelException {
 
 		// load test model
-		workflowEngine.loadBPMNModelFromFile("/bpmn/conditional_split_event.bpmn");
-		BPMNModel model = workflowEngine.loadModel("1.0.0");
+		workflowContext.loadBPMNModelFromFile("/bpmn/conditional_split_event.bpmn");
+		BPMNModel model = workflowContext.fetchModel("1.0.0");
 		assertNotNull(model);
 
 		// test count of elements

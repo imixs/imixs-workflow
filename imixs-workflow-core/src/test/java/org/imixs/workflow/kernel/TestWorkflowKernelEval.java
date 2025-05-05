@@ -8,12 +8,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.MockWorkflowEngine;
 import org.imixs.workflow.bpmn.BPMNUtil;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.openbpmn.bpmn.BPMNModel;
 
 /**
  * Test class for testing the eval method of the workflow kernel
@@ -25,13 +27,20 @@ public class TestWorkflowKernelEval {
 
 	private final static Logger logger = Logger.getLogger(TestWorkflowKernelEval.class.getName());
 
-	private MockWorkflowEngine workflowEngine;
+	MockWorkflowContext workflowContext;
+	MockWorkflowEngine workflowEngine;
 
 	@BeforeEach
-	public void setup() throws PluginException {
-		workflowEngine = new MockWorkflowEngine();
-		// load default model
-		workflowEngine.loadBPMNModelFromFile("/bpmn/workflowkernel_eval.bpmn");
+	public void setup() {
+		try {
+			workflowContext = new MockWorkflowContext();
+			workflowEngine = new MockWorkflowEngine(workflowContext);
+			workflowContext.loadBPMNModelFromFile("/bpmn/workflowkernel_eval.bpmn");
+			BPMNModel model = workflowContext.fetchModel("1.0.0");
+			assertNotNull(model);
+		} catch (PluginException | ModelException e) {
+			fail(e.getMessage());
+		}
 	}
 
 	@Test
@@ -82,7 +91,7 @@ public class TestWorkflowKernelEval {
 	 */
 	@Test
 	public void testParallelGateway() {
-		workflowEngine.loadBPMNModelFromFile("/bpmn/workflowkernel_eval_parallelgateway.bpmn");
+		workflowContext.loadBPMNModelFromFile("/bpmn/workflowkernel_eval_parallelgateway.bpmn");
 
 		long l = System.currentTimeMillis();
 		ItemCollection workitem = new ItemCollection();

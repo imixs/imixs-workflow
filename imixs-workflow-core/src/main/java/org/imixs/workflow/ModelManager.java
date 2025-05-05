@@ -1,3 +1,30 @@
+/*  
+ *  Imixs-Workflow 
+ *  
+ *  Copyright (C) 2001-2025 Imixs Software Solutions GmbH,  
+ *  http://www.imixs.com
+ *  
+ *  This program is free software; you can redistribute it and/or 
+ *  modify it under the terms of the GNU General Public License 
+ *  as published by the Free Software Foundation; either version 2 
+ *  of the License, or (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful, 
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+ *  General Public License for more details.
+ *  
+ *  You can receive a copy of the GNU General Public
+ *  License at http://www.gnu.org/licenses/gpl.html
+ *  
+ *  Project: 
+ *      https://www.imixs.org
+ *      https://github.com/imixs/imixs-workflow
+ *  
+ *  Contributors:  
+ *      Imixs Software Solutions GmbH - Project Management
+ *      Ralph Soika - Software Developer
+ */
 package org.imixs.workflow;
 
 import java.util.ArrayList;
@@ -29,15 +56,21 @@ import org.openbpmn.bpmn.navigation.BPMNStartElementIterator;
 import org.w3c.dom.Element;
 
 /**
- * This {@code ModelManager} provides methods to get model entities from a
- * model instance. The ModelManager is used by the {@link WorkflowKernel} to
- * manage the processing life cycle of a workitem.
- * The implementation is based on the OpenBPMN Meta model.
+ * This {@code ModelManager} provides methods to get thread save instances of
+ * {@code org.openbpmn.bpmn.BPMNModel} and provides convenience methods to
+ * resolve model flow details.
  * <p>
- * By analyzing the workitem model version the WorkflowKernel determines the
- * corresponding model and get the Tasks and Events from the ModelManager to
- * process the workitem and assign the workitem to the next Task defined by the
- * BPMN Model.
+ * The ModelManager is used by the {@link WorkflowKernel} to
+ * manage the processing life cycle of a workitem.
+ * <p>
+ * A client can use the {@linke WorkflowContext} to resolve a valid model
+ * version and fetch a thread save instance of a model.
+ * The model version is defined in the item `$modelversion` of a workitem. This
+ * may also be a regular expression. Also a valid model version can be resolved
+ * by the WorkflowContext based on the $workflowGroup.
+ * <p>
+ * The ModelManager provides methods to get instances of ItemCollection for
+ * Tasks and Events and other common BPMNElements.
  * 
  */
 public class ModelManager {
@@ -53,17 +86,58 @@ public class ModelManager {
     private final Map<String, BPMNElement> bpmnElementCache = new ConcurrentHashMap<>();
     private final Map<String, Set<String>> groupCache = new ConcurrentHashMap<>();
 
+    private WorkflowContext workflowContext = null;
     private RuleEngine ruleEngine = null;
+
+    // BPMNModel store
+    private final ConcurrentHashMap<String, BPMNModel> modelStore = new ConcurrentHashMap<>();
 
     /**
      * Constructor initializes the RuleEngine.
      * 
      */
-    public ModelManager() {
+    public ModelManager(WorkflowContext workflowContext) {
+        this.workflowContext = workflowContext;
     }
 
     /**
-     * Lazy loading for rule engine
+     * This method returns a thread save instance of a BPMNModel based on the given
+     * workitem meta data.
+     * The method lookups the matching model version by the {@link WorkflowContext}
+     * 
+     * @param workitem
+     * @return
+     * @throws ModelException
+     */
+    public BPMNModel getModelByWorkitem(ItemCollection workitem) throws ModelException {
+        // resolve version
+        String version = workflowContext.findModelVersionByWorkitem(workitem);
+        return getModel(version);
+    }
+
+    /**
+     * This method return a thread save instance of a BPMN Model. If the model does
+     * not yet exist in the ModelManager a new model instance is fetched and cached
+     * in the local model store.
+     * 
+     * @param version
+     * @return
+     * @throws ModelException
+     */
+    public BPMNModel getModel(String version) throws ModelException {
+        BPMNModel model = modelStore.get(version);
+
+        if (model == null) {
+            // fetch thread save copy of a new BPMNModel instance
+            model = workflowContext.fetchModel(version);
+            modelStore.put(version, model);
+        }
+        return model;
+    }
+
+    /**
+     * Returns an instance of the Imixs RuleEngine. The method is using a lazy
+     * loading mechanism.
      * 
      * @return
      */

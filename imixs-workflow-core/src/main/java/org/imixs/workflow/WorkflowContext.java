@@ -1,7 +1,7 @@
 /*  
  *  Imixs-Workflow 
  *  
- *  Copyright (C) 2001-2020 Imixs Software Solutions GmbH,  
+ *  Copyright (C) 2001-2025 Imixs Software Solutions GmbH,  
  *  http://www.imixs.com
  *  
  *  This program is free software; you can redistribute it and/or 
@@ -32,50 +32,58 @@ import org.imixs.workflow.exceptions.ModelException;
 import org.openbpmn.bpmn.BPMNModel;
 
 /**
- * This WorkflowContext provides the {@link WorkflowKernel} methods to load a
- * BPMNModel instance.
+ * This WorkflowContext provides methods to resolve a valid model version and
+ * fetch a thread save instance of a load a {@code org.openbpmn.bpmn.BPMNModel}.
  * 
  * @author imixs.com
  * @version 1.0
  * @see org.imixs.workflow.WorkflowKernel
  */
-
 public interface WorkflowContext {
 
-    // /**
-    // * This method loads a BPMNModel instance.
-    // *
-    // * @param modelRegex - valid model version
-    // * @return an instance of a BPMNModel
-    // * @throws ModelException
-    // */
-    // public BPMNModel loadModel(String version) throws ModelException;
-
     /**
-     * This method returns the highest version matching a given regular expression.
-     * 
-     * @param modelRegex - regular expression
-     * @return version matching the regex
+     * This method returns a exclusive thread save BPMNModel instance. The method
+     * must not return a shared model instance. The method must throw a
+     * ModelException in case no model matching the requested version exists. A
+     * client can call {@code findModelVersionByWorkitem} to resolve a valid model
+     * version for a workitem.
+     *
+     * @param version - valid model version
+     * @return an instance of a BPMNModel to be used in a thread save way
      * @throws ModelException
      */
-    public String findVersionByRegEx(String modelRegex) throws ModelException;
+    public BPMNModel fetchModel(String version) throws ModelException;
 
     /**
-     * Returns returns the hightest version matching a given workflow group.
-     * 
-     * @param group - name of the workflow group
-     * @return version matching the group
-     * @throws ModelException
-     */
-    public String findVersionByGroup(String group) throws ModelException;
-
-    /**
-     * Returns a Model matching the $modelVersion of a given workitem.
+     * Returns a valid model version for a given workitem. A model version can also
+     * be specified as a regular expression or can be resolved only by a given
+     * workflow group. The method must throw a ModelException in case no matching
+     * model version exists.
      * 
      * @param group - name of the workflow group
      * @return version matching the params of the given workitem
      * @throws ModelException
      **/
-    public BPMNModel findModelByWorkitem(ItemCollection workitem) throws ModelException;
+    public String findModelVersionByWorkitem(ItemCollection workitem) throws ModelException;
+
+    /**
+     * Returns the highest version matching a given regular expression. The method
+     * must throw a ModelException in case no matching model version exists.
+     * 
+     * @param modelRegex - regular expression
+     * @return version matching the regex
+     * @throws ModelException
+     */
+    public String findModelVersionByRegEx(String modelRegex) throws ModelException;
+
+    /**
+     * Returns returns the hightest version matching a given workflow group. The
+     * method must throw a ModelException in case no matching model version exists.
+     * 
+     * @param group - name of the workflow group
+     * @return version matching the group
+     * @throws ModelException
+     */
+    public String findModelVersionByGroup(String group) throws ModelException;
 
 }

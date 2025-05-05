@@ -5,13 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
-import org.openbpmn.bpmn.exceptions.BPMNModelException;
-import org.openbpmn.bpmn.util.BPMNModelFactory;
 
 /**
  * Test class test the Imixs BPMNUtil basic behavior.
@@ -20,23 +19,22 @@ import org.openbpmn.bpmn.util.BPMNModelFactory;
  */
 public class TestBPMNUtil {
 
-	protected BPMNModel model = null;
+	BPMNModel model = null;
 	ModelManager modelManager = null;
+	MockWorkflowContext workflowContext;
 
-	/**
-	 * Loads the default model
-	 */
 	@BeforeEach
-	public void setUp() {
-		// load default model
-		modelManager = new ModelManager();
+	public void setup() {
 		try {
-			model = BPMNModelFactory.read("/bpmn/simple.bpmn");
-		} catch (BPMNModelException e) {
-			e.printStackTrace();
-			fail();
-		}
+			workflowContext = new MockWorkflowContext();
+			modelManager = new ModelManager(workflowContext);
+			workflowContext.loadBPMNModelFromFile("/bpmn/simple.bpmn");
+			model = workflowContext.fetchModel("1.0.0");
+			assertNotNull(model);
 
+		} catch (ModelException e) {
+			fail(e.getMessage());
+		}
 	}
 
 	/**

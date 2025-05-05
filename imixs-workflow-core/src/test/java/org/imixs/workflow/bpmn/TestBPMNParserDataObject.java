@@ -12,6 +12,7 @@ import java.util.Set;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,11 +20,11 @@ import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.elements.DataObject;
 import org.openbpmn.bpmn.elements.core.BPMNElementNode;
-import org.openbpmn.bpmn.exceptions.BPMNModelException;
-import org.openbpmn.bpmn.util.BPMNModelFactory;
 import org.xml.sax.SAXException;
 
 /**
+ * Test class to test the behavior of the ModelManager.
+ * 
  * Test class test the Imixs BPMNParser
  * 
  * bpmn2:dataobject
@@ -31,20 +32,23 @@ import org.xml.sax.SAXException;
  * @author rsoika
  */
 public class TestBPMNParserDataObject {
+
 	BPMNModel model = null;
 	ModelManager modelManager = null;
+	MockWorkflowContext workflowContext;
 
 	@BeforeEach
-	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
+	public void setup() {
 		try {
-			modelManager = new ModelManager();
-			model = BPMNModelFactory.read("/bpmn/dataobject_example1.bpmn");
+			workflowContext = new MockWorkflowContext();
+			modelManager = new ModelManager(workflowContext);
+			workflowContext.loadBPMNModelFromFile("/bpmn/dataobject_example1.bpmn");
+			model = workflowContext.fetchModel("1.0.0");
 			assertNotNull(model);
-		} catch (BPMNModelException e) {
-			e.printStackTrace();
+
+		} catch (ModelException e) {
 			fail(e.getMessage());
 		}
-
 	}
 
 	@SuppressWarnings({ "unchecked" })

@@ -9,13 +9,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
-import org.openbpmn.bpmn.exceptions.BPMNModelException;
-import org.openbpmn.bpmn.util.BPMNModelFactory;
 
 /**
  * Test class tests complex situations of a Task with several init events.
@@ -23,18 +22,21 @@ import org.openbpmn.bpmn.util.BPMNModelFactory;
  * @author rsoika
  */
 public class TestModelManagerInitEvents {
-
 	BPMNModel model = null;
 	ModelManager modelManager = null;
+	MockWorkflowContext workflowContext;
 
 	@BeforeEach
 	public void setup() {
-		modelManager = new ModelManager();
 		try {
-			model = BPMNModelFactory.read("/bpmn/startevent_followup.bpmn");
+			workflowContext = new MockWorkflowContext();
+			modelManager = new ModelManager(workflowContext);
+			workflowContext.loadBPMNModelFromFile("/bpmn/startevent_followup.bpmn");
+			model = workflowContext.fetchModel("1.0.0");
 			assertNotNull(model);
-		} catch (BPMNModelException e) {
-			fail();
+
+		} catch (ModelException e) {
+			fail(e.getMessage());
 		}
 	}
 

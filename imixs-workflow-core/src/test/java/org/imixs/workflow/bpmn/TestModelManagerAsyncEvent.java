@@ -10,13 +10,12 @@ import java.text.ParseException;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
-import org.openbpmn.bpmn.exceptions.BPMNModelException;
-import org.openbpmn.bpmn.util.BPMNModelFactory;
 import org.xml.sax.SAXException;
 
 /**
@@ -32,20 +31,22 @@ import org.xml.sax.SAXException;
  * @author rsoika
  */
 public class TestModelManagerAsyncEvent {
+
     BPMNModel model = null;
     ModelManager modelManager = null;
+    MockWorkflowContext workflowContext;
 
     @BeforeEach
-    public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-        modelManager = new ModelManager();
+    public void setup() {
         try {
-
-            model = BPMNModelFactory.read("/bpmn/asyncEventSimple.bpmn");
+            workflowContext = new MockWorkflowContext();
+            modelManager = new ModelManager(workflowContext);
+            workflowContext.loadBPMNModelFromFile("/bpmn/asyncEventSimple.bpmn");
+            model = workflowContext.fetchModel("1.0.0");
             assertNotNull(model);
-            assertEquals("1.0.0", BPMNUtil.getVersion(model));
-        } catch (BPMNModelException e) {
-            e.printStackTrace();
-            fail();
+
+        } catch (ModelException e) {
+            fail(e.getMessage());
         }
     }
 
