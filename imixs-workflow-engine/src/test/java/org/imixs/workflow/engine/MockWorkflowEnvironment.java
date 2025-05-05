@@ -1,6 +1,5 @@
 package org.imixs.workflow.engine;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.when;
 
@@ -16,6 +15,7 @@ import org.imixs.workflow.Adapter;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.WorkflowKernel;
+import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -34,10 +34,10 @@ import jakarta.enterprise.event.Event;
 import jakarta.enterprise.inject.Instance;
 
 /**
- * The {@code WorkflowMockEnvironment} can be used as a base class for junit
- * tests to mock the Imixs WorkflowService. The class mocks the WorkflowService
- * and a workflow environment including the ModelService.
- * 
+ * The {@code MockWorkflowEnvironment} can be used as a base class for junit
+ * tests to mock the Imixs WorkflowService, WorkflowContextService and
+ * ModelService.
+ * <p>
  * Junit tests can instantiate this class to verify specific
  * method implementations of the workflowService, Plugin classes or Adapters in
  * a easy way.
@@ -49,8 +49,8 @@ import jakarta.enterprise.inject.Instance;
  * @author rsoika
  */
 @MockitoSettings(strictness = Strictness.WARN)
-public class WorkflowMockEnvironment {
-	protected final static Logger logger = Logger.getLogger(WorkflowMockEnvironment.class.getName());
+public class MockWorkflowEnvironment {
+	protected final static Logger logger = Logger.getLogger(MockWorkflowEnvironment.class.getName());
 
 	protected SessionContext ctx = null;
 	protected Map<String, ItemCollection> database = null;
@@ -67,8 +67,13 @@ public class WorkflowMockEnvironment {
 	@InjectMocks
 	protected WorkflowContextService workflowContextService; // Injects mocks into WorkflowService
 
-	// protected WorkflowContextMock workflowContext = null;
 	protected List<Adapter> adapterList = new ArrayList<>();
+
+	protected ModelManager modelManager = null;
+
+	public ModelManager getModelManager() {
+		return modelManager;
+	}
 
 	public ModelService getModelService() {
 		return modelService;
@@ -119,8 +124,8 @@ public class WorkflowMockEnvironment {
 		workflowService.modelService = modelService;
 		workflowService.workflowContextService = workflowContextService;
 		workflowContextService.modelService = modelService;
-		modelService.modelManager = new ModelManager();
-		assertNotNull(modelService.getModelManager());
+
+		modelManager = new ModelManager(workflowContextService);
 
 		// workflowContext = new WorkflowContextMock();
 		workflowService.ctx = ctx; // workflowContext.getSessionContext();
@@ -187,14 +192,26 @@ public class WorkflowMockEnvironment {
 	}
 
 	/**
-	 * Helper method that loads a new model into the ModelService
+	 * Helper method to load a model from internal cache (not thread save)
+	 * 
+	 * @param version
+	 * @return
+	 * @throws ModelException
+	 */
+	public BPMNModel fetchModel(String version) throws ModelException {
+		return modelService.getModel(version);
+	}
+
+	/**
+	 * Loads a new model
 	 * 
 	 * @param modelPath
 	 */
-	public void loadBPMNModel(String modelPath) {
+	public void loadBPMNModelFromFile(String modelPath) {
 		try {
 			BPMNModel model = BPMNModelFactory.read(modelPath);
 			modelService.addModel(model);
+
 		} catch (BPMNModelException e) {
 			e.printStackTrace();
 			fail();

@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.WorkflowMockEnvironment;
+import org.imixs.workflow.engine.MockWorkflowEnvironment;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -25,13 +25,13 @@ public class TestRulePluginConditions {
 
 	ItemCollection event;
 	ItemCollection workitem;
-	protected WorkflowMockEnvironment workflowEngine;
+	protected MockWorkflowEnvironment workflowEngine;
 
 	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
-		workflowEngine = new WorkflowMockEnvironment();
+		workflowEngine = new MockWorkflowEnvironment();
 		workflowEngine.setUp();
-		workflowEngine.loadBPMNModel("/bpmn/TestRulePluginConditions.bpmn");
+		workflowEngine.loadBPMNModelFromFile("/bpmn/TestRulePluginConditions.bpmn");
 		workitem = workflowEngine.getDocumentService().load("W0000-00001");
 		workitem.model("1.0.0").task(100);
 	}

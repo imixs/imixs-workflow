@@ -489,7 +489,8 @@ public class WorkflowService {
         }
 
         // Lookup current model. If not found update model by regex
-        BPMNModel model = workflowContextService.findModelByWorkitem(workitem);
+        String version = workflowContextService.findModelVersionByWorkitem(workitem);
+        BPMNModel model = workflowContextService.fetchModel(version);
         WorkflowKernel workflowkernel = new WorkflowKernel(workflowContextService);
         ItemCollection profile = workflowkernel.getModelManager().loadDefinition(model);
         // register plugins...

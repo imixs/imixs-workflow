@@ -7,7 +7,7 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.WorkflowMockEnvironment;
+import org.imixs.workflow.engine.MockWorkflowEnvironment;
 import org.imixs.workflow.engine.plugins.ApplicationPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -17,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.openbpmn.bpmn.BPMNModel;
 
 /**
  * Test the Application plug-in.
@@ -36,18 +37,18 @@ public class TestApplicationPlugin {
 	protected ApplicationPlugin applicationPlugin = null;
 	protected ItemCollection workitem;
 	protected ItemCollection event;
-	protected WorkflowMockEnvironment workflowEngine;
+	protected MockWorkflowEnvironment workflowEngine;
 
 	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
 
-		workflowEngine = new WorkflowMockEnvironment();
+		workflowEngine = new MockWorkflowEnvironment();
 		workflowEngine.setUp();
-		workflowEngine.loadBPMNModel("/bpmn/plugin-test.bpmn");
+		workflowEngine.loadBPMNModelFromFile("/bpmn/plugin-test.bpmn");
 
 		applicationPlugin = new ApplicationPlugin();
 		try {
-			applicationPlugin.init(workflowEngine.getWorkflowService());
+			applicationPlugin.init(workflowEngine.getWorkflowContextService());
 		} catch (PluginException e) {
 			fail(e.getMessage());
 		}
@@ -73,7 +74,9 @@ public class TestApplicationPlugin {
 	public void simpleTest() throws ModelException {
 
 		workitem.event(10);
-		event = workflowEngine.getModelService().loadEvent(workitem);
+		BPMNModel model = workflowEngine.getModelManager().getModelByWorkitem(workitem);
+		event = workflowEngine.getModelManager().loadEvent(workitem, model);
+
 		try {
 			applicationPlugin.run(workitem, event);
 		} catch (PluginException e) {

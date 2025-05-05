@@ -131,7 +131,7 @@ public class ModelService {
     }
 
     /**
-     * This method should return a thread save verison of a stored BPMN Model
+     * This method should return a thread save version of a stored BPMN Model
      * 
      * @TODO implement a deep copy mechanism
      * @param version
@@ -170,6 +170,18 @@ public class ModelService {
         // sort result
         Collections.sort(result);
         return result;
+    }
+
+    /**
+     * Returns true if the given Model Version exists in the local store
+     * <p>
+     * 
+     * @param group
+     * @return
+     */
+    public boolean hasModelVersion(String version) {
+        return modelStore.containsKey(version);
+
     }
 
     /**

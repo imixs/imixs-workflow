@@ -90,7 +90,7 @@ public class DocumentComposerPlugin extends AbstractPlugin {
             throw new PluginException(DocumentComposerPlugin.class.getSimpleName(), e.getErrorCode(), e.getMessage());
         }
 
-        ItemCollection evalItemCollection = this.getWorkflowService().evalWorkflowResult(event, "item",
+        ItemCollection evalItemCollection = this.getWorkflowContextService().evalWorkflowResult(event, "item",
                 documentContext);
 
         // find the data object

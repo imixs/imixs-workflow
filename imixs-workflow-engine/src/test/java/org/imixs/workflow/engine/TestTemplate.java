@@ -13,10 +13,10 @@ import org.junit.jupiter.api.Test;
 
 /**
  * The Test class TestTemplate can be used as a template to write junit tests.
- * The class uses the {@link WorkflowMockEnvironment} to simulate a workflow
+ * The class uses the {@link MockWorkflowEnvironment} to simulate a workflow
  * environment with a in-memory database.
  * 
- * The {@link WorkflowMockEnvironment} can be used to simulate any scenario with
+ * The {@link MockWorkflowEnvironment} can be used to simulate any scenario with
  * real BPMN model files including the execution of Plugin code.
  * 
  * 
@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
  */
 public class TestTemplate {
 
-	protected WorkflowMockEnvironment workflowEnvironment;
+	protected MockWorkflowEnvironment workflowEnvironment;
 
 	/**
 	 * Setup the Mock environment
@@ -34,9 +34,9 @@ public class TestTemplate {
 	 */
 	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
-		workflowEnvironment = new WorkflowMockEnvironment();
+		workflowEnvironment = new MockWorkflowEnvironment();
 		workflowEnvironment.setUp();
-		workflowEnvironment.loadBPMNModel("/bpmn/TestWorkflowService.bpmn");
+		workflowEnvironment.loadBPMNModelFromFile("/bpmn/TestWorkflowService.bpmn");
 	}
 
 	/**
@@ -64,7 +64,7 @@ public class TestTemplate {
 	public void testConditionalEvent1()
 			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 
-		workflowEnvironment.loadBPMNModel("/bpmn/conditional_event1.bpmn");
+		workflowEnvironment.loadBPMNModelFromFile("/bpmn/conditional_event1.bpmn");
 
 		// load test workitem
 		ItemCollection workitem = workflowEnvironment.getDocumentService().load("W0000-00001");

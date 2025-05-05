@@ -98,7 +98,7 @@ public class HistoryPlugin extends AbstractPlugin {
         if (rtfItemLog.isEmpty())
             return documentContext;
 
-        rtfItemLog = getWorkflowService().adaptText(rtfItemLog, documentContext);
+        rtfItemLog = getWorkflowContextService().adaptText(rtfItemLog, documentContext);
 
         List<List<?>> temp = null;
         // test deprecated field
@@ -113,7 +113,7 @@ public class HistoryPlugin extends AbstractPlugin {
         List<Object> newEntry = new ArrayList<Object>();
         newEntry.add(documentContext.getItemValueDate(WorkflowKernel.LASTEVENTDATE));
         newEntry.add(rtfItemLog);
-        newEntry.add(this.getWorkflowService().getUserName());
+        newEntry.add(this.getWorkflowContextService().getUserName());
         temp.add(newEntry);
         // Sort the list by date in descending order
         Collections.sort(temp, new Comparator<List<?>>() {

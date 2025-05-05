@@ -108,6 +108,117 @@ public class WorkflowContextService implements WorkflowContext {
     }
 
     /**
+     * This method returns a exclusive thread save BPMNModel instance. The method
+     * must not return a shared model instance. The method must throw a
+     * ModelException in case no model matching the requested version exists. A
+     * client can call {@code findModelVersionByWorkitem} to resolve a valid model
+     * version for a workitem.
+     *
+     * @param version - valid model version
+     * @return an instance of a BPMNModel to be used in a thread save way
+     * @throws ModelException
+     */
+    public BPMNModel fetchModel(String version) throws ModelException {
+        return modelService.getModel(version);
+    }
+
+    /**
+     * Returns a Model matching the $modelversion of a given workitem. The
+     * $modelversion can optional be provided as a regular expression.
+     * <p>
+     * In case no matching model version exits, the method tries to find the highest
+     * Model Version matching the corresponding workflow group.
+     * <p>
+     * The method throws a ModelException in case the model version did not exits.
+     **/
+    public String findModelVersionByWorkitem(ItemCollection workitem) throws ModelException {
+
+        String version = workitem.getModelVersion();
+        // first try a direct fetch....
+        if (version != null && !version.isEmpty()) {
+            if (modelService.hasModelVersion(version)) {
+                return version;
+            }
+        }
+
+        // ...try to find model version by regex...
+        if (version != null && !version.isEmpty()) {
+            String matchingVersion = findModelVersionByRegEx(version);
+            if (matchingVersion != null && !matchingVersion.isEmpty()) {
+                // match - update $modelVersion
+                logger.log(Level.INFO, "Update model version by regex: ''{0}'' ▶ ''{1}'',"
+                        + "  $workflowgroup: ''{2}'', $uniqueid: {3}",
+                        new Object[] { version, matchingVersion, workitem.getWorkflowGroup(),
+                                workitem.getUniqueID() });
+                workitem.model(matchingVersion);
+                return matchingVersion;
+            }
+        }
+
+        // ...try to find model version by group
+        if (!workitem.getWorkflowGroup().isEmpty()) {
+            String matchingVersion = findModelVersionByGroup(workitem.getWorkflowGroup());
+            if (matchingVersion != null && !matchingVersion.isEmpty()) {
+                // match - update $modelVersion
+                logger.log(Level.INFO, "Update model version by group ''{0}'' ▶ ''{1}'',"
+                        + "  $workflowgroup: ''{2}'', $uniqueid: {3}",
+                        new Object[] { workitem.getWorkflowGroup(), matchingVersion, workitem.getWorkflowGroup(),
+                                workitem.getUniqueID() });
+                workitem.model(matchingVersion);
+                return matchingVersion;
+
+            }
+        }
+        // no match!
+        throw new ModelException(ModelException.UNDEFINED_MODEL_VERSION, "$modelversion '" + version + "' not found");
+    }
+
+    /**
+     * This method returns a sorted list of model versions matching a given regex
+     * for a model version. The result is sorted in reverse order, so the highest
+     * version number is the first in the result list.
+     * 
+     * @param group
+     * @return
+     */
+    @Override
+    public String findModelVersionByRegEx(String modelRegex) {
+        boolean debug = logger.isLoggable(Level.FINE);
+        // Sorted in reverse order
+        Set<String> result = new TreeSet<>(Collections.reverseOrder());
+        if (debug) {
+            logger.log(Level.FINEST, "......searching model versions for regex ''{0}''...", modelRegex);
+        }
+        // try to find matching model version by regex
+        List<String> modelVersions = modelService.getAllModelVersions();
+        for (String _version : modelVersions) {
+            if (Pattern.compile(modelRegex).matcher(_version).find()) {
+                result.add(_version);
+            }
+        }
+        if (result.size() > 0) {
+            return result.iterator().next();
+        }
+        return null;
+    }
+
+    /**
+     * Returns a version by Group.
+     * The method computes a sorted list of all model versions containing the
+     * requested
+     * workflow group. The result is sorted in reverse order, so the highest version
+     * number is the first in the result list.
+     * 
+     * @param group - name of the workflow group
+     * @return list of matching model versions
+     * @throws ModelException
+     */
+    @Override
+    public String findModelVersionByGroup(String group) throws ModelException {
+        return modelService.findVersionByGroup(group);
+    }
+
+    /**
      * This returns a list of workflow events assigned to a given workitem. The
      * method evaluates the events for the current $modelversion and $taskid. The
      * result list is filtered by the properties 'keypublicresult' and
@@ -138,14 +249,15 @@ public class WorkflowContextService implements WorkflowContext {
             return result;
         }
         // resolve model.....
-        BPMNModel model = findModelByWorkitem(workitem);
+        String version = findModelVersionByWorkitem(workitem);
+        BPMNModel model = fetchModel(version);
         if (model == null) {
             throw new ModelException(
                     ModelException.INVALID_MODEL, "Model '" + workitem.getModelVersion() + "' not found.");
         }
 
         int taskId = workitem.getTaskID();
-        ModelManager modelManager = new ModelManager();
+        ModelManager modelManager = new ModelManager(this);
         ItemCollection task = modelManager.findTaskByID(model, taskId);
         if (task == null) {
             throw new ModelException(
@@ -619,114 +731,4 @@ public class WorkflowContextService implements WorkflowContext {
 
     }
 
-    /**
-     * Returns a Model matching the $modelversion of a given workitem. The
-     * $modelversion can optional be provided as a regular expression.
-     * <p>
-     * In case no matching model version exits, the method tries to find the highest
-     * Model Version matching the corresponding workflow group.
-     * <p>
-     * The method throws a ModelException in case the model version did not exits.
-     **/
-    public BPMNModel findModelByWorkitem(ItemCollection workitem) throws ModelException {
-        BPMNModel result = null;
-        String version = workitem.getModelVersion();
-        // first try a direct fetch....
-        if (version != null && !version.isEmpty()) {
-            result = modelService.getModel(version);
-        }
-
-        if (result != null) {
-            return result;
-        } else {
-            // try to find model by regex if version is not empty...
-            if (version != null && !version.isEmpty()) {
-                String matchingVersion = findVersionByRegEx(version);
-                if (matchingVersion != null && !matchingVersion.isEmpty()) {
-                    result = modelService.getModel(matchingVersion);
-                    if (result != null) {
-                        // match
-                        // update $modelVersion
-                        logger.fine("Update $modelversion by regex " + version + " ▷ " + matchingVersion);
-                        workitem.model(matchingVersion);
-                        return result;
-                    }
-                }
-            }
-
-            // Still no match, try to find model version by group
-            if (!workitem.getWorkflowGroup().isEmpty()) {
-                String matchingVersion = findVersionByGroup(workitem.getWorkflowGroup());
-                if (matchingVersion != null && !matchingVersion.isEmpty()) {
-
-                    // loggin...
-                    if (version.isEmpty()) {
-                        logger.log(Level.INFO, "Set model version ''{1}'',"
-                                + "  $workflowgroup: ''{2}'', $uniqueid: {3}",
-                                new Object[] { version, matchingVersion, workitem.getWorkflowGroup(),
-                                        workitem.getUniqueID() });
-                    } else {
-                        logger.log(Level.INFO, "Update model version: ''{0}'' ▶ ''{1}'',"
-                                + "  $workflowgroup: ''{2}'', $uniqueid: {3}",
-                                new Object[] { version, matchingVersion, workitem.getWorkflowGroup(),
-                                        workitem.getUniqueID() });
-                    }
-
-                    // update $modelVersion
-                    workitem.model(matchingVersion);
-                    result = modelService.getModel(matchingVersion);
-                    return result;
-                }
-            }
-
-            // no match!
-            throw new ModelException(ModelException.UNDEFINED_MODEL_VERSION,
-                    "$modelversion '" + version + "' not found");
-        }
-    }
-
-    /**
-     * This method returns a sorted list of model versions matching a given regex
-     * for a model version. The result is sorted in reverse order, so the highest
-     * version number is the first in the result list.
-     * 
-     * @param group
-     * @return
-     */
-    // @Override
-    public String findVersionByRegEx(String modelRegex) {
-        boolean debug = logger.isLoggable(Level.FINE);
-        // Sorted in reverse order
-        Set<String> result = new TreeSet<>(Collections.reverseOrder());
-        if (debug) {
-            logger.log(Level.FINEST, "......searching model versions for regex ''{0}''...", modelRegex);
-        }
-        // try to find matching model version by regex
-        List<String> modelVersions = modelService.getAllModelVersions();
-        for (String _version : modelVersions) {
-            if (Pattern.compile(modelRegex).matcher(_version).find()) {
-                result.add(_version);
-            }
-        }
-        if (result.size() > 0) {
-            return result.iterator().next();
-        }
-        return null;
-    }
-
-    /**
-     * Returns a version by Group.
-     * The method computes a sorted list of all model versions containing the
-     * requested
-     * workflow group. The result is sorted in reverse order, so the highest version
-     * number is the first in the result list.
-     * 
-     * @param group - name of the workflow group
-     * @return list of matching model versions
-     * @throws ModelException
-     */
-    // @Override
-    public String findVersionByGroup(String group) throws ModelException {
-        return modelService.findVersionByGroup(group);
-    }
 }

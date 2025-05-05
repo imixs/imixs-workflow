@@ -36,7 +36,10 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.engine.WorkflowContextService;
+import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.PluginException;
+
+import jakarta.inject.Inject;
 
 /**
  * This abstract class implements different helper methods used by subclasses
@@ -52,7 +55,12 @@ public abstract class AbstractPlugin implements Plugin {
     public static final String INVALID_PROPERTYVALUE_FORMAT = "INVALID_PROPERTYVALUE_FORMAT";
 
     private WorkflowContext ctx;
-    private WorkflowContextService workflowService;
+
+    @Inject
+    private WorkflowService workflowService;
+
+    @Inject
+    private WorkflowContextService workflowContextService;
 
     /**
      * Initialize Plugin and get an instance of the EJB Session Context
@@ -62,8 +70,7 @@ public abstract class AbstractPlugin implements Plugin {
         // get WorkflowService by check for an instance of WorkflowService
         if (_ctx instanceof WorkflowContextService) {
             // yes we are running in a WorkflowService EJB
-            workflowService = (WorkflowContextService) _ctx;
-
+            workflowContextService = (WorkflowContextService) _ctx;
         }
     }
 
@@ -76,18 +83,24 @@ public abstract class AbstractPlugin implements Plugin {
 
     }
 
-    // public WorkflowContext getCtx() {
-    // return ctx;
-    // }
-
     /**
      * Returns an instance of the WorkflowService EJB.
-     * 
+     *
      *
      * @return
      */
-    public WorkflowContextService getWorkflowService() {
+    public WorkflowService getWorkflowService() {
         return workflowService;
+    }
+
+    /**
+     * Returns an instance of the WorkflowContextService EJB.
+     *
+     *
+     * @return
+     */
+    public WorkflowContextService getWorkflowContextService() {
+        return workflowContextService;
     }
 
     /**

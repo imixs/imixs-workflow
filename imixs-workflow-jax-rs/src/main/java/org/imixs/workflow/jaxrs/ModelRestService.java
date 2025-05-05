@@ -579,7 +579,7 @@ public class ModelRestService {
     private void appendTagsToBuffer(String modelVersion, String rootContext, StringBuffer buffer)
             throws ModelException {
         BPMNModel model = modelService.getModelManager().getModel(modelVersion);
-        ItemCollection modelEntity = modelService.loadModel(modelVersion);
+        ItemCollection modelEntity = modelService.fetchModel(modelVersion);
 
         // now check groups...
         Set<String> groupList = modelService.getModelManager().findAllGroupsByModel(model);// .getWorkflowGroups(model);//

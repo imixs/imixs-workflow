@@ -335,7 +335,7 @@ public class MailPlugin extends AbstractPlugin {
         }
         // if no default sender take the current username
         if (sFrom == null || sFrom.isEmpty())
-            sFrom = this.getWorkflowService().getUserName();
+            sFrom = this.getWorkflowContextService().getUserName();
         if (debug) {
             logger.log(Level.FINEST, "......From: {0}", sFrom);
         }
@@ -368,7 +368,7 @@ public class MailPlugin extends AbstractPlugin {
      */
     public String getSubject(ItemCollection documentContext, ItemCollection documentActivity) throws PluginException {
         boolean debug = logger.isLoggable(Level.FINE);
-        String subject = getWorkflowService().adaptText(documentActivity.getItemValueString("txtMailSubject"),
+        String subject = getWorkflowContextService().adaptText(documentActivity.getItemValueString("txtMailSubject"),
                 documentContext);
         if (debug) {
             logger.log(Level.FINEST, "......Subject: {0}", subject);
@@ -479,7 +479,7 @@ public class MailPlugin extends AbstractPlugin {
      */
     public String getBody(ItemCollection documentContext, ItemCollection documentActivity) throws PluginException {
         // build mail body and replace dynamic values...
-        String aBodyText = getWorkflowService().adaptText(documentActivity.getItemValueString("rtfMailBody"),
+        String aBodyText = getWorkflowContextService().adaptText(documentActivity.getItemValueString("rtfMailBody"),
                 documentContext);
 
         // Test if mail body contains HTML content and updates the flag

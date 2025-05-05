@@ -35,7 +35,6 @@ import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.PluginException;
-
 import org.imixs.workflow.util.XMLParser;
 
 /**
@@ -79,12 +78,12 @@ public class TaxonomyPlugin extends AbstractPlugin {
 
 	private static final Logger logger = Logger.getLogger(TaxonomyPlugin.class.getName());
 
-
 	@Override
 	public ItemCollection run(ItemCollection documentContext, ItemCollection event) throws PluginException {
 		logger.finest("running TaxonomyPlugin");
 		// parse for taxonomy definition....
-		ItemCollection taxonomyConfig = this.getWorkflowService().evalWorkflowResult(event, "taxonomy", documentContext,
+		ItemCollection taxonomyConfig = this.getWorkflowContextService().evalWorkflowResult(event, "taxonomy",
+				documentContext,
 				true);
 		if (taxonomyConfig == null || taxonomyConfig.getItemNames().size() == 0) {
 			// no op - return
@@ -102,10 +101,10 @@ public class TaxonomyPlugin extends AbstractPlugin {
 				String type = taxonomyData.getItemValueString("type");
 				boolean anonymised = true;
 				if (taxonomyData.hasItem("anonymised")) {
-					anonymised=taxonomyData.getItemValueBoolean("anonymised");
+					anonymised = taxonomyData.getItemValueBoolean("anonymised");
 				}
-				logger.log(Level.FINEST, "... type={0}  anonymised={1}", new Object[]{type, anonymised});
-				evalTaxonomyDefinition(documentContext, name, type,anonymised);
+				logger.log(Level.FINEST, "... type={0}  anonymised={1}", new Object[] { type, anonymised });
+				evalTaxonomyDefinition(documentContext, name, type, anonymised);
 			}
 
 		}
@@ -114,29 +113,28 @@ public class TaxonomyPlugin extends AbstractPlugin {
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	void evalTaxonomyDefinition(ItemCollection documentContext, String name, String type, boolean anonymised) throws PluginException {
-		
+	void evalTaxonomyDefinition(ItemCollection documentContext, String name, String type, boolean anonymised)
+			throws PluginException {
+
 		// test if taxonomy name is valid (^[\w.-]+$)
 		if (!name.matches("^[\\w.-]+$")) {
-			  throw new PluginException(TaxonomyPlugin.class.getSimpleName(), INVALID_FORMAT,
-                      "Invalid taxonomy definition - the name cannot contain special characters: '" + name + "'");
+			throw new PluginException(TaxonomyPlugin.class.getSimpleName(), INVALID_FORMAT,
+					"Invalid taxonomy definition - the name cannot contain special characters: '" + name + "'");
 		}
-		
+
 		// add new taxonomy name
 		documentContext.appendItemValueUnique("taxonomy", name);
-		
+
 		List valuesStart = documentContext.getItemValue("taxonomy." + name + ".start");
 		List valuesStop = documentContext.getItemValue("taxonomy." + name + ".stop");
-		
-		
-		
+
 		if ("start".equals(type)) {
 
 			// the length of stop list must be the same as the start list
 			if (valuesStart.size() != valuesStop.size()) {
 				logger.log(Level.WARNING, "Invalid taxonomy definition ''{0}'' starttime without stoptime!"
-                                        + " - please check model event {1}.{2} taxonomy will be ignored!",
-                                        new Object[]{name, documentContext.getTaskID(), documentContext.getEventID()});
+						+ " - please check model event {1}.{2} taxonomy will be ignored!",
+						new Object[] { name, documentContext.getTaskID(), documentContext.getEventID() });
 				return;
 			}
 
@@ -156,8 +154,8 @@ public class TaxonomyPlugin extends AbstractPlugin {
 
 			if (valuesStop.size() != (valuesStart.size() - 1)) {
 				logger.log(Level.WARNING, "Invalid taxonomy definition ''{0}'' stoptime without starttime!"
-                                        + " - please check model entry {1}.{2} taxonomy will be ignored!",
-                                        new Object[]{name, documentContext.getTaskID(), documentContext.getEventID()});
+						+ " - please check model entry {1}.{2} taxonomy will be ignored!",
+						new Object[] { name, documentContext.getTaskID(), documentContext.getEventID() });
 				return;
 
 			}

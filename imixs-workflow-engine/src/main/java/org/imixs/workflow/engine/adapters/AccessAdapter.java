@@ -34,14 +34,17 @@ import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jakarta.inject.Inject;
-import jakarta.inject.Named;
+
 import org.imixs.workflow.GenericAdapter;
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.engine.WorkflowContextService;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
+
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 /**
  * The AccessAdapter is a generic adapter class responsible to update the ACL of
@@ -70,7 +73,7 @@ public class AccessAdapter implements GenericAdapter, Serializable {
     private static final Logger logger = Logger.getLogger(AccessAdapter.class.getName());
 
     // See CDI Constructor
-    protected WorkflowService workflowService;
+    protected WorkflowContextService workflowContextService;
 
     /**
      * Default Constructor
@@ -82,12 +85,12 @@ public class AccessAdapter implements GenericAdapter, Serializable {
     /**
      * CDI Constructor to inject WorkflowService
      * 
-     * @param workflowService
+     * @param workflowContextService
      */
     @Inject
-    public AccessAdapter(WorkflowService workflowService) {
+    public AccessAdapter(WorkflowContextService workflowContextService) {
         super();
-        this.workflowService = workflowService;
+        this.workflowContextService = workflowContextService;
     }
 
     /**
@@ -101,7 +104,7 @@ public class AccessAdapter implements GenericAdapter, Serializable {
         // get next process entity
         try {
             // nextTask = workflowService.evalNextTask(document, event);
-            nextTask = workflowService.evalNextTask(document);
+            nextTask = workflowContextService.evalNextTask(document);
             // in case the event is connected to a followup activity the
             // nextProcess can be null!
 
@@ -114,9 +117,8 @@ public class AccessAdapter implements GenericAdapter, Serializable {
         return null;
     }
 
-    public void setWorkflowService(WorkflowService workflowService) {
-        this.workflowService = workflowService;
-
+    public void setWorkflowContextService(WorkflowContextService workflowContextService) {
+        this.workflowContextService = workflowContextService;
     }
 
     /**
@@ -129,7 +131,7 @@ public class AccessAdapter implements GenericAdapter, Serializable {
     public ItemCollection updateParticipants(ItemCollection workitem) {
 
         List<String> participants = workitem.getItemValue(WorkflowService.PARTICIPANTS);
-        String user = workflowService.getUserName();
+        String user = workflowContextService.getUserName();
         if (!participants.contains(user)) {
             participants.add(user);
             workitem.replaceItemValue(WorkflowService.PARTICIPANTS, participants);
@@ -334,7 +336,7 @@ public class AccessAdapter implements GenericAdapter, Serializable {
                 if (valueList.indexOf(o) == -1) {
                     if (o instanceof String) {
                         // addapt textList
-                        List<String> adaptedRoles = workflowService.adaptTextList((String) o, documentContext);
+                        List<String> adaptedRoles = workflowContextService.adaptTextList((String) o, documentContext);
                         valueList.addAll(adaptedRoles);// .add(getWorkflowService().adaptText((String)o,
                                                        // documentContext));
                     } else {

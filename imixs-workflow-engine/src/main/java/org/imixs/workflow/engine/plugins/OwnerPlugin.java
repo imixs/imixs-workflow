@@ -193,7 +193,7 @@ public class OwnerPlugin extends AbstractPlugin {
                 if (valueList.indexOf(o) == -1) {
                     if (o instanceof String) {
                         // addapt textList
-                        List<String> adaptedRoles = this.getWorkflowService().adaptTextList((String) o,
+                        List<String> adaptedRoles = this.getWorkflowContextService().adaptTextList((String) o,
                                 documentContext);
                         valueList.addAll(adaptedRoles);// .add(getWorkflowService().adaptText((String)o,
                                                        // documentContext));

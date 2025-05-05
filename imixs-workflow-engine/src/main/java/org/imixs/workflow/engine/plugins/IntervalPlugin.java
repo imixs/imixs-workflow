@@ -87,11 +87,13 @@ public class IntervalPlugin extends AbstractPlugin {
         Optional<String> optional = fieldNames.stream().filter(x -> x.toLowerCase().startsWith("keyinterval"))
                 .findFirst();
         if (optional.isPresent()) {// Check whether optional has element you are looking for
-            logger.warning("Note: keyinterval is no longer supported by the intervalPlugin. Use instead a cron configuration.");
+            logger.warning(
+                    "Note: keyinterval is no longer supported by the intervalPlugin. Use instead a cron configuration.");
         }
 
         // evaluate interval configuration
-        ItemCollection evalItemCollection = getWorkflowService().evalWorkflowResult(event, "item", adocumentContext,
+        ItemCollection evalItemCollection = getWorkflowContextService().evalWorkflowResult(event, "item",
+                adocumentContext,
                 true);
         // We run only if an item 'inteval' is defined in the current event (issue #841)
         if (evalItemCollection != null && evalItemCollection.hasItem(EVAL_INTERVAL)) {
@@ -141,50 +143,50 @@ public class IntervalPlugin extends AbstractPlugin {
     /**
      * evaluates a cron definition
      * 
-     * @param cron - a cron definition * * * * * 
+     * @param cron         - a cron definition * * * * *
      * @param baseDateTime - the base dateTime for the evaluation
-     * @return next dateTime 
+     * @return next dateTime
      * @throws PluginException
      */
     public LocalDateTime evalCron(String cron, LocalDateTime baseDateTime) throws PluginException {
-        LocalDateTime result=null;
-        
+        LocalDateTime result = null;
+
         // split conr
         String[] cronDef = cron.split(" ");
         if (cronDef.length != 5) {
             throw new PluginException(IntervalPlugin.class.getName(), INVALID_FORMAT, "invalid cron format: " + cron);
         }
-    
-        if (baseDateTime==null) {
+
+        if (baseDateTime == null) {
             result = LocalDateTime.now().withSecond(0);
         } else {
-            result=baseDateTime;
+            result = baseDateTime;
         }
-        
+
         increase = true;
         try {
             // adjust minute
             String minute = cronDef[0];
             result = adjustDateTimeByCronUnit(minute, result, ChronoUnit.MINUTES, ChronoField.MINUTE_OF_HOUR);
-    
+
             // adjust hour
             String hour = cronDef[1];
             result = adjustDateTimeByCronUnit(hour, result, ChronoUnit.HOURS, ChronoField.HOUR_OF_DAY);
-    
+
             // adjust dayofmonth
             String dayofmonth = cronDef[2];
             result = adjustDateTimeByCronUnit(dayofmonth, result, ChronoUnit.DAYS, ChronoField.DAY_OF_MONTH);
-    
+
             // adjust month
             String month = cronDef[3];
             result = adjustDateTimeByCronUnit(month, result, ChronoUnit.MONTHS, ChronoField.MONTH_OF_YEAR);
-    
+
         } catch (NumberFormatException e) {
             // we do not support all kind of patterns
             throw new PluginException(IntervalPlugin.class.getName(), INVALID_FORMAT,
                     "invalid cron format: " + cron + " Note: we do not yet support all kind of patterns.");
         }
-    
+
         // adjust day of week by regex or Year
         String dayofweek = cronDef[4];
         if ("*".equals(dayofweek)) {
@@ -212,19 +214,16 @@ public class IntervalPlugin extends AbstractPlugin {
                             "invalid cron format 'DayOfWeek' : " + cron);
                 }
             }
-    
+
         }
-    
+
         return result;
     }
 
     public LocalDateTime evalCron(String cron) throws PluginException {
-        return evalCron(cron,null);
+        return evalCron(cron, null);
     }
-    
-    
-    
-    
+
     /**
      * The method evaluates a macro. Possible values:
      * <ul>
@@ -240,30 +239,30 @@ public class IntervalPlugin extends AbstractPlugin {
      * @throws PluginException
      */
     public LocalDateTime evalMacro(String macro, LocalDateTime ldt) throws PluginException {
-    
+
         switch (macro) {
-        case "@yearly":
-            ldt = ldt.plusYears(1);
-            break;
-        case "@monthly":
-            ldt = ldt.plusMonths(1);
-            break;
-        case "@weekly":
-            ldt = ldt.plusWeeks(1);
-            break;
-        case "@daily":
-            ldt = ldt.plusDays(1);
-            break;
-        case "@hourly":
-            ldt = ldt.plusHours(1);
-            break;
-        default:
-        	// unknown makro return null
-        	return null;
+            case "@yearly":
+                ldt = ldt.plusYears(1);
+                break;
+            case "@monthly":
+                ldt = ldt.plusMonths(1);
+                break;
+            case "@weekly":
+                ldt = ldt.plusWeeks(1);
+                break;
+            case "@daily":
+                ldt = ldt.plusDays(1);
+                break;
+            case "@hourly":
+                ldt = ldt.plusHours(1);
+                break;
+            default:
+                // unknown makro return null
+                return null;
         }
-    
+
         return ldt;
-    
+
     }
 
     /**

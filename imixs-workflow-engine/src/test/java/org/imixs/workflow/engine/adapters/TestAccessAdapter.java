@@ -9,7 +9,7 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.WorkflowMockEnvironment;
+import org.imixs.workflow.engine.MockWorkflowEnvironment;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
@@ -37,23 +37,23 @@ public class TestAccessAdapter {
 
 	protected ItemCollection workitem;
 	protected ItemCollection event;
-	protected WorkflowMockEnvironment workflowEnvironment;
+	protected MockWorkflowEnvironment workflowEnvironment;
 	BPMNModel model = null;
 
 	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
 		// Ensures that @Mock and @InjectMocks annotations are processed
 		MockitoAnnotations.openMocks(this);
-		workflowEnvironment = new WorkflowMockEnvironment();
+		workflowEnvironment = new MockWorkflowEnvironment();
 
 		// register AccessAdapter Mock
 		workflowEnvironment.registerAdapter(accessAdapter);
 
 		// Setup Environment
 		workflowEnvironment.setUp();
-		workflowEnvironment.loadBPMNModel("/bpmn/TestAccessPlugin.bpmn");
-		model = workflowEnvironment.getModelService().getModelManager().getModel("1.0.0");
-		accessAdapter.workflowService = workflowEnvironment.getWorkflowService();
+		workflowEnvironment.loadBPMNModelFromFile("/bpmn/TestAccessPlugin.bpmn");
+		model = workflowEnvironment.getModelManager().getModel("1.0.0");
+		accessAdapter.workflowContextService = workflowEnvironment.getWorkflowContextService();
 
 		// prepare data
 		workitem = new ItemCollection().model("1.0.0").task(100);
@@ -62,7 +62,7 @@ public class TestAccessAdapter {
 	@SuppressWarnings({ "rawtypes" })
 	@Test
 	public void simpleTest() throws ModelException {
-		event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100,
+		event = workflowEnvironment.getModelManager().findEventByID(model, 100,
 				10);
 		workitem.setEventID(10);
 		try {
@@ -80,7 +80,7 @@ public class TestAccessAdapter {
 	@SuppressWarnings({ "rawtypes" })
 	@Test
 	public void testNoUpdate() throws ModelException {
-		event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100,
+		event = workflowEnvironment.getModelManager().findEventByID(model, 100,
 				20);
 		workitem.setEventID(20);
 		try {
@@ -99,7 +99,7 @@ public class TestAccessAdapter {
 	@Test
 	public void fieldMappingTest() throws ModelException {
 
-		event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100,
+		event = workflowEnvironment.getModelManager().findEventByID(model, 100,
 				10);
 
 		// event = workflowMockEnvironment.getModel().getEvent(100, 10);
@@ -136,7 +136,7 @@ public class TestAccessAdapter {
 	@Test
 	public void staticUserGroupMappingTest() throws ModelException {
 
-		event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100,
+		event = workflowEnvironment.getModelManager().findEventByID(model, 100,
 				30);
 		workitem.setEventID(30);
 		try {
@@ -156,7 +156,7 @@ public class TestAccessAdapter {
 	@SuppressWarnings({ "rawtypes" })
 	@Test
 	public void fallbackTest() throws ModelException {
-		event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100,
+		event = workflowEnvironment.getModelManager().findEventByID(model, 100,
 				10);
 
 		event.replaceItemValue("keyaccessmode", "0");

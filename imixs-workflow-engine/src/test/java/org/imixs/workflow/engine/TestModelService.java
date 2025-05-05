@@ -31,17 +31,17 @@ import org.openbpmn.bpmn.BPMNModel;
 @MockitoSettings(strictness = Strictness.WARN)
 public class TestModelService {
 
-	protected WorkflowMockEnvironment workflowEngine;
+	protected MockWorkflowEnvironment workflowEnvironment;
 	ItemCollection workitem;
 
 	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
 
-		workflowEngine = new WorkflowMockEnvironment();
-		workflowEngine.setUp();
-		workflowEngine.loadBPMNModel("/bpmn/TestWorkflowService.bpmn");
+		workflowEnvironment = new MockWorkflowEnvironment();
+		workflowEnvironment.setUp();
+		workflowEnvironment.loadBPMNModelFromFile("/bpmn/TestWorkflowService.bpmn");
 
-		workitem = workflowEngine.getDocumentService().load("W0000-00001");
+		workitem = workflowEnvironment.getDocumentService().load("W0000-00001");
 		workitem.model("1.0.0").task(100);
 
 	}
@@ -59,11 +59,12 @@ public class TestModelService {
 	@Test
 	public void testGetDataObject() throws ModelException {
 		workitem.event(20);
-		ItemCollection event = this.workflowEngine.getModelManager().loadEvent(workitem);
+		BPMNModel model = this.workflowEnvironment.modelManager.getModelByWorkitem(workitem);
+		ItemCollection event = this.workflowEnvironment.getModelManager().loadEvent(workitem, model);
 
 		assertNotNull(event);
 
-		String data = workflowEngine.getModelService().getModelManager().findDataObject(event, "MyObject");
+		String data = workflowEnvironment.getModelManager().findDataObject(event, "MyObject");
 
 		assertNotNull(data);
 		assertEquals("My data", data);
@@ -83,15 +84,15 @@ public class TestModelService {
 		workitem.setEventID(10);
 		workitem.setWorkflowGroup("Ticket");
 
-		BPMNModel amodel = null;
+		String amodel = null;
 		try {
-			amodel = workflowEngine.getModelService().getModelByWorkitem(workitem);
+			amodel = workflowEnvironment.getWorkflowContextService().findModelVersionByWorkitem(workitem);
 		} catch (ModelException e) {
 			fail(e.getMessage());
 		}
 
 		assertNotNull(amodel);
-		assertEquals("1.0.0", BPMNUtil.getVersion(amodel));
+		assertEquals("1.0.0", amodel);
 	}
 
 	/**
@@ -110,7 +111,7 @@ public class TestModelService {
 
 		BPMNModel amodel = null;
 		try {
-			amodel = workflowEngine.getModelService().getModelByWorkitem(workitem);
+			amodel = workflowEnvironment.getModelManager().getModelByWorkitem(workitem);
 
 		} catch (ModelException e) {
 			e.printStackTrace();
@@ -134,7 +135,7 @@ public class TestModelService {
 
 		BPMNModel amodel = null;
 		try {
-			amodel = workflowEngine.getModelService().getModelByWorkitem(workitem);
+			amodel = workflowEnvironment.getModelManager().getModelByWorkitem(workitem);
 			fail();
 		} catch (ModelException e) {
 			// expected

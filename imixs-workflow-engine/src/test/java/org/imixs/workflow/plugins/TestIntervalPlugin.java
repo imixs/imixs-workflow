@@ -12,7 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.WorkflowMockEnvironment;
+import org.imixs.workflow.engine.MockWorkflowEnvironment;
 import org.imixs.workflow.engine.plugins.IntervalPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -29,16 +29,16 @@ public class TestIntervalPlugin {
     protected IntervalPlugin intervalPlugin = null;
 
     private static final Logger logger = Logger.getLogger(TestIntervalPlugin.class.getName());
-    protected WorkflowMockEnvironment workflowEnvironment;
+    protected MockWorkflowEnvironment workflowEnvironment;
     ItemCollection workitem = null;
     ItemCollection documentContext;
     ItemCollection event;
 
     @BeforeEach
     public void setUp() throws PluginException, ModelException {
-        workflowEnvironment = new WorkflowMockEnvironment();
+        workflowEnvironment = new MockWorkflowEnvironment();
         workflowEnvironment.setUp();
-        workflowEnvironment.loadBPMNModel("/bpmn/TestIntervalPlugin.bpmn");
+        workflowEnvironment.loadBPMNModelFromFile("/bpmn/TestIntervalPlugin.bpmn");
         workitem = workflowEnvironment.getDocumentService().load("W0000-00001");
         workitem.model("1.0.0").task(100);
 
@@ -68,9 +68,8 @@ public class TestIntervalPlugin {
         try {
             workitem.event(99);
 
-            BPMNModel model = workflowEnvironment.getWorkflowContextService().findModelByWorkitem(workitem);
-
-            event = workflowEnvironment.getModelService().getModelManager().loadEvent(workitem, model);
+            BPMNModel model = workflowEnvironment.getModelManager().getModelByWorkitem(workitem);
+            event = workflowEnvironment.getModelManager().loadEvent(workitem, model);
             // // 99);
             intervalPlugin.run(documentContext, event);
         } catch (PluginException | ModelException e) {
