@@ -9,7 +9,6 @@ import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.MockWorkflowContext;
-import org.imixs.workflow.MockWorkflowEngine;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
@@ -30,16 +29,14 @@ public class TestBPMNSplitEvents {
 
 	private final static Logger logger = Logger.getLogger(TestBPMNSplitEvents.class.getName());
 
-	MockWorkflowContext workflowContext;
-	MockWorkflowEngine workflowEngine;
+	MockWorkflowContext workflowEngine;
 
 	@BeforeEach
 	public void setup() {
 		try {
-			workflowContext = new MockWorkflowContext();
-			workflowEngine = new MockWorkflowEngine(workflowContext);
-			workflowContext.loadBPMNModelFromFile("/bpmn/split_event_with_condition.bpmn");
-			BPMNModel model = workflowContext.fetchModel("1.0.0");
+			workflowEngine = new MockWorkflowContext();
+			workflowEngine.loadBPMNModelFromFile("/bpmn/split_event_with_condition.bpmn");
+			BPMNModel model = workflowEngine.fetchModel("1.0.0");
 			assertNotNull(model);
 		} catch (PluginException | ModelException e) {
 			fail(e.getMessage());

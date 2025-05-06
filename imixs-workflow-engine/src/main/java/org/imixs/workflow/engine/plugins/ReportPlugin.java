@@ -98,7 +98,7 @@ public class ReportPlugin extends AbstractPlugin {
             reportFilePath = reportName;
 
         // replace dynamic field values
-        reportFilePath = getWorkflowContextService().adaptText(reportFilePath, adocumentContext);
+        reportFilePath = getWorkflowService().adaptText(reportFilePath, adocumentContext);
 
         String reportTarget = adocumentActivity.getItemValueString("txtReportTarget");
 

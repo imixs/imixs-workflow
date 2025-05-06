@@ -71,7 +71,7 @@ public class TestAccessAdapterTask {
 		workflowEnvironment.setUp();
 		workflowEnvironment.loadBPMNModelFromFile("/bpmn/TestAccessAdapterTask.bpmn");
 		model = workflowEnvironment.getModelManager().getModel("1.0.0");
-		accessAdapter.workflowContextService = workflowEnvironment.getWorkflowContextService();
+		accessAdapter.workflowService = workflowEnvironment.getWorkflowService();
 
 		// // prepare data
 		workitem = new ItemCollection().model("1.0.0").task(100);

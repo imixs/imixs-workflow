@@ -9,7 +9,6 @@ import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.MockWorkflowContext;
-import org.imixs.workflow.MockWorkflowEngine;
 import org.imixs.workflow.bpmn.BPMNUtil;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -27,16 +26,14 @@ public class TestWorkflowKernelEval {
 
 	private final static Logger logger = Logger.getLogger(TestWorkflowKernelEval.class.getName());
 
-	MockWorkflowContext workflowContext;
-	MockWorkflowEngine workflowEngine;
+	MockWorkflowContext workflowEngine;
 
 	@BeforeEach
 	public void setup() {
 		try {
-			workflowContext = new MockWorkflowContext();
-			workflowEngine = new MockWorkflowEngine(workflowContext);
-			workflowContext.loadBPMNModelFromFile("/bpmn/workflowkernel_eval.bpmn");
-			BPMNModel model = workflowContext.fetchModel("1.0.0");
+			workflowEngine = new MockWorkflowContext();
+			workflowEngine.loadBPMNModelFromFile("/bpmn/workflowkernel_eval.bpmn");
+			BPMNModel model = workflowEngine.fetchModel("1.0.0");
 			assertNotNull(model);
 		} catch (PluginException | ModelException e) {
 			fail(e.getMessage());
@@ -91,7 +88,7 @@ public class TestWorkflowKernelEval {
 	 */
 	@Test
 	public void testParallelGateway() {
-		workflowContext.loadBPMNModelFromFile("/bpmn/workflowkernel_eval_parallelgateway.bpmn");
+		workflowEngine.loadBPMNModelFromFile("/bpmn/workflowkernel_eval_parallelgateway.bpmn");
 
 		long l = System.currentTimeMillis();
 		ItemCollection workitem = new ItemCollection();

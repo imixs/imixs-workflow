@@ -64,7 +64,7 @@ public class TestAdaptText {
 
 		String resultString;
 		try {
-			resultString = this.workflowEngine.workflowContextService.adaptText(testString, documentContext);
+			resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
 			assertEquals(expectedString, resultString);
 		} catch (PluginException e) {
@@ -91,7 +91,7 @@ public class TestAdaptText {
 
 		String resultString = null;
 		try {
-			resultString = this.workflowEngine.workflowContextService.adaptText(testString, documentContext);
+			resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 			assertNotNull(resultString);
 			assertEquals(testString, resultString);
 		} catch (PluginException e) {
@@ -129,7 +129,7 @@ public class TestAdaptText {
 
 		documentContext.replaceItemValue("datDate", cal.getTime());
 
-		String resultString = this.workflowEngine.workflowContextService.adaptText(testString, documentContext);
+		String resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
 		assertEquals(expectedString, resultString);
 
@@ -152,7 +152,7 @@ public class TestAdaptText {
 
 		documentContext.replaceItemValue("datDate", cal.getTime());
 
-		String resultString = this.workflowEngine.workflowContextService.adaptText(testString, documentContext);
+		String resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
 		assertEquals(expectedString, resultString);
 
@@ -186,7 +186,7 @@ public class TestAdaptText {
 		value.add(300);
 		documentContext.replaceItemValue("_numbers", value);
 
-		String resultString = this.workflowEngine.workflowContextService.adaptText(testString, documentContext);
+		String resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
 		assertEquals(expectedString, resultString);
 
@@ -215,7 +215,7 @@ public class TestAdaptText {
 
 		documentContext.replaceItemValue("price", Float.valueOf((float) 1199.99));
 
-		String resultString = this.workflowEngine.workflowContextService.adaptText(testString, documentContext);
+		String resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
 		assertEquals(expectedString, resultString);
 
@@ -249,7 +249,7 @@ public class TestAdaptText {
 		value.add(300);
 		documentContext.replaceItemValue("_numbers", value);
 
-		String resultString = this.workflowEngine.workflowContextService.adaptText(testString, documentContext);
+		String resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
 		// we expect that only the first value is given, because no separator was
 		// defined.
@@ -285,7 +285,7 @@ public class TestAdaptText {
 		values.add(300);
 		documentContext.replaceItemValue("_numbers", values);
 
-		String resultString = this.workflowEngine.workflowContextService.adaptText(testString, documentContext);
+		String resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
 		assertEquals(expectedStringLast, resultString);
 
@@ -299,7 +299,7 @@ public class TestAdaptText {
 
 		documentContext.replaceItemValue("_numbers", values);
 
-		resultString = this.workflowEngine.workflowContextService.adaptText(testString, documentContext);
+		resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
 		assertEquals(expectedStringFirst, resultString);
 
@@ -331,7 +331,7 @@ public class TestAdaptText {
 		documentContext.appendItemValue("_partid", "A123");
 		documentContext.appendItemValue("_partid", "B456");
 
-		String resultString = this.workflowEngine.workflowContextService.adaptText(testString, documentContext);
+		String resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
 		assertEquals(expectedStringLast, resultString);
 
@@ -372,7 +372,7 @@ public class TestAdaptText {
 		// create a fake value which should be ignored
 		documentContext.replaceItemValue("_orderid", "not used");
 
-		String resultString = this.workflowEngine.workflowContextService.adaptText(testString, documentContext);
+		String resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
 
 		assertEquals(expectedStringLast, resultString);
 

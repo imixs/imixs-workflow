@@ -18,7 +18,6 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.MockPlugin;
 import org.imixs.workflow.MockPluginNull;
 import org.imixs.workflow.MockWorkflowContext;
-import org.imixs.workflow.MockWorkflowEngine;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -39,16 +38,14 @@ public class TestWorkflowKernelBasic {
 
     private static final Logger logger = Logger.getLogger(TestWorkflowKernelBasic.class.getName());
 
-    MockWorkflowContext workflowContext;
-    MockWorkflowEngine workflowEngine;
+    MockWorkflowContext workflowEngine;
 
     @BeforeEach
     public void setup() {
         try {
-            workflowContext = new MockWorkflowContext();
-            workflowEngine = new MockWorkflowEngine(workflowContext);
-            workflowContext.loadBPMNModelFromFile("/bpmn/simple.bpmn");
-            BPMNModel model = workflowContext.fetchModel("1.0.0");
+            workflowEngine = new MockWorkflowContext();
+            workflowEngine.loadBPMNModelFromFile("/bpmn/simple.bpmn");
+            BPMNModel model = workflowEngine.fetchModel("1.0.0");
             assertNotNull(model);
         } catch (PluginException | ModelException e) {
             fail(e.getMessage());
@@ -185,8 +182,8 @@ public class TestWorkflowKernelBasic {
     @Test
     public void testRecursiveBug() throws ModelException {
 
-        workflowContext.loadBPMNModelFromFile("/bpmn/recursive_issue1.bpmn");
-        BPMNModel model = workflowContext.fetchModel("1.0.0");
+        workflowEngine.loadBPMNModelFromFile("/bpmn/recursive_issue1.bpmn");
+        BPMNModel model = workflowEngine.fetchModel("1.0.0");
         assertNotNull(model);
 
         ItemCollection workitem = new ItemCollection().model("1.0.0").task(100).event(10);
@@ -266,8 +263,8 @@ public class TestWorkflowKernelBasic {
                 .event(10);
 
         try {
-            // MokWorkflowContext ctx = new MokWorkflowContext();
-            // kernel = new WorkflowKernel(workflowContext);
+            // MokworkflowEngine ctx = new MokworkflowEngine();
+            // kernel = new WorkflowKernel(workflowEngine);
 
             MockPluginNull mokPlugin = new MockPluginNull();
             workflowEngine.getWorkflowKernel().registerPlugin(mokPlugin);
@@ -328,8 +325,8 @@ public class TestWorkflowKernelBasic {
     public void testFollowup() {
         try {
             // load followup model
-            workflowContext.loadBPMNModelFromFile("/bpmn/followup_001.bpmn");
-            BPMNModel model = workflowContext.fetchModel("1.0.0");
+            workflowEngine.loadBPMNModelFromFile("/bpmn/followup_001.bpmn");
+            BPMNModel model = workflowEngine.fetchModel("1.0.0");
             assertNotNull(model);
 
             ItemCollection workItem = new ItemCollection();
@@ -367,8 +364,8 @@ public class TestWorkflowKernelBasic {
     public void testFollowupMultipleGateways() {
         try {
             // load followup model
-            workflowContext.loadBPMNModelFromFile("/bpmn/followup_002.bpmn");
-            BPMNModel model = workflowContext.fetchModel("1.0.0");
+            workflowEngine.loadBPMNModelFromFile("/bpmn/followup_002.bpmn");
+            BPMNModel model = workflowEngine.fetchModel("1.0.0");
             assertNotNull(model);
 
             ItemCollection workItem = new ItemCollection();

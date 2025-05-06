@@ -44,7 +44,7 @@ public class TestAnalysisPlugin {
 
 		analysisPlugin = new AnalysisPlugin();
 		try {
-			analysisPlugin.init(workflowEngine.getWorkflowContextService());
+			analysisPlugin.init(workflowEngine.getWorkflowService());
 		} catch (PluginException e) {
 			fail(e.getMessage());
 		}

@@ -109,7 +109,7 @@ public class TestWorkflowService {
 
 		List<ItemCollection> eventList = null;
 		try {
-			eventList = workflowEnvironment.workflowContextService.getEvents(workitem);
+			eventList = workflowEnvironment.workflowService.getEvents(workitem);
 			// .workflowService.getEvents(workitem);
 		} catch (ModelException e) {
 			e.printStackTrace();
@@ -141,7 +141,7 @@ public class TestWorkflowService {
 
 		List<ItemCollection> eventList = null;
 		try {
-			eventList = workflowEnvironment.workflowContextService.getEvents(workitem);
+			eventList = workflowEnvironment.workflowService.getEvents(workitem);
 		} catch (ModelException e) {
 			e.printStackTrace();
 			fail();
@@ -169,7 +169,7 @@ public class TestWorkflowService {
 
 		List<ItemCollection> eventList = null;
 		try {
-			eventList = workflowEnvironment.workflowContextService.getEvents(workitem);
+			eventList = workflowEnvironment.workflowService.getEvents(workitem);
 		} catch (ModelException e) {
 			e.printStackTrace();
 			fail();
@@ -187,7 +187,7 @@ public class TestWorkflowService {
 	@Test
 	public void testGetEventsReadRestrictedForManagerAccess() {
 
-		when(workflowEnvironment.workflowContextService.getUserNameList()).thenAnswer(new Answer<List<String>>() {
+		when(workflowEnvironment.workflowService.getUserNameList()).thenAnswer(new Answer<List<String>>() {
 			@Override
 			public List<String> answer(InvocationOnMock invocation) throws Throwable {
 				List<String> result = new ArrayList<>();
@@ -210,7 +210,7 @@ public class TestWorkflowService {
 
 		List<ItemCollection> eventList = null;
 		try {
-			eventList = workflowEnvironment.workflowContextService.getEvents(workitem);
+			eventList = workflowEnvironment.workflowService.getEvents(workitem);
 		} catch (ModelException e) {
 			e.printStackTrace();
 			fail();

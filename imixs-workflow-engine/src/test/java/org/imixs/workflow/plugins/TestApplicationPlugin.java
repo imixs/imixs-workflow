@@ -48,7 +48,7 @@ public class TestApplicationPlugin {
 
 		applicationPlugin = new ApplicationPlugin();
 		try {
-			applicationPlugin.init(workflowEngine.getWorkflowContextService());
+			applicationPlugin.init(workflowEngine.getWorkflowService());
 		} catch (PluginException e) {
 			fail(e.getMessage());
 		}

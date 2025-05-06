@@ -45,7 +45,7 @@ public class TestIntervalPlugin {
         // prepare plugin
         intervalPlugin = new IntervalPlugin();
         try {
-            intervalPlugin.init(workflowEnvironment.getWorkflowContextService());
+            intervalPlugin.init(workflowEnvironment.getWorkflowService());
         } catch (PluginException e) {
             fail(e.getMessage());
         }

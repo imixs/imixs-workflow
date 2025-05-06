@@ -86,7 +86,7 @@ public class TestModelService {
 
 		String amodel = null;
 		try {
-			amodel = workflowEnvironment.getWorkflowContextService().findModelVersionByWorkitem(workitem);
+			amodel = workflowEnvironment.workflowService.findModelVersionByWorkitem(workitem);
 		} catch (ModelException e) {
 			fail(e.getMessage());
 		}

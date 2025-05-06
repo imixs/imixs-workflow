@@ -52,7 +52,7 @@ public class TestResultPlugin {
 
         resultPlugin = new ResultPlugin();
         try {
-            resultPlugin.init(workflowEnvironment.getWorkflowContextService());
+            resultPlugin.init(workflowEnvironment.getWorkflowService());
         } catch (PluginException e) {
 
             e.printStackTrace();
@@ -437,7 +437,7 @@ public class TestResultPlugin {
         // run plugin
         workitem = resultPlugin.run(workitem, event);
 
-        workitem = workflowEnvironment.getWorkflowContextService().evalWorkflowResult(event, "item", workitem);
+        workitem = workflowEnvironment.getWorkflowService().evalWorkflowResult(event, "item", workitem);
         assertNotNull(workitem);
         assertTrue(workitem.hasItem("count"));
         assertEquals(55.332, workitem.getItemValueDouble("count"), 0);

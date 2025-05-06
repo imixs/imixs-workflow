@@ -82,7 +82,7 @@ public class TaxonomyPlugin extends AbstractPlugin {
 	public ItemCollection run(ItemCollection documentContext, ItemCollection event) throws PluginException {
 		logger.finest("running TaxonomyPlugin");
 		// parse for taxonomy definition....
-		ItemCollection taxonomyConfig = this.getWorkflowContextService().evalWorkflowResult(event, "taxonomy",
+		ItemCollection taxonomyConfig = this.getWorkflowContext().evalWorkflowResult(event, "taxonomy",
 				documentContext,
 				true);
 		if (taxonomyConfig == null || taxonomyConfig.getItemNames().size() == 0) {

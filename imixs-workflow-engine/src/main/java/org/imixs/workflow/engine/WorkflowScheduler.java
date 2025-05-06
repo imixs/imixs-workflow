@@ -92,9 +92,6 @@ public class WorkflowScheduler implements Scheduler {
     private ModelService modelService;
 
     @Inject
-    private WorkflowContextService workflowContextService;
-
-    @Inject
     private SchedulerService schedulerService;
 
     @Inject
@@ -359,7 +356,7 @@ public class WorkflowScheduler implements Scheduler {
         /*
          * Now we process all scheduled workItems for each model
          */
-        ModelManager modelManager = new ModelManager(workflowContextService);
+        ModelManager modelManager = new ModelManager(workflowService);
         iProcessWorkItems = 0;
         unprocessedIDs = new ArrayList<String>();
         try {
@@ -371,7 +368,7 @@ public class WorkflowScheduler implements Scheduler {
 
             for (String version : modelVersions) {
                 // find scheduled Events
-                BPMNModel model = workflowContextService.fetchModel(version);
+                BPMNModel model = workflowService.fetchModel(version);
 
                 if (model != null) {
                     // find all tasks

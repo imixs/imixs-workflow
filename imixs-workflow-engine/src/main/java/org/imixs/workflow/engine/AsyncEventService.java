@@ -102,9 +102,6 @@ public class AsyncEventService {
     @Inject
     private WorkflowService workflowService;
 
-    @Inject
-    private WorkflowContextService workflowContextService;
-
     /**
      * The observer method verifies if the current task contains a AsyncEvent
      * definition.
@@ -121,7 +118,7 @@ public class AsyncEventService {
         boolean debug = logger.isLoggable(Level.FINE);
         if (ProcessingEvent.AFTER_PROCESS == processingEvent.getEventType()) {
             // load target task
-            ItemCollection task = workflowContextService.evalNextTask(processingEvent.getDocument());
+            ItemCollection task = workflowService.evalNextTask(processingEvent.getDocument());
 
             // BPMNModel model =
             // modelService.findModelVersionByWorkitem(processingEvent.getDocument());

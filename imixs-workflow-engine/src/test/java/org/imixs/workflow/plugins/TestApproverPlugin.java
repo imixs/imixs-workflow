@@ -19,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.openbpmn.bpmn.BPMNModel;
 
 /**
  * Test class for ApproverPlugin
@@ -38,7 +39,7 @@ public class TestApproverPlugin {
 
 		workflowEnvironment = new MockWorkflowEnvironment();
 		workflowEnvironment.setUp();
-		workflowEnvironment.loadBPMNModel("/bpmn/TestApproverPlugin.bpmn");
+		workflowEnvironment.loadBPMNModelFromFile("/bpmn/TestApproverPlugin.bpmn");
 
 		approverPlugin = new ApproverPlugin();
 		try {
@@ -64,7 +65,8 @@ public class TestApproverPlugin {
 	public void testNewApproverList() throws PluginException, ModelException {
 
 		workitem.setEventID(10);
-		event = workflowEnvironment.getModelService().loadEvent(workitem); // .getModel().getEvent(100, 10);
+		BPMNModel model = this.workflowEnvironment.getModelManager().getModelByWorkitem(workitem);
+		event = workflowEnvironment.getModelManager().loadEvent(workitem, model);
 		// change result
 		event.replaceItemValue("txtActivityResult", "<item name='approvedby'>ProcessManager</item>");
 
@@ -97,7 +99,9 @@ public class TestApproverPlugin {
 	public void testDistinctApproverList() throws PluginException, ModelException {
 
 		workitem.setEventID(10);
-		event = workflowEnvironment.getModelService().loadEvent(workitem); // .getModel().getEvent(100, 10);
+
+		BPMNModel model = this.workflowEnvironment.getModelManager().getModelByWorkitem(workitem);
+		event = workflowEnvironment.getModelManager().loadEvent(workitem, model);
 
 		// change result
 		event.replaceItemValue("txtActivityResult", "<item name='approvedby'>ProcessManager</item>");
@@ -155,8 +159,8 @@ public class TestApproverPlugin {
 	public void testNewApproverListImmediateApproval() throws PluginException, ModelException {
 
 		workitem.setEventID(10);
-		event = workflowEnvironment.getModelService().loadEvent(workitem);
-
+		BPMNModel model = this.workflowEnvironment.getModelManager().getModelByWorkitem(workitem);
+		event = workflowEnvironment.getModelManager().loadEvent(workitem, model);
 		List<String> nameList = new ArrayList<String>();
 		nameList.add("anna");
 		nameList.add("manfred");
@@ -186,8 +190,8 @@ public class TestApproverPlugin {
 	public void testUpdateApproverListNewApprover() throws PluginException, ModelException {
 
 		workitem.setEventID(10);
-		event = workflowEnvironment.getModelService().loadEvent(workitem);
-
+		BPMNModel model = this.workflowEnvironment.getModelManager().getModelByWorkitem(workitem);
+		event = workflowEnvironment.getModelManager().loadEvent(workitem, model);
 		List<String> nameList = new ArrayList<String>();
 		nameList.add("anna");
 		nameList.add("manfred");
@@ -235,8 +239,8 @@ public class TestApproverPlugin {
 	public void testUpdateApproverListExistingApprover() throws PluginException, ModelException {
 
 		workitem.setEventID(10);
-		event = workflowEnvironment.getModelService().loadEvent(workitem);
-
+		BPMNModel model = this.workflowEnvironment.getModelManager().getModelByWorkitem(workitem);
+		event = workflowEnvironment.getModelManager().loadEvent(workitem, model);
 		List<String> nameList = new ArrayList<String>();
 		nameList.add("anna");
 		nameList.add("manfred");
@@ -281,8 +285,8 @@ public class TestApproverPlugin {
 	public void testCompleteApproval() throws PluginException, ModelException {
 
 		workitem.setEventID(10);
-		event = workflowEnvironment.getModelService().loadEvent(workitem);
-
+		BPMNModel model = this.workflowEnvironment.getModelManager().getModelByWorkitem(workitem);
+		event = workflowEnvironment.getModelManager().loadEvent(workitem, model);
 		List<String> nameList = new ArrayList<String>();
 		nameList.add("anna");
 		nameList.add("manfred");

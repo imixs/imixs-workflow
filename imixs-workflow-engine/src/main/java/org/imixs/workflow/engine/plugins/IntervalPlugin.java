@@ -92,7 +92,7 @@ public class IntervalPlugin extends AbstractPlugin {
         }
 
         // evaluate interval configuration
-        ItemCollection evalItemCollection = getWorkflowContextService().evalWorkflowResult(event, "item",
+        ItemCollection evalItemCollection = getWorkflowContext().evalWorkflowResult(event, "item",
                 adocumentContext,
                 true);
         // We run only if an item 'inteval' is defined in the current event (issue #841)

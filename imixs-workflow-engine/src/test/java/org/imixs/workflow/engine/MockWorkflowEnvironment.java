@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import org.imixs.workflow.Adapter;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ModelManager;
+import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -52,7 +53,7 @@ import jakarta.enterprise.inject.Instance;
 public class MockWorkflowEnvironment {
 	protected final static Logger logger = Logger.getLogger(MockWorkflowEnvironment.class.getName());
 
-	protected SessionContext ctx = null;
+	protected SessionContext sessionContext = null;
 	protected Map<String, ItemCollection> database = null;
 
 	@Mock
@@ -64,41 +65,10 @@ public class MockWorkflowEnvironment {
 	@InjectMocks
 	protected WorkflowService workflowService; // Injects mocks into WorkflowService
 
-	@InjectMocks
-	protected WorkflowContextService workflowContextService; // Injects mocks into WorkflowService
-
 	protected List<Adapter> adapterList = new ArrayList<>();
+	protected List<Plugin> pluginList = new ArrayList<>();
 
 	protected ModelManager modelManager = null;
-
-	public ModelManager getModelManager() {
-		return modelManager;
-	}
-
-	public ModelService getModelService() {
-		return modelService;
-	}
-
-	public DocumentService getDocumentService() {
-		return documentService;
-	}
-
-	public WorkflowService getWorkflowService() {
-		return workflowService;
-	}
-
-	public WorkflowContextService getWorkflowContextService() {
-		return workflowContextService;
-	}
-
-	/**
-	 * Can be used to register an Adapter before Setup
-	 * 
-	 * @param adapter
-	 */
-	public void registerAdapter(Adapter adapter) {
-		adapterList.add(adapter);
-	}
 
 	/**
 	 * The Setup method initializes a mock environment to test the imixs workflow
@@ -117,19 +87,14 @@ public class MockWorkflowEnvironment {
 		// Set up test environment
 		createTestDatabase();
 
-		ctx = Mockito.mock(SessionContext.class);
+		sessionContext = Mockito.mock(SessionContext.class);
 		setupSessionContext();
 
 		// Link modelService to workflowServiceMock
 		workflowService.modelService = modelService;
-		workflowService.workflowContextService = workflowContextService;
-		workflowContextService.modelService = modelService;
 
-		modelManager = new ModelManager(workflowContextService);
-
-		// workflowContext = new WorkflowContextMock();
-		workflowService.ctx = ctx; // workflowContext.getSessionContext();
-		workflowContextService.ctx = ctx;
+		modelManager = new ModelManager(workflowService);
+		workflowService.ctx = sessionContext;
 
 		// Mock Database Service with a in-memory database...
 		when(documentService.load(Mockito.anyString())).thenAnswer(new Answer<ItemCollection>() {
@@ -176,7 +141,7 @@ public class MockWorkflowEnvironment {
 			return null;
 		}).when(mockTextEvents).fire(Mockito.any(TextEvent.class));
 		// Inject the mocked Event<TextEvent> into the workflowService
-		injectMockIntoField(workflowContextService, "textEvents", mockTextEvents);
+		injectMockIntoField(workflowService, "textEvents", mockTextEvents);
 
 		/*
 		 * Mock Instance<Adapter> for adapters field
@@ -189,6 +154,42 @@ public class MockWorkflowEnvironment {
 		// Inject the mocked Instance<Adapter> into the workflowService
 		injectMockIntoField(workflowService, "adapters", mockAdapters);
 
+	}
+
+	public ModelManager getModelManager() {
+		return modelManager;
+	}
+
+	public ModelService getModelService() {
+		return modelService;
+	}
+
+	public DocumentService getDocumentService() {
+		return documentService;
+	}
+
+	public WorkflowService getWorkflowService() {
+		return workflowService;
+	}
+
+	/**
+	 * Can be used to register an Adapter before Setup
+	 * 
+	 * @param adapter
+	 */
+	public void registerAdapter(Adapter adapter) {
+		adapterList.add(adapter);
+	}
+
+	/**
+	 * Can be used to register an plugin before Setup
+	 * 
+	 * @param adapter
+	 * @throws PluginException
+	 */
+	public void registerPlugin(Plugin plugin) throws PluginException {
+		pluginList.add(plugin);
+		plugin.init(workflowService);
 	}
 
 	/**
@@ -264,26 +265,7 @@ public class MockWorkflowEnvironment {
 	private void setupSessionContext() {
 		Principal principal = Mockito.mock(Principal.class);
 		when(principal.getName()).thenReturn("manfred");
-		when(ctx.getCallerPrincipal()).thenReturn(principal);
+		when(sessionContext.getCallerPrincipal()).thenReturn(principal);
 	}
 
-	// /**
-	// * Helper method to inject a mock into a private/protected field using
-	// * reflection.
-	// *
-	// * @param targetObject The object into which the field is to be injected.
-	// * @param fieldName The name of the field to inject.
-	// * @param value The mock or object to inject into the field.
-	// */
-	// private void injectMockIntoField(Object targetObject, String fieldName,
-	// Object value) {
-	// try {
-	// Field field = targetObject.getClass().getDeclaredField(fieldName);
-	// field.setAccessible(true);
-	// field.set(targetObject, value);
-	// } catch (NoSuchFieldException | IllegalAccessException e) {
-	// throw new RuntimeException("Failed to inject mock into field: " + fieldName,
-	// e);
-	// }
-	// }
 }

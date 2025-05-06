@@ -78,7 +78,7 @@ public class EventLogPlugin extends AbstractPlugin {
 	public ItemCollection run(ItemCollection documentContext, ItemCollection event) throws PluginException {
 
 		// parse for eventlog definition....
-		ItemCollection eventLogConfig = this.getWorkflowContextService().evalWorkflowResult(event, "eventlog",
+		ItemCollection eventLogConfig = this.getWorkflowContext().evalWorkflowResult(event, "eventlog",
 				documentContext,
 				true);
 		if (eventLogConfig == null || eventLogConfig.getItemNames().size() == 0) {

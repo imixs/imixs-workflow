@@ -56,7 +56,7 @@ public class TestApproverResetPlugin {
 		workitem.replaceItemValue("ProcessManager", nameList);
 
 		// test with eddy
-		when(workflowEngine.getWorkflowContextService().getUserName()).thenReturn("eddy");
+		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("eddy");
 		// 100.10
 		workitem = workflowEngine.getWorkflowService().processWorkItem(workitem);
 		assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
@@ -69,14 +69,14 @@ public class TestApproverResetPlugin {
 		assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// switch to anna
-		when(workflowEngine.getWorkflowContextService().getUserName()).thenReturn("anna");
+		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("anna");
 		workitem.event(20);
 		workitem = workflowEngine.getWorkflowService().processWorkItem(workitem);
 		assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
 		assertEquals(2, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// switch to manfred
-		when(workflowEngine.getWorkflowContextService().getUserName()).thenReturn("manfred");
+		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("manfred");
 		workitem.event(20);
 		workitem = workflowEngine.getWorkflowService().processWorkItem(workitem);
 		assertEquals(0, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
@@ -105,7 +105,7 @@ public class TestApproverResetPlugin {
 		workitem.replaceItemValue("ProcessManager", nameList);
 
 		// test with eddy
-		when(workflowEngine.getWorkflowContextService().getUserName()).thenReturn("eddy");
+		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("eddy");
 		// 100.10
 		workitem = workflowEngine.getWorkflowService().processWorkItem(workitem);
 		assertEquals(3, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
@@ -125,14 +125,14 @@ public class TestApproverResetPlugin {
 		assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// switch to anna
-		when(workflowEngine.getWorkflowContextService().getUserName()).thenReturn("anna");
+		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("anna");
 		workitem.event(20);
 		workitem = workflowEngine.getWorkflowService().processWorkItem(workitem);
 		assertEquals(1, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVERS).size());
 		assertEquals(2, workitem.getItemValue("ProcessManager" + ApproverPlugin.APPROVEDBY).size());
 
 		// test manfred reject...
-		when(workflowEngine.getWorkflowContextService().getUserName()).thenReturn("manfred");
+		when(workflowEngine.getWorkflowService().getUserName()).thenReturn("manfred");
 		workitem.event(30);
 		workitem = workflowEngine.getWorkflowService().processWorkItem(workitem);
 		assertNotNull(workitem);

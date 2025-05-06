@@ -49,7 +49,7 @@ public class TestOwnerPluginProcessEntity {
 
 		workflowEnvironment = new MockWorkflowEnvironment();
 		workflowEnvironment.setUp();
-		workflowEnvironment.loadBPMNModel("/bpmn/TestOwnerAndACL.bpmn");
+		workflowEnvironment.loadBPMNModelFromFile("/bpmn/TestOwnerAndACL.bpmn");
 
 		// prepare data
 		workitem = new ItemCollection().model("1.0.0").task(100)

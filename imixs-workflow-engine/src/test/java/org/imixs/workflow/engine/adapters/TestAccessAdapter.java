@@ -1,6 +1,7 @@
 package org.imixs.workflow.engine.adapters;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -11,6 +12,7 @@ import java.util.logging.Logger;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.MockWorkflowEnvironment;
 import org.imixs.workflow.engine.WorkflowService;
+import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -35,6 +37,9 @@ public class TestAccessAdapter {
 	@InjectMocks
 	protected AccessAdapter accessAdapter;
 
+	@InjectMocks
+	protected OwnerPlugin ownerPlugin;
+
 	protected ItemCollection workitem;
 	protected ItemCollection event;
 	protected MockWorkflowEnvironment workflowEnvironment;
@@ -46,14 +51,18 @@ public class TestAccessAdapter {
 		MockitoAnnotations.openMocks(this);
 		workflowEnvironment = new MockWorkflowEnvironment();
 
+		// Setup Environment
+		workflowEnvironment.setUp();
+		workflowEnvironment.registerPlugin(ownerPlugin);
+
 		// register AccessAdapter Mock
 		workflowEnvironment.registerAdapter(accessAdapter);
 
-		// Setup Environment
-		workflowEnvironment.setUp();
+		assertNotNull(ownerPlugin.getWorkflowService());
+
 		workflowEnvironment.loadBPMNModelFromFile("/bpmn/TestAccessPlugin.bpmn");
 		model = workflowEnvironment.getModelManager().getModel("1.0.0");
-		accessAdapter.workflowContextService = workflowEnvironment.getWorkflowContextService();
+		accessAdapter.workflowService = workflowEnvironment.getWorkflowService();
 
 		// prepare data
 		workitem = new ItemCollection().model("1.0.0").task(100);
@@ -184,6 +193,7 @@ public class TestAccessAdapter {
 	@SuppressWarnings({ "rawtypes" })
 	@Test
 	public void testCondition() throws ModelException {
+		assertNotNull(ownerPlugin.getWorkflowService());
 		workitem.setTaskID(200);
 		workitem.setEventID(20);
 		workitem.replaceItemValue("_budget", 50);

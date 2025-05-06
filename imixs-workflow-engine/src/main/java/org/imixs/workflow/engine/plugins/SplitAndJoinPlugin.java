@@ -107,10 +107,10 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
         if (isDeprecatedConfiguration(workitem, event)) {
             logger.warning(
                     "SplitAndJoinPlugin is using deprecated configuration! Please use <split type='.,.'> instead of <item name='...'> ");
-            evalItemCollection = getWorkflowContextService().evalWorkflowResult(event, "item", workitem,
+            evalItemCollection = getWorkflowContext().evalWorkflowResult(event, "item", workitem,
                     false);
         } else {
-            evalItemCollection = getWorkflowContextService().evalWorkflowResult(event, "split", workitem,
+            evalItemCollection = getWorkflowContext().evalWorkflowResult(event, "split", workitem,
                     false);
         }
 
@@ -185,7 +185,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
      */
     private boolean isDeprecatedConfiguration(ItemCollection workitem, ItemCollection event) throws PluginException {
 
-        ItemCollection evalItemCollection = getWorkflowContextService().evalWorkflowResult(event, "item", workitem,
+        ItemCollection evalItemCollection = getWorkflowContext().evalWorkflowResult(event, "item", workitem,
                 false);
 
         if (evalItemCollection != null
@@ -297,7 +297,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
                 if (processData.hasItem("action")) {
                     String workflowResult = processData.getItemValueString("action");
                     if (!workflowResult.isEmpty()) {
-                        workflowResult = getWorkflowContextService().adaptText(workflowResult, workitemSubProcess);
+                        workflowResult = getWorkflowService().adaptText(workflowResult, workitemSubProcess);
                         originWorkitem.replaceItemValue("action", workflowResult);
                     }
 
@@ -402,7 +402,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
                         if (processData.hasItem("action")) {
                             String workflowResult = processData.getItemValueString("action");
                             if (!workflowResult.isEmpty()) {
-                                workflowResult = getWorkflowContextService().adaptText(workflowResult,
+                                workflowResult = getWorkflowService().adaptText(workflowResult,
                                         workitemSubProcess);
                                 originWorkitem.replaceItemValue("action", workflowResult);
                             }
@@ -416,7 +416,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
                     if (processData.hasItem("action")) {
                         String workflowResult = processData.getItemValueString("action");
                         if (!workflowResult.isEmpty()) {
-                            workflowResult = getWorkflowContextService().adaptText(workflowResult, workitemSubProcess);
+                            workflowResult = getWorkflowService().adaptText(workflowResult, workitemSubProcess);
                             originWorkitem.replaceItemValue("action", workflowResult);
                         }
 
@@ -551,7 +551,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
                     if (processData.hasItem("action")) {
                         String workflowResult = processData.getItemValueString("action");
                         if (!workflowResult.isEmpty()) {
-                            workflowResult = getWorkflowContextService().adaptText(workflowResult, originWorkitem);
+                            workflowResult = getWorkflowService().adaptText(workflowResult, originWorkitem);
                             subprocessWorkitem.replaceItemValue("action", workflowResult);
                         }
 

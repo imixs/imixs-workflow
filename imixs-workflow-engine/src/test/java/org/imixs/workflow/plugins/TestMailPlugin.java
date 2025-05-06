@@ -35,7 +35,7 @@ public class TestMailPlugin {
 
 		workflowEnvironment = new MockWorkflowEnvironment();
 		workflowEnvironment.setUp();
-		workflowEnvironment.loadBPMNModel("/bpmn/TestOwnerPlugin.bpmn");
+		workflowEnvironment.loadBPMNModelFromFile("/bpmn/TestOwnerPlugin.bpmn");
 
 		mailPlugin = new MailPlugin();
 		try {

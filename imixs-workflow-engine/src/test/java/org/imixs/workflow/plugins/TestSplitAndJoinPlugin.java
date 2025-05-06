@@ -40,11 +40,17 @@ public class TestSplitAndJoinPlugin {
 	ItemCollection workitem;
 	protected MockWorkflowEnvironment workflowEnvironment;
 
+	// @InjectMocks
+	protected SplitAndJoinPlugin splitAndJoinPlugin;
+
 	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
 		workflowEnvironment = new MockWorkflowEnvironment();
 		workflowEnvironment.setUp();
 		workflowEnvironment.loadBPMNModelFromFile("/bpmn/TestSplitAndJoinPlugin.bpmn");
+
+		splitAndJoinPlugin = new SplitAndJoinPlugin();
+		workflowEnvironment.registerPlugin(splitAndJoinPlugin);
 
 		// prepare test workitem
 		workitem = new ItemCollection();

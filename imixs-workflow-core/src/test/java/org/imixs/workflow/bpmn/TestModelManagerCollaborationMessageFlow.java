@@ -15,6 +15,7 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
+import org.imixs.workflow.exceptions.PluginException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
@@ -37,8 +38,12 @@ public class TestModelManagerCollaborationMessageFlow {
 
 	@BeforeEach
 	public void setup() {
-		workflowContext = new MockWorkflowContext();
-		modelManager = new ModelManager(workflowContext);
+		try {
+			workflowContext = new MockWorkflowContext();
+			modelManager = new ModelManager(workflowContext);
+		} catch (PluginException e) {
+			fail(e.getMessage());
+		}
 	}
 
 	/**

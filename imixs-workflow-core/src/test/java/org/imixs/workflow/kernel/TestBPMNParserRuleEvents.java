@@ -14,7 +14,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.MockWorkflowContext;
-import org.imixs.workflow.MockWorkflowEngine;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,14 +33,13 @@ import org.xml.sax.SAXException;
  */
 public class TestBPMNParserRuleEvents {
 
-	MockWorkflowContext workflowContext;
-	MockWorkflowEngine workflowEngine;
+	MockWorkflowContext workflowEngine;
 
 	@BeforeEach
 	public void setup() {
 		try {
-			workflowContext = new MockWorkflowContext();
-			workflowEngine = new MockWorkflowEngine(workflowContext);
+
+			workflowEngine = new MockWorkflowContext();
 		} catch (PluginException e) {
 			fail(e.getMessage());
 		}
@@ -54,8 +52,8 @@ public class TestBPMNParserRuleEvents {
 	public void testModelElements() {
 		try {
 			// load default model
-			workflowContext.loadBPMNModelFromFile("/bpmn/event_rules.bpmn");
-			BPMNModel model = workflowContext.fetchModel("1.0.0");
+			workflowEngine.loadBPMNModelFromFile("/bpmn/event_rules.bpmn");
+			BPMNModel model = workflowEngine.fetchModel("1.0.0");
 
 			// Test Environment
 			ItemCollection workitem = new ItemCollection();
@@ -105,8 +103,8 @@ public class TestBPMNParserRuleEvents {
 
 		// load test models
 		try {
-			workflowContext.loadBPMNModelFromFile("/bpmn/event_rules.bpmn");
-			BPMNModel model = workflowContext.fetchModel("1.0.0");
+			workflowEngine.loadBPMNModelFromFile("/bpmn/event_rules.bpmn");
+			BPMNModel model = workflowEngine.fetchModel("1.0.0");
 			assertNotNull(model);
 
 			// Test Environment
@@ -136,8 +134,8 @@ public class TestBPMNParserRuleEvents {
 
 		// load test models
 		try {
-			workflowContext.loadBPMNModelFromFile("/bpmn/event_rules.bpmn");
-			BPMNModel model = workflowContext.fetchModel("1.0.0");
+			workflowEngine.loadBPMNModelFromFile("/bpmn/event_rules.bpmn");
+			BPMNModel model = workflowEngine.fetchModel("1.0.0");
 			assertNotNull(model);
 
 			ItemCollection workItem = new ItemCollection();

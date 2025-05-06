@@ -13,16 +13,20 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 import org.imixs.workflow.bpmn.BPMNUtil;
+import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
+import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.exceptions.BPMNModelException;
 import org.openbpmn.bpmn.util.BPMNModelFactory;
 
 /**
- * This Mock implements the interface {@link WorkflowContext} and can be used
- * for junit tests.
+ * The MockWorkflowContext is a mock to simulate the behavior of a Workflow
+ * Engine. It can be used for junit tests.
  * 
+ * The Mock also registers a Test Plugin that simply counts the runs in a
+ * processing life cycle.
  */
 public class MockWorkflowContext implements WorkflowContext {
 
@@ -30,13 +34,24 @@ public class MockWorkflowContext implements WorkflowContext {
 
     private final Map<String, BPMNModel> modelStore = new ConcurrentHashMap<>();
 
+    private WorkflowKernel workflowKernel;
+
     /**
      * Constructor creates a WorkflowKernel and registers
      * a MockPlugin
      * 
      * @throws PluginException
      */
-    public MockWorkflowContext() {
+    public MockWorkflowContext() throws PluginException {
+        workflowKernel = new WorkflowKernel(this);
+
+        // Register a Test Plugin
+        MockPlugin mokPlugin = new MockPlugin();
+        workflowKernel.registerPlugin(mokPlugin);
+    }
+
+    public WorkflowKernel getWorkflowKernel() {
+        return workflowKernel;
     }
 
     /**
@@ -186,4 +201,37 @@ public class MockWorkflowContext implements WorkflowContext {
                 "no matching model version found for workflow group: '" + group + "'");
 
     }
+
+    @Override
+    public ItemCollection getWorkItem(String uniqueid) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'getWorkItem'");
+    }
+
+    @Override
+    public ItemCollection processWorkItem(ItemCollection workitem)
+            throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
+        return workflowKernel.process(workitem);
+    }
+
+    @Override
+    public ItemCollection evalNextTask(ItemCollection workitem) throws PluginException, ModelException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'evalNextTask'");
+    }
+
+    @Override
+    public ItemCollection evalWorkflowResult(ItemCollection event, String xmlTag, ItemCollection documentContext,
+            boolean resolveItemValues) throws PluginException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'evalWorkflowResult'");
+    }
+
+    @Override
+    public ItemCollection evalWorkflowResult(ItemCollection event, String tag, ItemCollection documentContext)
+            throws PluginException {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'evalWorkflowResult'");
+    }
+
 }

@@ -37,7 +37,6 @@ import java.util.logging.Logger;
 
 import org.imixs.workflow.GenericAdapter;
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.WorkflowContextService;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
@@ -73,7 +72,7 @@ public class AccessAdapter implements GenericAdapter, Serializable {
     private static final Logger logger = Logger.getLogger(AccessAdapter.class.getName());
 
     // See CDI Constructor
-    protected WorkflowContextService workflowContextService;
+    protected WorkflowService workflowService;
 
     /**
      * Default Constructor
@@ -85,12 +84,12 @@ public class AccessAdapter implements GenericAdapter, Serializable {
     /**
      * CDI Constructor to inject WorkflowService
      * 
-     * @param workflowContextService
+     * @param workflowService
      */
     @Inject
-    public AccessAdapter(WorkflowContextService workflowContextService) {
+    public AccessAdapter(WorkflowService workflowService) {
         super();
-        this.workflowContextService = workflowContextService;
+        this.workflowService = workflowService;
     }
 
     /**
@@ -104,7 +103,7 @@ public class AccessAdapter implements GenericAdapter, Serializable {
         // get next process entity
         try {
             // nextTask = workflowService.evalNextTask(document, event);
-            nextTask = workflowContextService.evalNextTask(document);
+            nextTask = workflowService.evalNextTask(document);
             // in case the event is connected to a followup activity the
             // nextProcess can be null!
 
@@ -117,8 +116,9 @@ public class AccessAdapter implements GenericAdapter, Serializable {
         return null;
     }
 
-    public void setWorkflowContextService(WorkflowContextService workflowContextService) {
-        this.workflowContextService = workflowContextService;
+    public void setWorkflowService(WorkflowService workflowService) {
+        this.workflowService = workflowService;
+
     }
 
     /**
@@ -131,7 +131,7 @@ public class AccessAdapter implements GenericAdapter, Serializable {
     public ItemCollection updateParticipants(ItemCollection workitem) {
 
         List<String> participants = workitem.getItemValue(WorkflowService.PARTICIPANTS);
-        String user = workflowContextService.getUserName();
+        String user = workflowService.getUserName();
         if (!participants.contains(user)) {
             participants.add(user);
             workitem.replaceItemValue(WorkflowService.PARTICIPANTS, participants);
@@ -336,7 +336,7 @@ public class AccessAdapter implements GenericAdapter, Serializable {
                 if (valueList.indexOf(o) == -1) {
                     if (o instanceof String) {
                         // addapt textList
-                        List<String> adaptedRoles = workflowContextService.adaptTextList((String) o, documentContext);
+                        List<String> adaptedRoles = workflowService.adaptTextList((String) o, documentContext);
                         valueList.addAll(adaptedRoles);// .add(getWorkflowService().adaptText((String)o,
                                                        // documentContext));
                     } else {

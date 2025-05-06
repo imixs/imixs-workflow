@@ -10,6 +10,7 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
+import org.imixs.workflow.exceptions.PluginException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
@@ -36,7 +37,7 @@ public class TestModelManagerMultipleTaskTypes {
 			model = workflowContext.fetchModel("1.0.0");
 			assertNotNull(model);
 
-		} catch (ModelException e) {
+		} catch (ModelException | PluginException e) {
 			fail(e.getMessage());
 		}
 	}

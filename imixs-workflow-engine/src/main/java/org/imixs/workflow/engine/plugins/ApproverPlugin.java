@@ -95,7 +95,7 @@ public class ApproverPlugin extends AbstractPlugin {
         boolean refresh = false;
         boolean reset = false;
 
-        ItemCollection evalItemCollection = this.getWorkflowContextService().evalWorkflowResult(event, "item",
+        ItemCollection evalItemCollection = this.getWorkflowContext().evalWorkflowResult(event, "item",
                 workitem);
 
         // test for items with name 'approvedby'
@@ -147,7 +147,7 @@ public class ApproverPlugin extends AbstractPlugin {
                     }
 
                     // 2.) add current approver to approvedBy.....
-                    String currentAppover = getWorkflowContextService().getUserName();
+                    String currentAppover = getWorkflowService().getUserName();
                     List<String> listApprovedBy = workitem.getItemValue(aGroup + APPROVEDBY);
                     List<String> listApprovers = workitem.getItemValue(aGroup + APPROVERS);
                     if (debug) {

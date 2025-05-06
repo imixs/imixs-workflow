@@ -97,7 +97,7 @@ public class ReportService {
     DocumentService documentService;
 
     @Inject
-    WorkflowContextService workflowContextService;
+    WorkflowService workflowService;
 
     /**
      * Returns a Report Entity by its identifier. The identifier can either be the
@@ -690,7 +690,7 @@ public class ReportService {
             try {
                 logger.log(Level.FINEST, "......converter = {0}", converter);
                 // adapt the value list...
-                adaptedValueList = workflowContextService.adaptTextList(converter, itemcol);
+                adaptedValueList = workflowService.adaptTextList(converter, itemcol);
             } catch (PluginException e) {
                 logger.log(Level.WARNING, "Unable to adapt text converter: {0}", converter);
             }
