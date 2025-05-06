@@ -16,6 +16,7 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowKernel;
+import org.imixs.workflow.bpmn.BPMNUtil;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.mockito.InjectMocks;
@@ -200,7 +201,7 @@ public class MockWorkflowEnvironment {
 	 * @throws ModelException
 	 */
 	public BPMNModel fetchModel(String version) throws ModelException {
-		return modelService.getModel(version);
+		return modelService.getBPMNModel(version);
 	}
 
 	/**
@@ -209,9 +210,10 @@ public class MockWorkflowEnvironment {
 	 * @param modelPath
 	 */
 	public void loadBPMNModelFromFile(String modelPath) {
+
 		try {
 			BPMNModel model = BPMNModelFactory.read(modelPath);
-			modelService.addModel(model);
+			modelService.addModelData(BPMNUtil.getVersion(model), model, null);
 
 		} catch (BPMNModelException e) {
 			e.printStackTrace();

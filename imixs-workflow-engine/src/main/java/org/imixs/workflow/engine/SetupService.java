@@ -215,7 +215,7 @@ public class SetupService {
                     BPMNModel model = BPMNModelFactory.read(bpmnInputStream);
                     String version = BPMNUtil.getVersion(model);
                     // test if model is a deprecated duplicate entry!
-                    if (modelService.getModelStore().containsKey(version)) {
+                    if (modelService.hasModelVersion(version)) {
                         logger.warning("│   ├── duplicated Model Entity found (" + modelEntity.getUniqueID()
                                 + ") for model version '" + version
                                 + "' - entity will be removed!");
@@ -225,8 +225,8 @@ public class SetupService {
                                 BPMNUtil.getVersion(model) });
                         // Add the model into the ModelManger and put the model into the ModelService
                         // model store
-                        modelService.addModel(model);
-                        modelService.getModelEntityStore().put(version, modelEntity);
+                        modelService.addModelData(version, model, modelEntity);
+                        // modelService.getModelEntityStore().put(version, modelEntity);
                     }
                 } catch (BPMNModelException e) {
                     logger.log(Level.WARNING, "Failed to load model ''{0}'' : {1}",
@@ -529,7 +529,7 @@ public class SetupService {
                     logger.log(Level.FINE,
                             "importXmlEntityData - removing existing configuration for model version ''{0}''",
                             aModelVersion);
-                    modelService.removeModel(aModelVersion);
+                    modelService.removeModelData(aModelVersion);
                 }
                 // save new entities into database and update modelversion.....
                 for (int i = 0; i < ecol.getDocument().length; i++) {

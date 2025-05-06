@@ -140,7 +140,7 @@ public class TestOwnerPlugin {
 	@Test
 	public void staticUserGroupMappingTest() throws ModelException {
 
-		BPMNModel model = workflowEnvironment.getModelService().getModel("1.0.0");
+		BPMNModel model = workflowEnvironment.getModelService().getBPMNModel("1.0.0");
 		event = workflowEnvironment.getModelManager().findEventByID(model, 100, 10);
 		event.replaceItemValue("keyupdateAcl", true);
 		event.replaceItemValue("keyOwnershipFields", "[sam, tom,  anna ,]");
@@ -163,7 +163,7 @@ public class TestOwnerPlugin {
 	@Test
 	public void testNoUpdate() throws ModelException {
 
-		BPMNModel model = workflowEnvironment.getModelService().getModel("1.0.0");
+		BPMNModel model = workflowEnvironment.getModelService().getBPMNModel("1.0.0");
 		event = workflowEnvironment.getModelManager().findEventByID(model, 100, 20);
 
 		try {

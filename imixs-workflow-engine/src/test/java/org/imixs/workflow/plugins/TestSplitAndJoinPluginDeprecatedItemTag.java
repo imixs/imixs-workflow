@@ -46,7 +46,7 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 		workflowEnvironment = new MockWorkflowEnvironment();
 		workflowEnvironment.setUp();
 		workflowEnvironment.loadBPMNModelFromFile("/bpmn/TestSplitAndJoinPlugin.bpmn");
-		model = workflowEnvironment.getModelService().getModel("1.0.0");
+		model = workflowEnvironment.getModelService().getBPMNModel("1.0.0");
 		// mock abstract plugin class for the plitAndJoinPlugin
 		splitAndJoinPlugin = Mockito.mock(SplitAndJoinPlugin.class, Mockito.CALLS_REAL_METHODS);
 		when(splitAndJoinPlugin.getWorkflowService()).thenReturn(workflowEnvironment.getWorkflowService());

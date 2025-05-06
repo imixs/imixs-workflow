@@ -28,7 +28,9 @@
 
 package org.imixs.workflow.engine;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -40,7 +42,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
@@ -50,6 +56,8 @@ import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.elements.BPMNProcess;
+import org.openbpmn.bpmn.exceptions.BPMNModelException;
+import org.openbpmn.bpmn.util.BPMNModelFactory;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
@@ -60,9 +68,11 @@ import jakarta.ejb.Singleton;
 import jakarta.inject.Inject;
 
 /**
- * The ModelService provides methods to load and save BPMNModels form the
- * Database. BPMModel instances are not Thread save. For this reason the service
- * implements a Pool to manage BPMNModel in a thread save way.
+ * The ModelService provides methods to load and save BPMNModel data form the
+ * Database and methods to find model versions based on meta information.
+ * <p>
+ * Note: BPMModel instances are not Thread save. For this reason the service
+ * the method getBPMNModel returns an exclusive version of a BPMNModel object.
  * 
  * 
  * @see org.imixs.workflow.ModelManager
@@ -82,9 +92,7 @@ public class ModelService {
     private static final Logger logger = Logger.getLogger(ModelService.class.getName());
 
     // BPMNModel store
-    private final ConcurrentHashMap<String, BPMNModel> modelStore = new ConcurrentHashMap<>();
-    // Model Entity Store
-    private final ConcurrentHashMap<String, ItemCollection> modelEntityStore = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, BPMNModelData> modelDataStore = new ConcurrentHashMap<>();
 
     @Inject
     protected DocumentService documentService;
@@ -96,10 +104,6 @@ public class ModelService {
         super();
     }
 
-    public Map<String, BPMNModel> getModelStore() {
-        return modelStore;
-    }
-
     /**
      * Lazy loading of ModelManager
      */
@@ -109,25 +113,83 @@ public class ModelService {
     }
 
     /**
+     * Adds a BPMNModel with its metadata into the local model store.
+     * <p>
+     * The method pre initialize all processes within the BPMNModel to
+     * avoid the lazing loading.
+     * <p>
+     * The Method does not store the data in the database. To store new model data
+     * call {@code saveModel}
+     * 
+     */
+    public void addModelData(String version, BPMNModel model, ItemCollection metadata) {
+        // pre open all processes
+        try {
+            Set<BPMNProcess> processes = model.getProcesses();
+            for (BPMNProcess process : processes) {
+                process.init();
+            }
+        } catch (BPMNModelException e) {
+            logger.warning("Failed to open process: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        // if metaData not provided create one on the fly...
+        if (metadata == null) {
+            metadata = new ItemCollection();
+            org.w3c.dom.Document document = model.getDoc();
+            byte[] rawData = null;
+            try {
+                // Convert Document to byte[]
+                TransformerFactory transformerFactory = TransformerFactory.newInstance();
+                Transformer transformer = transformerFactory.newTransformer();
+                DOMSource source = new DOMSource(document);
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                StreamResult result = new StreamResult(outputStream);
+                transformer.transform(source, result);
+                rawData = outputStream.toByteArray();
+            } catch (Exception e) {
+                logger.warning("Failed to convert Document to byte[]: " + e.getMessage());
+                e.printStackTrace();
+            }
+
+            // convert document into a byte array...
+            metadata.addFileData(new FileData("model.bpmn", rawData, null, null));
+
+        }
+
+        modelDataStore.put(version, new BPMNModelData(version, model, metadata));
+
+    }
+
+    /**
      * returns a sorted String list of all stored model versions
      * 
      * @return
      */
     public List<String> getVersions() {
-        Set<String> versions = modelStore.keySet();
-        // convert to List
-        List<String> result = new ArrayList<>();
-        result.addAll(versions);
-        Collections.sort(result, Collections.reverseOrder());
-        return result;
+        List<String> versions = new ArrayList<>(modelDataStore.keySet());
+        Collections.sort(versions);
+        return versions;
     }
 
     /**
-     * Adds a new model into the local model store
+     * This method loads a Model metadata form the internal model store.
+     * <p>
+     * To access a BPMNModel object directly use the method
+     * {@code getModel(version)}
+     * 
+     * @return the ItemCollection with the model meta data
      */
-    public void addModel(BPMNModel model) {
-        String version = BPMNUtil.getVersion(model);
-        modelStore.put(version, model);
+    public ItemCollection loadModelMetaData(String version) {
+        BPMNModelData modelData = modelDataStore.get(version);
+        ItemCollection result = modelData.metadata;
+        if (result == null) {
+            logger.severe("invalid model version!");
+            throw new InvalidAccessException(InvalidAccessException.INVALID_ID,
+                    "findModelEntity - invalid model version: " + version);
+        }
+        return result;
     }
 
     /**
@@ -137,39 +199,38 @@ public class ModelService {
      * @param version
      * @return
      */
-    public BPMNModel getModel(String version) {
-        logger.warning("Not thread save! - missing implementation!");
-        return modelStore.get(version);
+    public BPMNModel getBPMNModel(String version) {
+        // logger.warning("Not thread save! - missing implementation!");
+        BPMNModelData modelData = modelDataStore.get(version);
+
+        if (modelData == null) {
+            throw new InvalidAccessException(InvalidAccessException.INVALID_ID,
+                    "Invalid model version: " + version);
+        }
+        if (modelData.metadata.getFileData().size() == 0) {
+            throw new InvalidAccessException(InvalidAccessException.INVALID_ID,
+                    "Missing BPMN raw data for model version: " + version);
+        }
+        // get raw data from metadata
+        FileData fileData = modelData.metadata.getFileData().get(0);
+        InputStream inputStream = new ByteArrayInputStream(fileData.getContent());
+        BPMNModel modelClone;
+        try {
+            // create a new instance of BPMNModel
+            modelClone = BPMNModelFactory.read(inputStream);
+        } catch (BPMNModelException e) {
+            throw new InvalidAccessException(InvalidAccessException.INVALID_ID,
+                    "Faild to load BPMN raw data for model version: " + version, e);
+        }
+        return modelClone;
+
     }
 
     /**
      * Removes a BPMNModel form the local model store
      */
-    public void removeModel(String version) {
-        // Test if version exists
-        if (modelStore.containsKey(version)) {
-            modelStore.remove(version);
-        }
-    }
-
-    /**
-     * This method returns a sorted list of all model versions over all models.
-     * <p>
-     * 
-     * @param group
-     * @return
-     */
-    public List<String> getAllModelVersions() {
-        List<String> result = new ArrayList<String>();
-        for (Map.Entry<String, BPMNModel> entry : modelStore.entrySet()) {
-            String version = entry.getKey();
-            if (!result.contains(version)) {
-                result.add(version);
-            }
-        }
-        // sort result
-        Collections.sort(result);
-        return result;
+    public void removeModelData(String version) {
+        modelDataStore.remove(version);
     }
 
     /**
@@ -180,7 +241,7 @@ public class ModelService {
      * @return
      */
     public boolean hasModelVersion(String version) {
-        return modelStore.containsKey(version);
+        return modelDataStore.containsKey(version);
 
     }
 
@@ -194,8 +255,9 @@ public class ModelService {
      */
     public List<String> findAllWorkflowGroups() {
         List<String> result = new ArrayList<String>();
-        for (Map.Entry<String, BPMNModel> entry : modelStore.entrySet()) {
-            BPMNModel model = entry.getValue();
+        for (Map.Entry<String, BPMNModelData> entry : modelDataStore.entrySet()) {
+            BPMNModelData modelData = entry.getValue();
+            BPMNModel model = modelData.bpmnModel;
             Set<BPMNProcess> processList = model.getProcesses();
             for (BPMNProcess _process : processList) {
                 String name = _process.getName();
@@ -228,8 +290,9 @@ public class ModelService {
             logger.log(Level.FINEST, "......searching model versions for workflowgroup ''{0}''...", group);
         }
         // try to find matching model version by group
-        for (Map.Entry<String, BPMNModel> entry : modelStore.entrySet()) {
-            BPMNModel model = entry.getValue();
+        for (Map.Entry<String, BPMNModelData> entry : modelDataStore.entrySet()) {
+            BPMNModelData modelData = entry.getValue();
+            BPMNModel model = modelData.bpmnModel;
             Set<BPMNProcess> processList = model.getProcesses();
             for (BPMNProcess _process : processList) {
                 String name = _process.getName();
@@ -278,10 +341,9 @@ public class ModelService {
         if (model != null) {
             String version = BPMNUtil.getVersion(model);
             // first delete existing model entities
-            this.removeModel(version);
+            this.removeModelData(version);
             // store model into internal cache
 
-            this.addModel(model);
             ItemCollection modelItemCol = new ItemCollection();
             modelItemCol.replaceItemValue("type", "model");
             modelItemCol.replaceItemValue("$snapshot.history", 1);
@@ -309,52 +371,25 @@ public class ModelService {
                 // store model in database
                 modelItemCol.replaceItemValue(DocumentService.NOINDEX, true);
                 documentService.save(modelItemCol);
-                modelEntityStore.put(version, modelItemCol);
             } catch (TransformerException e) {
                 throw new ModelException(ModelException.INVALID_MODEL, "Failed to write model: " + e.getMessage());
             }
+            // store model locally
+            this.addModelData(version, model, modelItemCol);
         }
-    }
-
-    /**
-     * This method puts a model entity into the internal store.
-     * 
-     * @param modelEntity
-     */
-    public Map<String, ItemCollection> getModelEntityStore() {
-        return modelEntityStore;
-    }
-
-    /**
-     * This method loads a Model entity with its meta data form the internal model
-     * store.
-     * <p>
-     * To access a BPMNModel object directly use the method
-     * {@code getModel(version)}
-     * 
-     * @return the ItemCollection with the model meta data
-     */
-    public ItemCollection loadModelEntity(String version) {
-        ItemCollection result = modelEntityStore.get(version);
-        if (result == null) {
-            logger.severe("invalid model version!");
-            throw new InvalidAccessException(InvalidAccessException.INVALID_ID,
-                    "findModelEntity - invalid model version: " + version);
-        }
-        return result;
     }
 
     /**
      * This method deletes an existing Model from the database and removes the model
-     * form the internal ModelStore.
+     * data form the internal ModelStore.
      * <p>
      * A model entity is identified by the type='model' and its name (model
      * version). After the model entity was deleted form the database, the method
      * will also remove the model from the ModelManager
      * 
-     * @param model
+     * @param bpmnModel
      */
-    public void deleteModel(String version) {
+    public void deleteModelData(String version) {
         if (version != null && !version.isEmpty()) {
             boolean debug = logger.isLoggable(Level.FINE);
             if (debug) {
@@ -368,8 +403,7 @@ public class ModelService {
                     documentService.remove(modelEntity);
                 }
             }
-            this.removeModel(version);
-            modelEntityStore.remove(version);
+            this.removeModelData(version);
         } else {
             logger.severe("deleteModel - invalid model version!");
             throw new InvalidAccessException(InvalidAccessException.INVALID_ID, "deleteModel - invalid model version!");
@@ -377,19 +411,19 @@ public class ModelService {
     }
 
     /**
-     * This method fetches an existing Model Entity from the model store
-     * 
-     * @param model
+     * Internal storage object holing the BPMN Model together with the
+     * ItemCollection
      */
-    public ItemCollection findModelEntity(String version) {
-        ItemCollection result = modelEntityStore.get(version);
-        if (result == null) {
-            logger.severe("invalid model version!");
-            throw new InvalidAccessException(InvalidAccessException.INVALID_ID,
-                    "findModelEntity - invalid model version: " + version);
+    class BPMNModelData {
+        ItemCollection metadata;
+        BPMNModel bpmnModel;
+        String version;
+
+        public BPMNModelData(String version, BPMNModel model, ItemCollection metadata) {
+            this.metadata = metadata;
+            this.bpmnModel = model;
+            this.version = version;
         }
-        return result;
 
     }
-
 }

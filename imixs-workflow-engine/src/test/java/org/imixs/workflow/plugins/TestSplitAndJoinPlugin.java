@@ -114,7 +114,7 @@ public class TestSplitAndJoinPlugin {
 	 ***/
 	@Test
 	public void testOpenBPMNBuilder() throws ModelException {
-		BPMNModel model = workflowEnvironment.getModelService().getModel("1.0.0");
+		BPMNModel model = workflowEnvironment.getModelService().getBPMNModel("1.0.0");
 		BPMNElementNode eventElement = model.findElementNodeById("IntermediateCatchEvent_4");
 		ItemCollection test = BPMNEntityBuilder.build(eventElement);
 		String txtValue = test.getItemValueString("txtactivityresult");

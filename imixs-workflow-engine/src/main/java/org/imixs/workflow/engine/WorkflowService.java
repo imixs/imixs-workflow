@@ -791,7 +791,7 @@ public class WorkflowService implements WorkflowContext {
      * @throws ModelException
      */
     public BPMNModel fetchModel(String version) throws ModelException {
-        return modelService.getModel(version);
+        return modelService.getBPMNModel(version);
     }
 
     /**
@@ -862,7 +862,7 @@ public class WorkflowService implements WorkflowContext {
             logger.log(Level.FINEST, "......searching model versions for regex ''{0}''...", modelRegex);
         }
         // try to find matching model version by regex
-        List<String> modelVersions = modelService.getAllModelVersions();
+        List<String> modelVersions = modelService.getVersions();
         for (String _version : modelVersions) {
             if (Pattern.compile(modelRegex).matcher(_version).find()) {
                 result.add(_version);
