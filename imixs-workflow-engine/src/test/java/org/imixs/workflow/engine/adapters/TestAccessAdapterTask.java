@@ -9,7 +9,7 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.WorkflowMockEnvironment;
+import org.imixs.workflow.engine.MockWorkflowEnvironment;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.AdapterException;
@@ -52,7 +52,7 @@ public class TestAccessAdapterTask {
 
 	protected ItemCollection workitem;
 	protected ItemCollection event;
-	protected WorkflowMockEnvironment workflowEnvironment;
+	protected MockWorkflowEnvironment workflowEnvironment;
 	BPMNModel model = null;
 
 	@InjectMocks
@@ -62,15 +62,15 @@ public class TestAccessAdapterTask {
 	public void setUp() throws PluginException, ModelException {
 		// Ensures that @Mock and @InjectMocks annotations are processed
 		MockitoAnnotations.openMocks(this);
-		workflowEnvironment = new WorkflowMockEnvironment();
+		workflowEnvironment = new MockWorkflowEnvironment();
 
 		// register AccessAdapter Mock
 		workflowEnvironment.registerAdapter(accessAdapter);
 
 		// Setup Environment
 		workflowEnvironment.setUp();
-		workflowEnvironment.loadBPMNModel("/bpmn/TestAccessAdapterTask.bpmn");
-		model = workflowEnvironment.getModelService().getModelManager().getModel("1.0.0");
+		workflowEnvironment.loadBPMNModelFromFile("/bpmn/TestAccessAdapterTask.bpmn");
+		model = workflowEnvironment.getModelManager().getModel("1.0.0");
 		accessAdapter.workflowService = workflowEnvironment.getWorkflowService();
 
 		// // prepare data
@@ -96,7 +96,7 @@ public class TestAccessAdapterTask {
 		list.add("Julian");
 		workitem.replaceItemValue(WorkflowService.WRITEACCESS, list);
 
-		event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100,
+		event = workflowEnvironment.getModelManager().findEventByID(model, 100,
 				10);
 		workitem.setEventID(10);
 		try {
@@ -122,7 +122,7 @@ public class TestAccessAdapterTask {
 	@Test
 	public void testACLfromProcessEntity() throws ModelException {
 
-		event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 300,
+		event = workflowEnvironment.getModelManager().findEventByID(model, 300,
 				10);
 		workitem.setEventID(10);
 		workitem.setTaskID(300);
@@ -152,7 +152,7 @@ public class TestAccessAdapterTask {
 	@Test
 	public void testACLfromActivityEntity() throws ModelException {
 
-		event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100,
+		event = workflowEnvironment.getModelManager().findEventByID(model, 100,
 				20);
 		workitem.setEventID(20);
 		try {
@@ -186,7 +186,7 @@ public class TestAccessAdapterTask {
 		list.add("Julian");
 		workitem.replaceItemValue(OwnerPlugin.OWNER, list);
 		workitem.setTaskID(300);
-		event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 300,
+		event = workflowEnvironment.getModelManager().findEventByID(model, 300,
 				20);
 		workitem.setEventID(20);
 		try {

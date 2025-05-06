@@ -17,7 +17,7 @@ import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.bpmn.BPMNEntityBuilder;
 import org.imixs.workflow.bpmn.BPMNUtil;
-import org.imixs.workflow.engine.WorkflowMockEnvironment;
+import org.imixs.workflow.engine.MockWorkflowEnvironment;
 import org.imixs.workflow.engine.plugins.SplitAndJoinPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -38,13 +38,19 @@ public class TestSplitAndJoinPlugin {
 
 	ItemCollection event;
 	ItemCollection workitem;
-	protected WorkflowMockEnvironment workflowEnvironment;
+	protected MockWorkflowEnvironment workflowEnvironment;
+
+	// @InjectMocks
+	protected SplitAndJoinPlugin splitAndJoinPlugin;
 
 	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
-		workflowEnvironment = new WorkflowMockEnvironment();
+		workflowEnvironment = new MockWorkflowEnvironment();
 		workflowEnvironment.setUp();
-		workflowEnvironment.loadBPMNModel("/bpmn/TestSplitAndJoinPlugin.bpmn");
+		workflowEnvironment.loadBPMNModelFromFile("/bpmn/TestSplitAndJoinPlugin.bpmn");
+
+		splitAndJoinPlugin = new SplitAndJoinPlugin();
+		workflowEnvironment.registerPlugin(splitAndJoinPlugin);
 
 		// prepare test workitem
 		workitem = new ItemCollection();
@@ -108,7 +114,7 @@ public class TestSplitAndJoinPlugin {
 	 ***/
 	@Test
 	public void testOpenBPMNBuilder() throws ModelException {
-		BPMNModel model = workflowEnvironment.getModelService().getModel("1.0.0");
+		BPMNModel model = workflowEnvironment.getModelService().getBPMNModel("1.0.0");
 		BPMNElementNode eventElement = model.findElementNodeById("IntermediateCatchEvent_4");
 		ItemCollection test = BPMNEntityBuilder.build(eventElement);
 		String txtValue = test.getItemValueString("txtactivityresult");

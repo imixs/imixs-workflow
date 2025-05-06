@@ -136,25 +136,33 @@ public class WorkflowKernel {
     private List<Plugin> pluginRegistry = null;
     private Map<String, Adapter> adapterRegistry = null;
 
-    private WorkflowContext ctx = null;
+    private ModelManager modelManager = null;
+    private WorkflowContext context = null;
 
     private List<ItemCollection> splitWorkitems = null;
 
     private static final Logger logger = Logger.getLogger(WorkflowKernel.class.getName());
 
     /**
-     * Constructor initialize the contextObject and plugin vectors
+     * Constructor initialize a ModelManger instance. The ModelManager instance can
+     * load models form the WorkflowContext.
      */
-    public WorkflowKernel(final WorkflowContext ctx) {
+    public WorkflowKernel(final WorkflowContext context) {
         // check workflow context
-        if (ctx == null) {
+        if (context == null) {
             throw new ProcessingErrorException(WorkflowKernel.class.getSimpleName(), MISSING_WORKFLOWCONTEXT,
-                    "WorkflowKernel can not be initialized: workitemContext is null!");
+                    "WorkflowKernel can not be initialized: context is null!");
         }
-        this.ctx = ctx;
+
+        this.context = context;
+        modelManager = new ModelManager(context);
         pluginRegistry = new ArrayList<Plugin>();
         adapterRegistry = new HashMap<String, Adapter>();
         splitWorkitems = new ArrayList<ItemCollection>();
+    }
+
+    public ModelManager getModelManager() {
+        return modelManager;
     }
 
     /**
@@ -218,7 +226,7 @@ public class WorkflowKernel {
                 }
             }
         }
-        plugin.init(ctx);
+        plugin.init(context);
         pluginRegistry.add(plugin);
     }
 
@@ -396,10 +404,13 @@ public class WorkflowKernel {
         workitem.removeItem(ADAPTER_ERROR_PARAMS);
         workitem.removeItem(ADAPTER_ERROR_MESSAGE);
 
+        // fetch Model instance
+        BPMNModel model = modelManager.getModelByWorkitem(workitem);
+
         // Iterate through all events in the process flow
         splitWorkitems = new ArrayList<ItemCollection>();
         List<String> loopDetector = new ArrayList<String>();
-        ItemCollection event = this.ctx.getModelManager().loadEvent(workitem);
+        ItemCollection event = this.loadEvent(workitem, model);
         while (event != null) {
             String id = event.getItemValueString("id");
             if (loopDetector.contains(id)) {
@@ -407,11 +418,56 @@ public class WorkflowKernel {
                         "Event loop detected " + workitem.getTaskID() + "." + workitem.getEventID() + " event " + id
                                 + " was called twice in one processing life cycle. Check your model!");
             }
-            event = processEvent(workitem, event);
+            event = processEvent(workitem, event, model);
             loopDetector.add(id);
         }
 
         return workitem;
+    }
+
+    /**
+     * Returns the BPMN Event entity associated with a given workitem, based on its
+     * attributes "$modelVersion", "$taskID" and "$eventID".
+     * <p>
+     * The method throws a {@link ModelException} if no Event can be resolved based
+     * on the given model information.
+     * <p>
+     * The method is called by the {@link WorkflowKernel} to start the processing
+     * life cycle.
+     * <p>
+     * A Event is typically connected with a Task by outgoing SequenceFlows.
+     * A special case is a Start event followed by one or more Events connected with
+     * a Task (Start-Task) element.
+     * 
+     * @param workitem
+     * @return BPMN Event entity - {@link ItemCollection}
+     * @throws ModelException if no event was found
+     */
+    public ItemCollection loadEvent(ItemCollection workitem, BPMNModel model) throws ModelException {
+
+        logger.fine("...loadEvent " + workitem.getTaskID() + "." + workitem.getEventID());
+        ItemCollection event = modelManager.findEventByID(model, workitem.getTaskID(), workitem.getEventID());
+        // verify if the event is a valid processing event?
+        if (event != null) {
+            List<ItemCollection> allowedEvents = modelManager.findEventsByTask(model, workitem.getTaskID());
+            boolean found = false;
+            for (ItemCollection allowedEvent : allowedEvents) {
+                // logger.info("verify event : " + allowedEvent.getItemValueString("id"));
+                if (allowedEvent.getItemValueString("id").equals(event.getItemValueString("id"))) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                event = null;
+            }
+        }
+        // If we still did not find the event we throw a ModelException....
+        if (event == null) {
+            throw new ModelException(ModelException.UNDEFINED_MODEL_ENTRY, "Event " + workitem.getTaskID() + "."
+                    + workitem.getEventID() + " is not callable in model '" + workitem.getModelVersion() + "'");
+        }
+        return event;
     }
 
     /**
@@ -430,10 +486,8 @@ public class WorkflowKernel {
      * @throws ModelException
      * @throws PluginException
      */
-    private ItemCollection processEvent(ItemCollection workitem, ItemCollection event)
+    private ItemCollection processEvent(ItemCollection workitem, ItemCollection event, BPMNModel model)
             throws ModelException, PluginException {
-
-        BPMNModel model = this.ctx.getModelManager().getModel(workitem.getModelVersion());
 
         // Update the intermediate processing status
         updateIntermediateEvent(workitem, event);
@@ -450,12 +504,12 @@ public class WorkflowKernel {
             // write event log
             logEvent(workitem.getTaskID(), workitem.getEventID(), workitem.getTaskID(), workitem);
             // load new Event and start new processing life cycle...
-            event = this.ctx.getModelManager().loadEvent(workitem);
+            event = this.loadEvent(workitem, model);
             workitem.event(event.getItemValueInteger(BPMNUtil.EVENT_ITEM_EVENTID));
             return event;
         } else {
             // evaluate next BPMN Element.....
-            ItemCollection nextElement = this.ctx.getModelManager().nextModelElement(event, workitem);
+            ItemCollection nextElement = this.modelManager.nextModelElement(model, event, workitem);
             if (nextElement == null || !nextElement.hasItem("type")) {
                 throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
                         "No valid Target Element found - BPMN Event Element must be followed by a Task or another Event! Verify Sequence Flows and Conditions!");
@@ -483,7 +537,7 @@ public class WorkflowKernel {
                 logEvent(workitem.getTaskID(), workitem.getEventID(),
                         nextElement.getItemValueInteger(BPMNUtil.TASK_ITEM_TASKID), workitem);
                 // Update status - Issue #722
-                updateWorkflowStatus(workitem, nextElement);
+                updateWorkflowStatus(workitem, nextElement, model);
                 // terminate processing life cycle
                 workitem.event(0);
                 event = null;
@@ -534,7 +588,7 @@ public class WorkflowKernel {
             BPMNElementNode nextSplitNode = splitElementNavigator.next();
             ItemCollection splitItemCol = BPMNEntityBuilder.build(nextSplitNode);
             // Test if the flow is a the Main SequenceFlow of the ParallelGateway.
-            boolean bMainFlow = this.ctx.getModelManager().isMainParallelGatewayFlow(gatewayNode, nextSplitNode,
+            boolean bMainFlow = this.modelManager.isMainParallelGatewayFlow(gatewayNode, nextSplitNode,
                     workitem);
             if (bMainFlow) {
                 if (foundMainTask == true) {
@@ -556,7 +610,7 @@ public class WorkflowKernel {
                 // only process events in the normal process cycle
                 if (processEvents) {
                     while (splitEvent != null) {
-                        splitEvent = this.processEvent(cloned, splitEvent);
+                        splitEvent = this.processEvent(cloned, splitEvent, model);
                     }
                 }
 
@@ -604,7 +658,8 @@ public class WorkflowKernel {
 
         // clone the workitem to avoid pollution of the origin workitem
         ItemCollection workitem = (ItemCollection) _workitem.clone();
-        BPMNModel model = this.ctx.getModelManager().getModel(workitem.getModelVersion());
+        // fetch Model instance
+        BPMNModel model = modelManager.getModelByWorkitem(workitem);
 
         // check $TaskID
         if (workitem.getTaskID() <= 0)
@@ -633,7 +688,7 @@ public class WorkflowKernel {
             BPMNElementNode intermediateEventElement = model.findElementNodeById(intermediateEventElementID);
             event = BPMNEntityBuilder.build(intermediateEventElement);
         } else {
-            event = this.ctx.getModelManager().loadEvent(workitem);
+            event = this.loadEvent(workitem, model);
         }
 
         while (event != null) {
@@ -648,11 +703,11 @@ public class WorkflowKernel {
             // test if a new model version was assigned by the last event
             if (updateModelVersionByEvent(workitem, event)) {
                 // load new Event and start new processing life cycle...
-                event = this.ctx.getModelManager().loadEvent(workitem);
+                event = this.loadEvent(workitem, model);
                 workitem.event(event.getItemValueInteger("numactivityid"));
             } else {
                 // evaluate next BPMN Element.....
-                ItemCollection nextElement = this.ctx.getModelManager().nextModelElement(event, workitem);
+                ItemCollection nextElement = this.modelManager.nextModelElement(model, event, workitem);
                 if (nextElement != null && !nextElement.hasItem("type")) {
                     throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
                             "BPMN Element Entity must provide the item 'type'!");
@@ -747,12 +802,13 @@ public class WorkflowKernel {
         workitem.model(version).event(iNextEvent);
 
         if (iTask > 0) {
-            // optional
+            // optional - test if we can load the target task...
             workitem.task(iTask);
-            // test if we can load the target task...
-            ItemCollection itemColNextTask = this.ctx.getModelManager().loadTask(workitem);
+            // fetch Model instance
+            BPMNModel model = modelManager.getModelByWorkitem(workitem);
+            ItemCollection itemColNextTask = this.modelManager.loadTask(workitem, model);
             if (itemColNextTask != null) {
-                updateWorkflowStatus(workitem, itemColNextTask);
+                updateWorkflowStatus(workitem, itemColNextTask, model);
             }
         }
         return true;
@@ -776,9 +832,6 @@ public class WorkflowKernel {
                 + workitem.getItemValueString(MODELVERSION) + " ▷ " + workitem.getTaskID() + "."
                 + workitem.getEventID() + ")";
 
-        if (ctx == null) {
-            logger.warning("no WorkflowContext defined!");
-        }
         logger.info(msg);
         // execute SignalAdapters
         executeSignalAdapters(documentResult, event);
@@ -807,7 +860,8 @@ public class WorkflowKernel {
      * 
      * @throws ModelException
      */
-    private void updateWorkflowStatus(ItemCollection workitem, ItemCollection itemColNextTask) throws ModelException {
+    private void updateWorkflowStatus(ItemCollection workitem, ItemCollection itemColNextTask, BPMNModel model)
+            throws ModelException {
         boolean debug = logger.isLoggable(Level.FINE);
         if (!ModelManager.TASK_ELEMENT.equals(itemColNextTask.getType())) {
             throw new ModelException(ModelException.INVALID_MODEL,
@@ -818,7 +872,7 @@ public class WorkflowKernel {
         workitem.removeItem("$intermediateEvent");
         workitem.removeItem("$intermediateEventElementID");
 
-        ItemCollection process = ctx.getModelManager().loadProcess(workitem);
+        ItemCollection process = this.modelManager.loadProcess(workitem, model);
         // Update the attributes $taskID and $WorkflowStatus
         workitem.task(itemColNextTask.getItemValueInteger(BPMNUtil.TASK_ITEM_TASKID));
         if (debug) {

@@ -32,15 +32,19 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.StringWriter;
 import java.util.logging.Logger;
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.Marshaller;
+
 import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.engine.ReportService;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.xml.XMLDataCollection;
 import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
 import org.imixs.workflow.xml.XSLHandler;
+
+import jakarta.inject.Inject;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.Marshaller;
 
 /**
  * This plug-in executes a Imixs Report definition and stores the result either
@@ -73,6 +77,9 @@ public class ReportPlugin extends AbstractPlugin {
 
     private static final Logger logger = Logger.getLogger(ReportPlugin.class.getName());
 
+    @Inject
+    ReportService reportService;
+
     /**
      * Executes a report defined defined by the event in the attribute
      * 'txtReportName'.
@@ -98,7 +105,7 @@ public class ReportPlugin extends AbstractPlugin {
         if ("".equals(reportName))
             return adocumentContext;
 
-        ItemCollection itemCol = getWorkflowService().getReportService().findReport(reportName);
+        ItemCollection itemCol = reportService.findReport(reportName);
         if (itemCol == null) {
             // report undefined
             throw new PluginException(ReportPlugin.class.getSimpleName(), REPORT_UNDEFINED,

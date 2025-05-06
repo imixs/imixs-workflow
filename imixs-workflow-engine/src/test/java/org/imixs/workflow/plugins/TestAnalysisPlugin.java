@@ -8,7 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.WorkflowMockEnvironment;
+import org.imixs.workflow.engine.MockWorkflowEnvironment;
 import org.imixs.workflow.engine.plugins.AnalysisPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -18,6 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.openbpmn.bpmn.BPMNModel;
 
 /**
  * Test class for AnalysisPlugin
@@ -32,14 +33,14 @@ public class TestAnalysisPlugin {
 
 	ItemCollection workitem;
 
-	protected WorkflowMockEnvironment workflowEngine;
+	protected MockWorkflowEnvironment workflowEngine;
 
 	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
 
-		workflowEngine = new WorkflowMockEnvironment();
+		workflowEngine = new MockWorkflowEnvironment();
 		workflowEngine.setUp();
-		workflowEngine.loadBPMNModel("/bpmn/plugin-test.bpmn");
+		workflowEngine.loadBPMNModelFromFile("/bpmn/plugin-test.bpmn");
 
 		analysisPlugin = new AnalysisPlugin();
 		try {
@@ -65,7 +66,8 @@ public class TestAnalysisPlugin {
 		workitem.event(10);
 		ItemCollection event;
 		try {
-			event = workflowEngine.getModelService().loadEvent(workitem);
+			BPMNModel model = workflowEngine.getModelManager().getModelByWorkitem(workitem);
+			event = workflowEngine.getModelManager().loadEvent(workitem, model);
 
 			String sResult = "<item name='measurepoint' type='start'>M1</item>";
 			logger.log(Level.INFO, "txtActivityResult={0}", sResult);

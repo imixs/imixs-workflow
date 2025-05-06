@@ -40,14 +40,14 @@ public class TestWorkflowService {
 	protected ApplicationPlugin applicationPlugin = null;
 	protected ItemCollection workitem;
 	protected ItemCollection event, documentProcess;
-	protected WorkflowMockEnvironment workflowEnvironment;
+	protected MockWorkflowEnvironment workflowEnvironment;
 
 	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
 
-		workflowEnvironment = new WorkflowMockEnvironment();
+		workflowEnvironment = new MockWorkflowEnvironment();
 		workflowEnvironment.setUp();
-		workflowEnvironment.loadBPMNModel("/bpmn/TestWorkflowService.bpmn");
+		workflowEnvironment.loadBPMNModelFromFile("/bpmn/TestWorkflowService.bpmn");
 
 	}
 
@@ -110,6 +110,7 @@ public class TestWorkflowService {
 		List<ItemCollection> eventList = null;
 		try {
 			eventList = workflowEnvironment.workflowService.getEvents(workitem);
+			// .workflowService.getEvents(workitem);
 		} catch (ModelException e) {
 			e.printStackTrace();
 			fail();

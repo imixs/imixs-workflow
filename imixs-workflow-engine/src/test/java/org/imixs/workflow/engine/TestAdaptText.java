@@ -31,14 +31,14 @@ import org.mockito.quality.Strictness;
 public class TestAdaptText {
 	private final static Logger logger = Logger.getLogger(TestAdaptText.class.getName());
 
-	protected WorkflowMockEnvironment workflowEngine;
+	protected MockWorkflowEnvironment workflowEngine;
 	ItemCollection workitem;
 
 	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
-		workflowEngine = new WorkflowMockEnvironment();
+		workflowEngine = new MockWorkflowEnvironment();
 		workflowEngine.setUp();
-		workflowEngine.loadBPMNModel("/bpmn/TestWorkflowService.bpmn");
+		workflowEngine.loadBPMNModelFromFile("/bpmn/TestWorkflowService.bpmn");
 		workitem = workflowEngine.getDocumentService().load("W0000-00001");
 		workitem.model("1.0.0").task(100);
 	}

@@ -12,18 +12,20 @@ import java.util.Set;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
+import org.imixs.workflow.exceptions.PluginException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.elements.DataObject;
 import org.openbpmn.bpmn.elements.core.BPMNElementNode;
-import org.openbpmn.bpmn.exceptions.BPMNModelException;
-import org.openbpmn.bpmn.util.BPMNModelFactory;
 import org.xml.sax.SAXException;
 
 /**
+ * Test class to test the behavior of the ModelManager.
+ * 
  * Test class test the Imixs BPMNParser
  * 
  * bpmn2:dataobject
@@ -31,21 +33,23 @@ import org.xml.sax.SAXException;
  * @author rsoika
  */
 public class TestBPMNParserDataObject {
+
 	BPMNModel model = null;
-	ModelManager openBPMNModelManager = null;
+	ModelManager modelManager = null;
+	MockWorkflowContext workflowContext;
 
 	@BeforeEach
-	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
+	public void setup() {
 		try {
-			openBPMNModelManager = new ModelManager();
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/dataobject_example1.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
+			workflowContext = new MockWorkflowContext();
+			modelManager = new ModelManager(workflowContext);
+			workflowContext.loadBPMNModelFromFile("/bpmn/dataobject_example1.bpmn");
+			model = workflowContext.fetchModel("1.0.0");
 			assertNotNull(model);
-		} catch (ModelException | BPMNModelException e) {
-			e.printStackTrace();
+
+		} catch (ModelException | PluginException e) {
 			fail(e.getMessage());
 		}
-
 	}
 
 	@SuppressWarnings({ "unchecked" })
@@ -54,7 +58,7 @@ public class TestBPMNParserDataObject {
 			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		// test task 1000
-		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
+		ItemCollection task = modelManager.findTaskByID(model, 1000);
 		assertNotNull(task);
 		List<?> dataObjects = task.getItemValue("dataObjects");
 		assertNotNull(dataObjects);
@@ -73,7 +77,7 @@ public class TestBPMNParserDataObject {
 			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		// test event 1000.10
-		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 10);
+		ItemCollection event = modelManager.findEventByID(model, 1000, 10);
 		assertNotNull(event);
 
 		List<?> dataObjects = event.getItemValue("dataObjects");
@@ -101,7 +105,7 @@ public class TestBPMNParserDataObject {
 			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		// test event 1000.10
-		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 10);
+		ItemCollection event = modelManager.findEventByID(model, 1000, 10);
 		assertNotNull(event);
 
 		BPMNElementNode bpmnElementNode = model.findElementNodeById(event.getItemValueString("id"));

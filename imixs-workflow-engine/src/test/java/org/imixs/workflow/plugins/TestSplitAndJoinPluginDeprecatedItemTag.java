@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
-import org.imixs.workflow.engine.WorkflowMockEnvironment;
+import org.imixs.workflow.engine.MockWorkflowEnvironment;
 import org.imixs.workflow.engine.plugins.SplitAndJoinPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -37,21 +37,21 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 	protected SplitAndJoinPlugin splitAndJoinPlugin = null;
 	ItemCollection event;
 	ItemCollection workitem;
-	protected WorkflowMockEnvironment workflowEnvironment;
+	protected MockWorkflowEnvironment workflowEnvironment;
 	BPMNModel model;
 
 	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
 
-		workflowEnvironment = new WorkflowMockEnvironment();
+		workflowEnvironment = new MockWorkflowEnvironment();
 		workflowEnvironment.setUp();
-		workflowEnvironment.loadBPMNModel("/bpmn/TestSplitAndJoinPlugin.bpmn");
-		model = workflowEnvironment.getModelService().getModel("1.0.0");
+		workflowEnvironment.loadBPMNModelFromFile("/bpmn/TestSplitAndJoinPlugin.bpmn");
+		model = workflowEnvironment.getModelService().getBPMNModel("1.0.0");
 		// mock abstract plugin class for the plitAndJoinPlugin
 		splitAndJoinPlugin = Mockito.mock(SplitAndJoinPlugin.class, Mockito.CALLS_REAL_METHODS);
 		when(splitAndJoinPlugin.getWorkflowService()).thenReturn(workflowEnvironment.getWorkflowService());
 		try {
-			splitAndJoinPlugin.init(workflowEnvironment.getWorkflowContext());
+			splitAndJoinPlugin.init(workflowEnvironment.getWorkflowService());
 		} catch (PluginException e) {
 
 			e.printStackTrace();
@@ -81,7 +81,7 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 	@Test
 	public void testCreateSubProcess() throws ModelException {
 		try {
-			event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100,
+			event = workflowEnvironment.getModelManager().findEventByID(model, 100,
 					20);
 			splitAndJoinPlugin.run(workitem, event);
 		} catch (PluginException e) {
@@ -121,7 +121,7 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 	@Test
 	public void testCreateSubProcessTargetFieldName() throws ModelException {
 		try {
-			event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100,
+			event = workflowEnvironment.getModelManager().findEventByID(model, 100,
 					60);
 			splitAndJoinPlugin.run(workitem, event);
 		} catch (PluginException e) {
@@ -164,7 +164,7 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 		fileData.setAttribute("text", textlist);
 		workitem.addFileData(fileData);
 		try {
-			event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100,
+			event = workflowEnvironment.getModelManager().findEventByID(model, 100,
 					61);
 			splitAndJoinPlugin.run(workitem, event);
 		} catch (PluginException e) {
@@ -206,7 +206,7 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 	@Test
 	public void testCreateMultiSubProcess() throws ModelException {
 		try {
-			event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100,
+			event = workflowEnvironment.getModelManager().findEventByID(model, 100,
 					30);
 			splitAndJoinPlugin.run(workitem, event);
 		} catch (PluginException e) {
@@ -242,7 +242,7 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 	@Test
 	public void testCreateSubProcessParsingError() throws ModelException {
 		try {
-			event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100,
+			event = workflowEnvironment.getModelManager().findEventByID(model, 100,
 					40);
 			splitAndJoinPlugin.run(workitem, event);
 			fail();
@@ -271,7 +271,7 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 		 * 1.) create test result for new subprcoess.....
 		 */
 		try {
-			event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100,
+			event = workflowEnvironment.getModelManager().findEventByID(model, 100,
 					20);
 			splitAndJoinPlugin.run(workitem, event);
 		} catch (PluginException e) {
@@ -296,7 +296,7 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 		subprocess.replaceItemValue("_sub_data", "some test data");
 		// now we process the subprocess
 		try {
-			event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100,
+			event = workflowEnvironment.getModelManager().findEventByID(model, 100,
 					50);
 			splitAndJoinPlugin.run(subprocess, event);
 		} catch (PluginException e) {
@@ -327,7 +327,7 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 
 		// 1.) create test subprocess.....
 		try {
-			event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100,
+			event = workflowEnvironment.getModelManager().findEventByID(model, 100,
 					20);
 			splitAndJoinPlugin.run(workitem, event);
 		} catch (PluginException e) {
@@ -345,7 +345,7 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 
 		// 2.) now update the subprocess
 		try {
-			event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 200,
+			event = workflowEnvironment.getModelManager().findEventByID(model, 200,
 					20);
 			// set new team member
 			workitem.replaceItemValue("namTeam", "Walter");
@@ -374,7 +374,7 @@ public class TestSplitAndJoinPluginDeprecatedItemTag {
 	@Test
 	public void testCreateSubProcessCopyItemByRegex() throws ModelException {
 		try {
-			event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100,
+			event = workflowEnvironment.getModelManager().findEventByID(model, 100,
 					70);
 			splitAndJoinPlugin.run(workitem, event);
 		} catch (PluginException e) {

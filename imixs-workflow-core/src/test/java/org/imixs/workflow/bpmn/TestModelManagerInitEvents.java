@@ -9,33 +9,35 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
+import org.imixs.workflow.exceptions.PluginException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
-import org.openbpmn.bpmn.exceptions.BPMNModelException;
-import org.openbpmn.bpmn.util.BPMNModelFactory;
 
 /**
  * Test class tests complex situations of a Task with several init events.
  * 
  * @author rsoika
  */
-public class TestBPMNModelInitEvents {
-
+public class TestModelManagerInitEvents {
 	BPMNModel model = null;
-	ModelManager openBPMNModelManager = null;
+	ModelManager modelManager = null;
+	MockWorkflowContext workflowContext;
 
 	@BeforeEach
 	public void setup() {
-		openBPMNModelManager = new ModelManager();
 		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/startevent_followup.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
+			workflowContext = new MockWorkflowContext();
+			modelManager = new ModelManager(workflowContext);
+			workflowContext.loadBPMNModelFromFile("/bpmn/startevent_followup.bpmn");
+			model = workflowContext.fetchModel("1.0.0");
 			assertNotNull(model);
-		} catch (ModelException | BPMNModelException e) {
-			fail();
+
+		} catch (ModelException | PluginException e) {
+			fail(e.getMessage());
 		}
 	}
 
@@ -48,8 +50,8 @@ public class TestBPMNModelInitEvents {
 	public void testStartEvents() {
 		try {
 			// test start task....
-			openBPMNModelManager.findStartTasks(model, "Simple");
-			List<ItemCollection> startEvents = openBPMNModelManager.findEventsByTask(model, 1000);
+			modelManager.findStartTasks(model, "Simple");
+			List<ItemCollection> startEvents = modelManager.findEventsByTask(model, 1000);
 			assertNotNull(startEvents);
 			assertEquals(3, startEvents.size());
 
@@ -75,7 +77,7 @@ public class TestBPMNModelInitEvents {
 		// test start task....
 		List<ItemCollection> startTasks;
 		try {
-			startTasks = openBPMNModelManager.findStartTasks(model, "Simple");
+			startTasks = modelManager.findStartTasks(model, "Simple");
 			assertNotNull(startTasks);
 			assertEquals(1, startTasks.size());
 			ItemCollection startTask = startTasks.get(0);
@@ -94,7 +96,7 @@ public class TestBPMNModelInitEvents {
 		// test start task....
 		try {
 			List<ItemCollection> endTasks;
-			endTasks = openBPMNModelManager.findEndTasks(model, "Simple");
+			endTasks = modelManager.findEndTasks(model, "Simple");
 			assertNotNull(endTasks);
 			assertEquals(1, endTasks.size());
 			ItemCollection endTask = endTasks.get(0);

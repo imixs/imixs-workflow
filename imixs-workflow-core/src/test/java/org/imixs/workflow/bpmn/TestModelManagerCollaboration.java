@@ -13,13 +13,13 @@ import java.util.Set;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
+import org.imixs.workflow.exceptions.PluginException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
-import org.openbpmn.bpmn.exceptions.BPMNModelException;
-import org.openbpmn.bpmn.util.BPMNModelFactory;
 import org.xml.sax.SAXException;
 
 /**
@@ -29,20 +29,22 @@ import org.xml.sax.SAXException;
  * 
  * @author rsoika
  */
-public class TestBPMNParserCollaboration {
+public class TestModelManagerCollaboration {
 	BPMNModel model = null;
-	ModelManager openBPMNModelManager = null;
+	ModelManager modelManager = null;
+	MockWorkflowContext workflowContext;
 
 	@BeforeEach
-	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		openBPMNModelManager = new ModelManager();
+	public void setup() {
 		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/collaboration.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
+			workflowContext = new MockWorkflowContext();
+			modelManager = new ModelManager(workflowContext);
+			workflowContext.loadBPMNModelFromFile("/bpmn/collaboration.bpmn");
+			model = workflowContext.fetchModel("1.0.0");
 			assertNotNull(model);
-		} catch (ModelException | BPMNModelException e) {
-			e.printStackTrace();
-			fail();
+
+		} catch (ModelException | PluginException e) {
+			fail(e.getMessage());
 		}
 	}
 
@@ -51,13 +53,13 @@ public class TestBPMNParserCollaboration {
 			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
 		// Test Environment
-		ItemCollection profile = openBPMNModelManager.loadDefinition(model);
+		ItemCollection profile = modelManager.loadDefinition(model);
 		assertNotNull(profile);
 		assertEquals("environment.profile", profile.getItemValueString("txtname"));
 		assertEquals("WorkflowEnvironmentEntity", profile.getItemValueString("type"));
 		assertEquals("1.0.0", profile.getItemValueString("$ModelVersion"));
 
-		Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
+		Set<String> groups = modelManager.findAllGroupsByModel(model);
 		// List<String> groups = model.getGroups();
 		// Test Groups
 		assertFalse(groups.contains("Collaboration"));
@@ -68,16 +70,16 @@ public class TestBPMNParserCollaboration {
 		// assertEquals(2, model.findAllTasks().size());
 
 		// test task 1000
-		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
+		ItemCollection task = modelManager.findTaskByID(model, 1000);
 		assertNotNull(task);
 
 		// test activity 1000.10 submit
-		ItemCollection activity = openBPMNModelManager.findEventByID(model, 1000, 10);
+		ItemCollection activity = modelManager.findEventByID(model, 1000, 10);
 		assertNotNull(activity);
 		assertEquals("submit", activity.getItemValueString("txtname"));
 
 		// test task 1100
-		task = openBPMNModelManager.findTaskByID(model, 2000);
+		task = modelManager.findTaskByID(model, 2000);
 		assertNotNull(task);
 
 	}

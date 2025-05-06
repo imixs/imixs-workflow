@@ -9,12 +9,14 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.WorkflowMockEnvironment;
+import org.imixs.workflow.engine.MockWorkflowEnvironment;
 import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.MockitoAnnotations;
 import org.openbpmn.bpmn.BPMNModel;
 
 /**
@@ -29,26 +31,27 @@ public class TestOwnerPlugin {
 
 	private final static Logger logger = Logger.getLogger(TestOwnerPlugin.class.getName());
 
-	OwnerPlugin ownerPlugin = null;
+	@InjectMocks
+	protected OwnerPlugin ownerPlugin;
+
 	ItemCollection workitem;
 	ItemCollection event;
 
-	protected WorkflowMockEnvironment workflowEnvironment;
+	protected MockWorkflowEnvironment workflowEnvironment;
 
 	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
+		// Ensures that @Mock and @InjectMocks annotations are processed
+		MockitoAnnotations.openMocks(this);
 
-		workflowEnvironment = new WorkflowMockEnvironment();
+		workflowEnvironment = new MockWorkflowEnvironment();
+		ownerPlugin.setWorkflowService(workflowEnvironment.getWorkflowService());
+
 		workflowEnvironment.setUp();
-		workflowEnvironment.loadBPMNModel("/bpmn/TestOwnerPlugin.bpmn");
+		workflowEnvironment.registerPlugin(ownerPlugin);
 
-		ownerPlugin = new OwnerPlugin();
-		try {
-			ownerPlugin.init(workflowEnvironment.getWorkflowService());
-		} catch (PluginException e) {
+		workflowEnvironment.loadBPMNModelFromFile("/bpmn/TestOwnerPlugin.bpmn");
 
-			e.printStackTrace();
-		}
 		workitem = workflowEnvironment.getDocumentService().load("W0000-00001");
 		workitem.model("1.0.0").task(100);
 
@@ -137,8 +140,8 @@ public class TestOwnerPlugin {
 	@Test
 	public void staticUserGroupMappingTest() throws ModelException {
 
-		BPMNModel model = workflowEnvironment.getModelService().getModelManager().getModel("1.0.0");
-		event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100, 10);
+		BPMNModel model = workflowEnvironment.getModelService().getBPMNModel("1.0.0");
+		event = workflowEnvironment.getModelManager().findEventByID(model, 100, 10);
 		event.replaceItemValue("keyupdateAcl", true);
 		event.replaceItemValue("keyOwnershipFields", "[sam, tom,  anna ,]");
 
@@ -160,8 +163,8 @@ public class TestOwnerPlugin {
 	@Test
 	public void testNoUpdate() throws ModelException {
 
-		BPMNModel model = workflowEnvironment.getModelService().getModelManager().getModel("1.0.0");
-		event = workflowEnvironment.getModelService().getModelManager().findEventByID(model, 100, 20);
+		BPMNModel model = workflowEnvironment.getModelService().getBPMNModel("1.0.0");
+		event = workflowEnvironment.getModelManager().findEventByID(model, 100, 20);
 
 		try {
 			ownerPlugin.run(workitem, event);
@@ -183,7 +186,7 @@ public class TestOwnerPlugin {
 	@Test
 	public void testMultipleEvents() throws ModelException {
 
-		workflowEnvironment.loadBPMNModel("/bpmn/TestOwnerPluginWithEval.bpmn");
+		workflowEnvironment.loadBPMNModelFromFile("/bpmn/TestOwnerPluginWithEval.bpmn");
 		workitem.task(1000).event(10);
 		try {
 			workflowEnvironment.getWorkflowService().processWorkItem(workitem);

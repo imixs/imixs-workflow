@@ -6,27 +6,21 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.IOException;
-import java.text.ParseException;
 import java.util.Set;
 
-import javax.xml.parsers.ParserConfigurationException;
-
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
+import org.imixs.workflow.exceptions.PluginException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
-import org.openbpmn.bpmn.exceptions.BPMNModelException;
-import org.openbpmn.bpmn.util.BPMNModelFactory;
-import org.xml.sax.SAXException;
 
 /**
- * Test class
+ * Test class to test the behavior of the ModelManager.
  * 
  * Special cases with collaboration diagram containing two workflow groups
  * (participants) with different workflow models.
- * 
  * 
  * 
  * @author rsoika
@@ -34,14 +28,19 @@ import org.xml.sax.SAXException;
 public class TestBPMNParserCollaborationMinutes {
 
 	BPMNModel model = null;
-	ModelManager openBPMNModelManager = null;
+	ModelManager modelManager = null;
+	MockWorkflowContext workflowContext;
 
 	@BeforeEach
-	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		openBPMNModelManager = new ModelManager();
+	public void setup() {
 		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/minutes.bpmn"));
-		} catch (ModelException | BPMNModelException e) {
+			workflowContext = new MockWorkflowContext();
+			modelManager = new ModelManager(workflowContext);
+			workflowContext.loadBPMNModelFromFile("/bpmn/minutes.bpmn");
+			model = workflowContext.fetchModel("1.0.0");
+			assertNotNull(model);
+
+		} catch (ModelException | PluginException e) {
 			fail(e.getMessage());
 		}
 	}
@@ -49,10 +48,7 @@ public class TestBPMNParserCollaborationMinutes {
 	@Test
 	public void testSimple() throws ModelException {
 
-		BPMNModel model = openBPMNModelManager.getModel("1.0.0");
-		assertNotNull(model);
-
-		Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
+		Set<String> groups = modelManager.findAllGroupsByModel(model);
 		// Test Groups
 		assertFalse(groups.contains("Collaboration"));
 		assertTrue(groups.contains("Protokoll"));
@@ -60,7 +56,6 @@ public class TestBPMNParserCollaborationMinutes {
 
 		// test count of elements
 		assertEquals(8, model.findAllActivities().size());
-
 	}
 
 }

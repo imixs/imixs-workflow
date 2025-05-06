@@ -31,6 +31,7 @@ package org.imixs.workflow.engine.plugins;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowContext;
@@ -51,18 +52,23 @@ public abstract class AbstractPlugin implements Plugin {
     public static final String INVALID_PROPERTYVALUE_FORMAT = "INVALID_PROPERTYVALUE_FORMAT";
 
     private WorkflowContext ctx;
+
     private WorkflowService workflowService;
 
     /**
      * Initialize Plugin and get an instance of the EJB Session Context
      */
-    public void init(WorkflowContext actx) throws PluginException {
-        ctx = actx;
+    public void init(WorkflowContext _ctx) throws PluginException {
+        ctx = _ctx;
         // get WorkflowService by check for an instance of WorkflowService
-        if (actx instanceof WorkflowService) {
+        if (_ctx instanceof WorkflowService) {
             // yes we are running in a WorkflowService EJB
-            workflowService = (WorkflowService) actx;
+            workflowService = (WorkflowService) _ctx;
         }
+    }
+
+    public WorkflowContext getWorkflowContext() {
+        return ctx;
     }
 
     @Override
@@ -70,17 +76,18 @@ public abstract class AbstractPlugin implements Plugin {
 
     }
 
-    public WorkflowContext getCtx() {
-        return ctx;
-    }
-
     /**
      * Returns an instance of the WorkflowService EJB.
-     * 
+     *
+     *
      * @return
      */
     public WorkflowService getWorkflowService() {
         return workflowService;
+    }
+
+    public void setWorkflowService(WorkflowService workflowService) {
+        this.workflowService = workflowService;
     }
 
     /**

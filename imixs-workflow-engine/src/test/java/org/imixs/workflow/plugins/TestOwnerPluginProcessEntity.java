@@ -9,7 +9,7 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.WorkflowMockEnvironment;
+import org.imixs.workflow.engine.MockWorkflowEnvironment;
 import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -42,14 +42,14 @@ public class TestOwnerPluginProcessEntity {
 	protected ItemCollection workitem;
 	protected ItemCollection event;
 
-	protected WorkflowMockEnvironment workflowEnvironment;
+	protected MockWorkflowEnvironment workflowEnvironment;
 
 	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
 
-		workflowEnvironment = new WorkflowMockEnvironment();
+		workflowEnvironment = new MockWorkflowEnvironment();
 		workflowEnvironment.setUp();
-		workflowEnvironment.loadBPMNModel("/bpmn/TestOwnerAndACL.bpmn");
+		workflowEnvironment.loadBPMNModelFromFile("/bpmn/TestOwnerAndACL.bpmn");
 
 		// prepare data
 		workitem = new ItemCollection().model("1.0.0").task(100)

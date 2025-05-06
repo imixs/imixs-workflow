@@ -12,15 +12,15 @@ import java.util.Set;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
+import org.imixs.workflow.exceptions.PluginException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.elements.MessageFlow;
 import org.openbpmn.bpmn.elements.core.BPMNElementNode;
-import org.openbpmn.bpmn.exceptions.BPMNModelException;
-import org.openbpmn.bpmn.util.BPMNModelFactory;
 import org.xml.sax.SAXException;
 
 /**
@@ -30,15 +30,20 @@ import org.xml.sax.SAXException;
  * 
  * @author rsoika
  */
-public class TestBPMNParserCollaborationMessageFlow {
+public class TestModelManagerCollaborationMessageFlow {
 
 	BPMNModel model = null;
-	ModelManager openBPMNModelManager = null;
+	ModelManager modelManager = null;
+	MockWorkflowContext workflowContext;
 
 	@BeforeEach
-	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		openBPMNModelManager = new ModelManager();
-
+	public void setup() {
+		try {
+			workflowContext = new MockWorkflowContext();
+			modelManager = new ModelManager(workflowContext);
+		} catch (PluginException e) {
+			fail(e.getMessage());
+		}
 	}
 
 	/**
@@ -52,28 +57,28 @@ public class TestBPMNParserCollaborationMessageFlow {
 	 */
 	@Test
 	public void testSimple() {
-
 		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/collaboration_messageflow.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
+			workflowContext.loadBPMNModelFromFile("/bpmn/collaboration_messageflow.bpmn");
+			model = workflowContext.fetchModel("1.0.0");
 			assertNotNull(model);
-		} catch (ModelException | BPMNModelException e) {
+		} catch (ModelException e) {
 			e.printStackTrace();
-			fail();
+			fail(e.getMessage());
 		}
+
 		// test count of elements
 		assertEquals(2, model.findAllActivities().size());
 
 		// test task 1000
-		ItemCollection task1 = openBPMNModelManager.findTaskByID(model, 1000);
+		ItemCollection task1 = modelManager.findTaskByID(model, 1000);
 
 		assertNotNull(task1);
-		Collection<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 1000);
+		Collection<ItemCollection> events = modelManager.findEventsByTask(model, 1000);
 		assertNotNull(events);
 		assertEquals(1, events.size());
 
 		// load event 1000.10 and test the message flow
-		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 10);
+		ItemCollection event = modelManager.findEventByID(model, 1000, 10);
 		assertNotNull(event);
 		assertEquals("submit", event.getItemValueString(BPMNUtil.EVENT_ITEM_NAME));
 		BPMNElementNode eventElement = (BPMNElementNode) model.findElementById(event.getItemValueString("id"));
@@ -86,7 +91,7 @@ public class TestBPMNParserCollaborationMessageFlow {
 		BPMNElementNode target = messageFlows.iterator().next().getTargetElement();
 		assertNotNull(target);
 		// we expect the Task 2
-		ItemCollection task2 = openBPMNModelManager.findTaskByID(model, 1100);
+		ItemCollection task2 = modelManager.findTaskByID(model, 1100);
 		assertEquals(target.getId(), task2.getItemValueString("id"));
 
 	}
@@ -98,27 +103,27 @@ public class TestBPMNParserCollaborationMessageFlow {
 	 */
 	@Test
 	public void testComplex() {
-
 		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/collaboration_messageflow_complex.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
+			workflowContext.loadBPMNModelFromFile("/bpmn/collaboration_messageflow_complex.bpmn");
+			model = workflowContext.fetchModel("1.0.0");
 			assertNotNull(model);
-		} catch (ModelException | BPMNModelException e) {
+		} catch (ModelException e) {
 			e.printStackTrace();
-			fail();
+			fail(e.getMessage());
 		}
+
 		// test count of elements
 		assertEquals(4, model.findAllActivities().size());
 
 		// test task 1000
-		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
+		ItemCollection task = modelManager.findTaskByID(model, 1000);
 		assertNotNull(task);
-		Collection<ItemCollection> events = openBPMNModelManager.findEventsByTask(model, 1000);
+		Collection<ItemCollection> events = modelManager.findEventsByTask(model, 1000);
 		assertNotNull(events);
 		assertEquals(2, events.size());
 
 		// load activity 1000.20
-		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 20);
+		ItemCollection event = modelManager.findEventByID(model, 1000, 20);
 		assertNotNull(event);
 		assertEquals("submit", event.getItemValueString(BPMNUtil.EVENT_ITEM_NAME));
 
@@ -132,7 +137,7 @@ public class TestBPMNParserCollaborationMessageFlow {
 		BPMNElementNode target = messageFlows.iterator().next().getTargetElement();
 		assertNotNull(target);
 		// we expect the target Event 2000.5
-		ItemCollection eventTarget = openBPMNModelManager.findEventByID(model, 2000, 5);
+		ItemCollection eventTarget = modelManager.findEventByID(model, 2000, 5);
 		assertEquals(target.getId(), eventTarget.getItemValueString("id"));
 
 	}

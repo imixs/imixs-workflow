@@ -45,10 +45,11 @@ import java.util.logging.Logger;
 import javax.xml.transform.TransformerException;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.bpmn.BPMNEntityBuilder;
 import org.imixs.workflow.bpmn.BPMNUtil;
-import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.ModelService;
+import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.ModelException;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.elements.Activity;
@@ -92,10 +93,7 @@ public class ModelRestService {
             "activityentity");
 
     @Inject
-    private DocumentService documentService;
-
-    @Inject
-    private WorkflowRestService workflowRestService;
+    private WorkflowService workflowService;
 
     @Inject
     private ModelService modelService;
@@ -181,7 +179,7 @@ public class ModelRestService {
         StringBuffer sb = new StringBuffer();
         sb.append("<model>");
         try {
-            col = modelService.getModelManager().getVersions();
+            col = modelService.getVersions();
 
             for (String aversion : col) {
                 sb.append("<version>" + aversion + "</version>");
@@ -199,20 +197,16 @@ public class ModelRestService {
             @QueryParam("format") String format) {
         List<ItemCollection> result = new ArrayList<>();
 
-        try {
-            BPMNModel model;
-            model = modelService.getModelManager().getModel(version);
+        BPMNModel model;
+        model = modelService.getBPMNModel(version);
 
-            // find all tasks
-            Set<Activity> activities = model.findAllActivities();
-            for (Activity task : activities) {
-                if (BPMNUtil.isImixsTaskElement(task)) {
-                    ItemCollection taskEntity = BPMNEntityBuilder.build(task);
-                    result.add(taskEntity);
-                }
+        // find all tasks
+        Set<Activity> activities = model.findAllActivities();
+        for (Activity task : activities) {
+            if (BPMNUtil.isImixsTaskElement(task)) {
+                ItemCollection taskEntity = BPMNEntityBuilder.build(task);
+                result.add(taskEntity);
             }
-        } catch (ModelException e) {
-            logger.severe("Unable to find tasks by model: " + e.getMessage());
         }
 
         return documentRestService.convertResultList(result, items, format);
@@ -228,27 +222,25 @@ public class ModelRestService {
     @GET
     @Path("/{version}/bpmn")
     public Response getModelFile(@PathParam("version") String version, @Context UriInfo uriInfo) {
-        try {
-            // lookup model
-            BPMNModel model = modelService.getModelManager().getModel(version);
-            if (model != null) {
-                StreamingOutput stream = output -> {
-                    try {
-                        model.writeToOutputStream(model.getDoc(), output);
-                    } catch (TransformerException e) {
-                        // Handle exception: Log it or rethrow as a WebApplicationException
-                        throw new WebApplicationException("Error while transforming BPMN Model to XML", e);
-                    }
-                };
-                return Response.ok(stream)
-                        .type(MediaType.APPLICATION_XML)
-                        .build();
-            } else {
-                return Response.status(Response.Status.NOT_FOUND).build();
-            }
-        } catch (ModelException e) {
+
+        // lookup model
+        BPMNModel bpmnModel = modelService.getBPMNModel(version);
+        if (bpmnModel != null) {
+            StreamingOutput stream = output -> {
+                try {
+                    bpmnModel.writeToOutputStream(bpmnModel.getDoc(), output);
+                } catch (TransformerException e) {
+                    // Handle exception: Log it or rethrow as a WebApplicationException
+                    throw new WebApplicationException("Error while transforming BPMN Model to XML", e);
+                }
+            };
+            return Response.ok(stream)
+                    .type(MediaType.APPLICATION_XML)
+                    .build();
+        } else {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
+
     }
 
     /**
@@ -262,8 +254,9 @@ public class ModelRestService {
             @QueryParam("format") String format) {
         ItemCollection definition = null;
         try {
-            BPMNModel model = modelService.getModelManager().getModel(version);
-            definition = modelService.getModelManager().loadDefinition(model);
+            BPMNModel model = modelService.getBPMNModel(version);
+            ModelManager modelManager = new ModelManager(workflowService);
+            definition = modelManager.loadDefinition(model);
         } catch (Exception e) {
             throw new WebApplicationException("BPMN Model Error: ", e);
         }
@@ -285,8 +278,9 @@ public class ModelRestService {
             @QueryParam("items") String items, @QueryParam("format") String format) {
         ItemCollection task = null;
         try {
-            BPMNModel model = modelService.getModelManager().getModel(version);
-            task = modelService.getModelManager().findTaskByID(model, taskID);
+            BPMNModel model = modelService.getBPMNModel(version);
+            ModelManager modelManager = new ModelManager(workflowService);
+            task = modelManager.findTaskByID(model, taskID);
         } catch (Exception e) {
             throw new WebApplicationException("BPMN Model Error: ", e);
         }
@@ -310,8 +304,9 @@ public class ModelRestService {
             @QueryParam("items") String items, @QueryParam("format") String format) {
         ItemCollection event = null;
         try {
-            BPMNModel model = modelService.getModelManager().getModel(version);
-            event = modelService.getModelManager().findEventByID(model, taskID, eventID);
+            BPMNModel model = modelService.getBPMNModel(version);
+            ModelManager modelManager = new ModelManager(workflowService);
+            event = modelManager.findEventByID(model, taskID, eventID);
         } catch (Exception e) {
             throw new WebApplicationException("BPMN Model Error: ", e);
         }
@@ -323,12 +318,11 @@ public class ModelRestService {
     public Response findAllEventsByTask(@PathParam("version") String version, @PathParam("taskid") int taskID,
             @QueryParam("items") String items, @QueryParam("format") String format) {
         List<ItemCollection> result = null;
-        try {
-            BPMNModel model = modelService.getModelManager().getModel(version);
-            result = modelService.getModelManager().findEventsByTask(model, taskID);
-        } catch (ModelException e) {
-            throw new WebApplicationException("BPMN Model Error: ", e);
-        }
+
+        BPMNModel model = modelService.getBPMNModel(version);
+        ModelManager modelManager = new ModelManager(workflowService);
+        result = modelManager.findEventsByTask(model, taskID);
+
         return documentRestService.convertResultList(result, items, format);
     }
 
@@ -344,8 +338,9 @@ public class ModelRestService {
             @QueryParam("format") String format) {
         List<ItemCollection> result = new ArrayList<>();
         try {
-            BPMNModel model = modelService.getModelManager().getModel(version);
-            Set<String> groups = modelService.getModelManager().findAllGroupsByModel(model);
+            BPMNModel model = modelService.getBPMNModel(version);
+            ModelManager modelManager = new ModelManager(workflowService);
+            Set<String> groups = modelManager.findAllGroupsByModel(model);
 
             for (String group : groups) {
                 ItemCollection itemColGroup = new ItemCollection();
@@ -371,8 +366,9 @@ public class ModelRestService {
             @QueryParam("items") String items, @QueryParam("format") String format) {
         List<ItemCollection> result = new ArrayList<>();
         try {
-            BPMNModel model = modelService.getModelManager().getModel(version);
-            result = modelService.getModelManager().findTasks(model, group);
+            BPMNModel model = modelService.getBPMNModel(version);
+            ModelManager modelManager = new ModelManager(workflowService);
+            result = modelManager.findTasks(model, group);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -395,8 +391,9 @@ public class ModelRestService {
             @QueryParam("items") String items, @QueryParam("format") String format) {
         List<ItemCollection> result = null;
         try {
-            BPMNModel model = modelService.getModelManager().getModel(version);
-            result = modelService.getModelManager().findStartTasks(model, group);
+            BPMNModel model = modelService.getBPMNModel(version);
+            ModelManager modelManager = new ModelManager(workflowService);
+            result = modelManager.findStartTasks(model, group);
             return documentRestService.convertResultList(result, items, format);
         } catch (ModelException e) {
             throw new WebApplicationException("BPMN Model Error: ", e);
@@ -419,8 +416,9 @@ public class ModelRestService {
             @QueryParam("items") String items, @QueryParam("format") String format) {
         List<ItemCollection> result = null;
         try {
-            BPMNModel model = modelService.getModelManager().getModel(version);
-            result = modelService.getModelManager().findEndTasks(model, group);
+            BPMNModel model = modelService.getBPMNModel(version);
+            ModelManager modelManager = new ModelManager(workflowService);
+            result = modelManager.findEndTasks(model, group);
             return documentRestService.convertResultList(result, items, format);
         } catch (ModelException e) {
             throw new WebApplicationException("BPMN Model Error: ", e);
@@ -432,7 +430,7 @@ public class ModelRestService {
     @Path("/{version}")
     public void deleteModel(@PathParam("version") String version) {
         try {
-            modelService.deleteModel(version);
+            modelService.deleteModelData(version);
         } catch (Exception e) {
             throw new WebApplicationException("BPMN Model Error: ", e);
         }
@@ -443,7 +441,7 @@ public class ModelRestService {
      * This method consumes a Imixs BPMN model file and updates the corresponding
      * model information.
      * 
-     * @param model
+     * @param bpmnModel
      * @return
      */
     @PUT
@@ -558,7 +556,8 @@ public class ModelRestService {
      * @throws ModelException
      */
     private String modelVersionTableToString(String rootContext) throws ModelException {
-        List<String> modelVersionList = modelService.getModelManager().getVersions();
+
+        List<String> modelVersionList = modelService.getVersions();
         StringBuffer buffer = new StringBuffer();
 
         for (String modelVersion : modelVersionList) {
@@ -578,12 +577,12 @@ public class ModelRestService {
      */
     private void appendTagsToBuffer(String modelVersion, String rootContext, StringBuffer buffer)
             throws ModelException {
-        BPMNModel model = modelService.getModelManager().getModel(modelVersion);
-        ItemCollection modelEntity = modelService.loadModel(modelVersion);
+        BPMNModel model = modelService.getBPMNModel(modelVersion);
+        ModelManager modelManager = new ModelManager(workflowService);
+        ItemCollection modelEntity = modelService.loadModelMetaData(modelVersion);
 
         // now check groups...
-        Set<String> groupList = modelService.getModelManager().findAllGroupsByModel(model);// .getWorkflowGroups(model);//
-        // model.getGroups();
+        Set<String> groupList = modelManager.findAllGroupsByModel(model);
         buffer.append("<tr>");
 
         if (modelEntity != null) {

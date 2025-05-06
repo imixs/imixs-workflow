@@ -34,14 +34,16 @@ import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jakarta.inject.Inject;
-import jakarta.inject.Named;
+
 import org.imixs.workflow.GenericAdapter;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.AdapterException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
+
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 /**
  * The AccessAdapter is a generic adapter class responsible to update the ACL of

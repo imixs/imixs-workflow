@@ -36,6 +36,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.ModelService;
 import org.imixs.workflow.engine.WorkflowService;
@@ -46,7 +47,9 @@ import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.faces.util.ErrorHandler;
 import org.imixs.workflow.faces.util.LoginController;
 import org.imixs.workflow.faces.util.ValidationException;
+import org.openbpmn.bpmn.BPMNModel;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ConversationScoped;
 import jakarta.enterprise.event.Event;
 import jakarta.enterprise.event.ObserverException;
@@ -131,12 +134,18 @@ public class WorkflowController extends AbstractDataController implements Serial
     LoginController loginController;
 
     List<ItemCollection> activities = null;
+    ModelManager modelManager = null;
 
     public static final String DEFAULT_TYPE = "workitem";
 
     public WorkflowController() {
         super();
         setDefaultType("workitem");
+    }
+
+    @PostConstruct
+    public void init() {
+        modelManager = new ModelManager(workflowService);
     }
 
     /**
@@ -188,7 +197,8 @@ public class WorkflowController extends AbstractDataController implements Serial
         }
 
         // find the ProcessEntity
-        startProcessEntity = modelService.getModelManager().loadTask(data);
+        BPMNModel model = modelManager.getModelByWorkitem(data);
+        startProcessEntity = modelManager.loadTask(data, model);
 
         // ProcessEntity found?
         if (startProcessEntity == null) {
@@ -221,7 +231,8 @@ public class WorkflowController extends AbstractDataController implements Serial
         data.replaceItemValue("$writeaccess", data.getItemValue(WorkflowKernel.CREATOR));
 
         // assign WorkflowGroup and editor
-        ItemCollection processDef = modelService.getModelManager().loadProcess(data);
+        ItemCollection processDef = modelManager.loadProcess(data, model);
+
         data.replaceItemValue(WorkflowKernel.WORKFLOWGROUP, processDef.getItemValueString("name"));
         data.replaceItemValue(WorkflowKernel.WORKFLOWSTATUS, startProcessEntity.getItemValueString("name"));
         data.replaceItemValue("txtWorkflowImageURL", startProcessEntity.getItemValueString("txtimageurl"));

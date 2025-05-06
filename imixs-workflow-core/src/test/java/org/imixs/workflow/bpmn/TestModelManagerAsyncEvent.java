@@ -10,13 +10,13 @@ import java.text.ParseException;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
+import org.imixs.workflow.exceptions.PluginException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
-import org.openbpmn.bpmn.exceptions.BPMNModelException;
-import org.openbpmn.bpmn.util.BPMNModelFactory;
 import org.xml.sax.SAXException;
 
 /**
@@ -31,20 +31,23 @@ import org.xml.sax.SAXException;
  * 
  * @author rsoika
  */
-public class TestBPMNParserAsyncEvent {
+public class TestModelManagerAsyncEvent {
+
     BPMNModel model = null;
-    ModelManager openBPMNModelManager = null;
+    ModelManager modelManager = null;
+    MockWorkflowContext workflowContext;
 
     @BeforeEach
-    public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-        openBPMNModelManager = new ModelManager();
+    public void setup() {
         try {
-            openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/asyncEventSimple.bpmn"));
-            model = openBPMNModelManager.getModel("1.0.0");
+            workflowContext = new MockWorkflowContext();
+            modelManager = new ModelManager(workflowContext);
+            workflowContext.loadBPMNModelFromFile("/bpmn/asyncEventSimple.bpmn");
+            model = workflowContext.fetchModel("1.0.0");
             assertNotNull(model);
-        } catch (ModelException | BPMNModelException e) {
-            e.printStackTrace();
-            fail();
+
+        } catch (ModelException | PluginException e) {
+            fail(e.getMessage());
         }
     }
 
@@ -63,13 +66,13 @@ public class TestBPMNParserAsyncEvent {
             throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
 
         // test task 100
-        ItemCollection task = openBPMNModelManager.findTaskByID(model, 100);
+        ItemCollection task = modelManager.findTaskByID(model, 100);
         assertNotNull(task);
         assertEquals(100, task.getItemValueInteger("boundaryEvent.targetEvent"));
         assertEquals(1000, task.getItemValueInteger("boundaryEvent.timerEventDefinition.timeDuration"));
 
         // test task 200
-        task = openBPMNModelManager.findTaskByID(model, 200);
+        task = modelManager.findTaskByID(model, 200);
         assertNotNull(task);
         assertEquals(200, task.getItemValueInteger("boundaryEvent.targetEvent"));
         assertEquals(0, task.getItemValueInteger("boundaryEvent.timerEventDefinition.timeDuration"));

@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.engine.WorkflowMockEnvironment;
+import org.imixs.workflow.engine.MockWorkflowEnvironment;
 import org.imixs.workflow.engine.plugins.ApproverPlugin;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -24,14 +24,14 @@ public class TestApproverResetPlugin {
 	final static String MODEL_VERSION = "1.0.0";
 	ItemCollection event;
 
-	protected WorkflowMockEnvironment workflowEngine;
+	protected MockWorkflowEnvironment workflowEngine;
 	ItemCollection workitem = null;
 
 	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
-		workflowEngine = new WorkflowMockEnvironment();
+		workflowEngine = new MockWorkflowEnvironment();
 		workflowEngine.setUp();
-		workflowEngine.loadBPMNModel("/bpmn/TestApproverPluginReset.bpmn");
+		workflowEngine.loadBPMNModelFromFile("/bpmn/TestApproverPluginReset.bpmn");
 		workitem = workflowEngine.getDocumentService().load("W0000-00001");
 		workitem.model("1.0.0").task(100);
 	}

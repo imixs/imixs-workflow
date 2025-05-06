@@ -1,16 +1,40 @@
+/*  
+ *  Imixs-Workflow 
+ *  
+ *  Copyright (C) 2001-2025 Imixs Software Solutions GmbH,  
+ *  http://www.imixs.com
+ *  
+ *  This program is free software; you can redistribute it and/or 
+ *  modify it under the terms of the GNU General Public License 
+ *  as published by the Free Software Foundation; either version 2 
+ *  of the License, or (at your option) any later version.
+ *  
+ *  This program is distributed in the hope that it will be useful, 
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of 
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+ *  General Public License for more details.
+ *  
+ *  You can receive a copy of the GNU General Public
+ *  License at http://www.gnu.org/licenses/gpl.html
+ *  
+ *  Project: 
+ *      https://www.imixs.org
+ *      https://github.com/imixs/imixs-workflow
+ *  
+ *  Contributors:  
+ *      Imixs Software Solutions GmbH - Project Management
+ *      Ralph Soika - Software Developer
+ */
 package org.imixs.workflow;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 import org.imixs.workflow.bpmn.BPMNEntityBuilder;
 import org.imixs.workflow.bpmn.BPMNLinkedFlowIterator;
@@ -32,15 +56,21 @@ import org.openbpmn.bpmn.navigation.BPMNStartElementIterator;
 import org.w3c.dom.Element;
 
 /**
- * This {@code ModelManager} provides methods to get model entities from a
- * model instance. The ModelManager is used by the {@link WorkflowKernel} to
- * manage the processing life cycle of a workitem.
- * The implementation is based on the OpenBPMN Meta model.
+ * This {@code ModelManager} provides methods to get thread save instances of
+ * {@code org.openbpmn.bpmn.BPMNModel} and provides convenience methods to
+ * resolve model flow details.
  * <p>
- * By analyzing the workitem model version the WorkflowKernel determines the
- * corresponding model and get the Tasks and Events from the ModelManager to
- * process the workitem and assign the workitem to the next Task defined by the
- * BPMN Model.
+ * The ModelManager is used by the {@link WorkflowKernel} to
+ * manage the processing life cycle of a workitem.
+ * <p>
+ * A client can use the {@linke WorkflowContext} to resolve a valid model
+ * version and fetch a thread save instance of a model.
+ * The model version is defined in the item `$modelversion` of a workitem. This
+ * may also be a regular expression. Also a valid model version can be resolved
+ * by the WorkflowContext based on the $workflowGroup.
+ * <p>
+ * The ModelManager provides methods to get instances of ItemCollection for
+ * Tasks and Events and other common BPMNElements.
  * 
  */
 public class ModelManager {
@@ -51,75 +81,71 @@ public class ModelManager {
     public final static String EVENT_ELEMENT = "intermediateCatchEvent";
     public final static String PARALLELGATEWAY_ELEMENT = "parallelGateway";
 
-    // Model store
-    private final Map<String, BPMNModel> modelStore = new ConcurrentHashMap<>();
-
     // cache
     private final Map<String, ItemCollection> bpmnEntityCache = new ConcurrentHashMap<>();
     private final Map<String, BPMNElement> bpmnElementCache = new ConcurrentHashMap<>();
     private final Map<String, Set<String>> groupCache = new ConcurrentHashMap<>();
 
+    private WorkflowContext workflowContext = null;
     private RuleEngine ruleEngine = null;
 
+    // BPMNModel store
+    private final ConcurrentHashMap<String, BPMNModel> modelStore = new ConcurrentHashMap<>();
+
     /**
-     * Private constructor to prevent instantiation
+     * Constructor initializes the RuleEngine.
+     * 
      */
-    public ModelManager() {
-        ruleEngine = new RuleEngine();
+    public ModelManager(WorkflowContext workflowContext) {
+        this.workflowContext = workflowContext;
     }
 
     /**
-     * Returns the internal ModelStore holding all BPMNModels by version.
+     * This method returns a thread save instance of a BPMNModel based on the given
+     * workitem meta data.
+     * The method lookups the matching model version by the {@link WorkflowContext}
      * 
+     * @param workitem
      * @return
+     * @throws ModelException
      */
-    public Map<String, BPMNModel> getModelStore() {
-        return modelStore;
+    public BPMNModel getModelByWorkitem(ItemCollection workitem) throws ModelException {
+        // resolve version
+        String version = workflowContext.findModelVersionByWorkitem(workitem);
+        return getModel(version);
     }
 
     /**
-     * Adds a new model into the local model store
-     */
-    public void addModel(BPMNModel model) throws ModelException {
-        String version = BPMNUtil.getVersion(model);
-        modelStore.put(version, model);
-        clearCache();
-    }
-
-    /**
-     * Removes a BPMNModel form the local model store
-     */
-    public void removeModel(String version) {
-        // Test if version exists
-        if (modelStore.containsKey(version)) {
-            modelStore.remove(version);
-            clearCache();
-        }
-    }
-
-    /**
-     * Returns a BPMNModel by its version from the local model store
+     * This method return a thread save instance of a BPMN Model. If the model does
+     * not yet exist in the ModelManager a new model instance is fetched and cached
+     * in the local model store.
      * 
-     * @param version - a bpmn model version ($modelVersion)
-     * @return a BPMNModel instance.
+     * @param version
+     * @return
+     * @throws ModelException
      */
     public BPMNModel getModel(String version) throws ModelException {
-        return modelStore.get(version);
+        BPMNModel model = modelStore.get(version);
+
+        if (model == null) {
+            // fetch thread save copy of a new BPMNModel instance
+            model = workflowContext.fetchModel(version);
+            modelStore.put(version, model);
+        }
+        return model;
     }
 
     /**
-     * Returns a List with all BPMNModel instances
+     * Returns an instance of the Imixs RuleEngine. The method is using a lazy
+     * loading mechanism.
      * 
      * @return
      */
-    public List<BPMNModel> getAllModels() {
-        List<BPMNModel> result = new ArrayList<>();
-        result.addAll(modelStore.values());
-        return result;
-    }
-
-    public BPMNModel getModelByWorkitem(ItemCollection workitem) throws ModelException {
-        return this.findModelByWorkitem(workitem);
+    private RuleEngine getRuleEngine() {
+        if (ruleEngine == null) {
+            ruleEngine = new RuleEngine();
+        }
+        return ruleEngine;
     }
 
     /**
@@ -162,8 +188,8 @@ public class ModelManager {
      * @return BPMN Event entity - {@link ItemCollection}
      * @throws ModelException if no event was found
      */
-    public ItemCollection loadProcess(ItemCollection workitem) throws ModelException {
-        BPMNModel model = findModelByWorkitem(workitem);
+    public ItemCollection loadProcess(ItemCollection workitem, BPMNModel model) throws ModelException {
+
         String key = BPMNUtil.getVersion(model) + "~" + workitem.getTaskID();
         Activity task = (Activity) bpmnElementCache.computeIfAbsent(key,
                 k -> lookupTaskElementByID(model, workitem.getTaskID()));
@@ -191,8 +217,8 @@ public class ModelManager {
      * @return BPMN Event entity - {@link ItemCollection}
      * @throws ModelException if no event was found
      */
-    public ItemCollection loadTask(ItemCollection workitem) throws ModelException {
-        BPMNModel model = findModelByWorkitem(workitem);
+    public ItemCollection loadTask(ItemCollection workitem, BPMNModel model) throws ModelException {
+
         ItemCollection task = findTaskByID(model, workitem.getTaskID());
         if (task == null) {
             throw new ModelException(ModelException.UNDEFINED_MODEL_ENTRY,
@@ -219,9 +245,8 @@ public class ModelManager {
      * @return BPMN Event entity - {@link ItemCollection}
      * @throws ModelException if no event was found
      */
-    public ItemCollection loadEvent(ItemCollection workitem) throws ModelException {
+    public ItemCollection loadEvent(ItemCollection workitem, BPMNModel model) throws ModelException {
 
-        BPMNModel model = findModelByWorkitem(workitem);
         // logger.info("...loadEvent " + workitem.getTaskID() + "." +
         // workitem.getEventID());
         ItemCollection event = findEventByID(model, workitem.getTaskID(), workitem.getEventID());
@@ -264,10 +289,9 @@ public class ModelManager {
      * @throws ModelException          - if no valid element was found
      * @throws BPMNValidationException
      */
-    public ItemCollection nextModelElement(ItemCollection event, ItemCollection workitem)
+    public ItemCollection nextModelElement(BPMNModel model, ItemCollection event, ItemCollection workitem)
             throws ModelException {
         long l = System.currentTimeMillis();
-        BPMNModel model = findModelByWorkitem(workitem);
         // lookup the current BPMN event element by its ID
         String id = event.getItemValueString("id");
         Event eventElement = (Event) model.findElementNodeById(id);
@@ -303,86 +327,6 @@ public class ModelManager {
                     "$modelversion " + version + " invalid condition: " + e.getMessage());
         }
         return null;
-    }
-
-    /**
-     * returns a sorted String list of all stored model versions
-     * 
-     * @return
-     */
-    public List<String> getVersions() {
-        Set<String> versions = modelStore.keySet();
-        // convert to List
-        List<String> result = new ArrayList<>();
-        result.addAll(versions);
-        Collections.sort(result, Collections.reverseOrder());
-        return result;
-    }
-
-    /**
-     * Returns a Model matching the $modelversion of a given workitem. The
-     * $modelversion can optional be provided as a regular expression.
-     * <p>
-     * In case no matching model version exits, the method tries to find the highest
-     * Model Version matching the corresponding workflow group.
-     * <p>
-     * The method throws a ModelException in case the model version did not exits.
-     **/
-    public BPMNModel findModelByWorkitem(ItemCollection workitem) throws ModelException {
-        BPMNModel result = null;
-        String version = workitem.getModelVersion();
-        // first try a direct fetch....
-        if (version != null && !version.isEmpty()) {
-            result = modelStore.get(version);
-        }
-        if (result != null) {
-            return result;
-        } else {
-            // try to find model by regex if version is not empty...
-            if (version != null && !version.isEmpty()) {
-                Set<String> matchingVersions = findVersionsByRegEx(version);
-                for (String matchingVersion : matchingVersions) {
-                    result = modelStore.get(matchingVersion);
-                    if (result != null) {
-                        // match
-                        // update $modelVersion
-                        logger.fine("Update $modelversion by regex " + version + " ▷ " + matchingVersion);
-                        workitem.model(matchingVersion);
-                        return result;
-                    }
-                }
-            }
-
-            // Still no match, try to find model version by group
-            if (!workitem.getWorkflowGroup().isEmpty()) {
-                Set<String> versions = findAllVersionsByGroup(workitem.getWorkflowGroup());
-                if (!versions.isEmpty()) {
-                    String newVersion = versions.iterator().next();
-                    if (!newVersion.isEmpty()) {
-                        // loggin...
-                        if (version.isEmpty()) {
-                            logger.log(Level.INFO, "Set model version ''{1}'',"
-                                    + "  $workflowgroup: ''{2}'', $uniqueid: {3}",
-                                    new Object[] { version, newVersion, workitem.getWorkflowGroup(),
-                                            workitem.getUniqueID() });
-                        } else {
-                            logger.log(Level.INFO, "Update model version: ''{0}'' ▶ ''{1}'',"
-                                    + "  $workflowgroup: ''{2}'', $uniqueid: {3}",
-                                    new Object[] { version, newVersion, workitem.getWorkflowGroup(),
-                                            workitem.getUniqueID() });
-                        }
-                    }
-                    // update $modelVersion
-                    workitem.model(newVersion);
-                    result = modelStore.get(newVersion);
-                    return result;
-                }
-            }
-
-            // no match!
-            throw new ModelException(ModelException.UNDEFINED_MODEL_VERSION,
-                    "$modelversion '" + version + "' not found");
-        }
     }
 
     /**
@@ -440,90 +384,13 @@ public class ModelManager {
      * @return
      * @throws ModelException
      */
-    public Set<String> findAllGroups() throws ModelException {
-        Set<String> result = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
-        for (BPMNModel model : modelStore.values()) {
-            result.addAll(findAllGroupsByModel(model));
-        }
-        return result;
-    }
-
-    /**
-     * Returns a sorted list of all model versions containing the requested
-     * workflow group. The result is sorted in reverse order, so the highest version
-     * number is the first in the result list.
-     * 
-     * @param group - name of the workflow group
-     * @return list of matching model versions
-     * @throws ModelException
-     */
-    public Set<String> findAllVersionsByGroup(String group) throws ModelException {
-        boolean debug = logger.isLoggable(Level.FINE);
-        // Sorted in reverse order
-        Set<String> result = new TreeSet<>(String.CASE_INSENSITIVE_ORDER.reversed());
-        if (debug) {
-            logger.log(Level.FINEST, "......searching model versions for workflowgroup ''{0}''...", group);
-        }
-        // try to find matching model version by group
-        Collection<BPMNModel> models = modelStore.values();
-        for (BPMNModel _model : models) {
-            Set<String> allGroups = findAllGroupsByModel(_model);
-            if (allGroups.contains(group)) {
-                result.add(BPMNUtil.getVersion(_model));
-            }
-        }
-
-        return result;
-    }
-
-    /**
-     * Returns the first matching model version by a given workflow group.
-     * <p>
-     * If multiple models are containing the same group the latest version will be
-     * returned.
-     * <p>
-     * In case the model is a collaboration diagram, the method compares the given
-     * group name only with private process instances (Pools)!
-     * 
-     * @param group
-     * @return
-     * @throws ModelException
-     */
-    public String findVersionByGroup(String group) throws ModelException {
-        String result = null;
-        Set<String> versions = findAllVersionsByGroup(group);
-        if (versions.size() > 0) {
-            result = versions.iterator().next();
-        }
-        return result;
-    }
-
-    /**
-     * This method returns a sorted list of model versions matching a given regex
-     * for a model version. The result is sorted in reverse order, so the highest
-     * version number is the first in the result list.
-     * 
-     * @param group
-     * @return
-     */
-    public Set<String> findVersionsByRegEx(String modelRegex) {
-        boolean debug = logger.isLoggable(Level.FINE);
-        // List<String> result = new ArrayList<String>();
-        // Sorted in reverse order
-        Set<String> result = new TreeSet<>(Collections.reverseOrder());
-        if (debug) {
-            logger.log(Level.FINEST, "......searching model versions for regex ''{0}''...", modelRegex);
-        }
-        // try to find matching model version by regex
-        Collection<BPMNModel> models = modelStore.values();
-        for (BPMNModel amodel : models) {
-            String _version = BPMNUtil.getVersion(amodel);
-            if (Pattern.compile(modelRegex).matcher(_version).find()) {
-                result.add(_version);
-            }
-        }
-        return result;
-    }
+    // public Set<String> findAllGroups() throws ModelException {
+    // Set<String> result = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+    // for (BPMNModel model : modelStore.values()) {
+    // result.addAll(findAllGroupsByModel(model));
+    // }
+    // return result;
+    // }
 
     /**
      * This method finds a Imixs task element by its ID (imixs:activityid).
@@ -831,7 +698,7 @@ public class ModelManager {
      */
     public boolean evaluateCondition(String expression, ItemCollection workitem) {
         try {
-            return ruleEngine.evaluateBooleanExpression(expression, workitem);
+            return getRuleEngine().evaluateBooleanExpression(expression, workitem);
         } catch (PluginException e) {
             e.printStackTrace();
             logger.severe("Failed to evaluate Condition: " + e.getMessage());
@@ -865,8 +732,7 @@ public class ModelManager {
                 String condition = outFlow.getConditionExpression();
                 if (condition != null && !condition.isEmpty()) {
                     try {
-                        // RuleEngine ruleEngine = new RuleEngine();
-                        boolean conditionResult = ruleEngine.evaluateBooleanExpression(condition, workitem);
+                        boolean conditionResult = getRuleEngine().evaluateBooleanExpression(condition, workitem);
                         if (conditionResult == true) {
                             return true;
                         }
@@ -879,15 +745,6 @@ public class ModelManager {
             }
         }
         return false;
-    }
-
-    /**
-     * Reset the internal BPMN Element cache
-     */
-    private void clearCache() {
-        bpmnEntityCache.clear();
-        bpmnElementCache.clear();
-        groupCache.clear();
     }
 
     /**

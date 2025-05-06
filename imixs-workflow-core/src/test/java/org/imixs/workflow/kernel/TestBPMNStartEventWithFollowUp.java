@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.MockWorkflowEngine;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
@@ -22,17 +22,16 @@ import org.openbpmn.bpmn.BPMNModel;
  */
 public class TestBPMNStartEventWithFollowUp {
 
-	private BPMNModel model;
-	private MockWorkflowEngine workflowEngine;
+	MockWorkflowContext workflowEngine;
 
 	@BeforeEach
-	public void setup() throws PluginException {
-		workflowEngine = new MockWorkflowEngine();
-		workflowEngine.loadBPMNModel("/bpmn/startevent_followup.bpmn");
+	public void setup() {
 		try {
-			model = workflowEngine.getModelManager().getModel("1.0.0");
+			workflowEngine = new MockWorkflowContext();
+			workflowEngine.loadBPMNModelFromFile("/bpmn/startevent_followup.bpmn");
+			BPMNModel model = workflowEngine.fetchModel("1.0.0");
 			assertNotNull(model);
-		} catch (ModelException e) {
+		} catch (PluginException | ModelException e) {
 			fail(e.getMessage());
 		}
 	}

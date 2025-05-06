@@ -24,11 +24,16 @@ import org.junit.jupiter.api.Test;
  */
 public class TestWorkflowKernelPluginRegistration {
 
-	private MockWorkflowContext workflowContext;
+	MockWorkflowContext workflowEngine;
 
 	@BeforeEach
-	public void setup() throws PluginException {
-		workflowContext = new MockWorkflowContext();
+	public void setup() {
+		try {
+			workflowEngine = new MockWorkflowContext();
+
+		} catch (PluginException e) {
+			fail(e.getMessage());
+		}
 	}
 
 	/**
@@ -38,7 +43,7 @@ public class TestWorkflowKernelPluginRegistration {
 	@Test
 	public void testKernel() {
 
-		WorkflowKernel kernel = new WorkflowKernel(workflowContext);
+		WorkflowKernel kernel = new WorkflowKernel(workflowEngine);
 		// We expect that no plugin is registered
 		List<Plugin> pluginRegistry = kernel.getPluginRegistry();
 		assertNotNull(pluginRegistry);
@@ -68,7 +73,7 @@ public class TestWorkflowKernelPluginRegistration {
 	 */
 	@Test
 	public void testInit() {
-		WorkflowKernel kernel = new WorkflowKernel(workflowContext);
+		WorkflowKernel kernel = new WorkflowKernel(workflowEngine);
 		// Now we register a Pluign
 		MockPlugin mockPlugin = new MockPlugin();
 		try {
@@ -100,7 +105,7 @@ public class TestWorkflowKernelPluginRegistration {
 	 */
 	@Test
 	public void testPluginRegistration() {
-		WorkflowKernel kernel = new WorkflowKernel(workflowContext);
+		WorkflowKernel kernel = new WorkflowKernel(workflowEngine);
 		// Now we register a Pluign
 		MockPlugin mockPlugin = new MockPlugin();
 		try {

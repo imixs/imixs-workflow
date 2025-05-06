@@ -30,11 +30,11 @@ import org.junit.jupiter.api.Test;
  */
 public class TestWorkflowServiceGateways {
 
-	protected WorkflowMockEnvironment workflowEnvironment;
+	protected MockWorkflowEnvironment workflowEnvironment;
 
 	@BeforeEach
 	public void setUp() throws PluginException, ModelException {
-		workflowEnvironment = new WorkflowMockEnvironment();
+		workflowEnvironment = new MockWorkflowEnvironment();
 		workflowEnvironment.setUp();
 	}
 
@@ -52,7 +52,7 @@ public class TestWorkflowServiceGateways {
 	@Test
 	public void testConditionalEvent1() {
 
-		workflowEnvironment.loadBPMNModel("/bpmn/conditional_event1.bpmn");
+		workflowEnvironment.loadBPMNModelFromFile("/bpmn/conditional_event1.bpmn");
 		// load test workitem
 		ItemCollection workitem = workflowEnvironment.getDocumentService().load("W0000-00001");
 		try {
@@ -108,7 +108,7 @@ public class TestWorkflowServiceGateways {
 	public void testConditionalDefaultEvent()
 			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 
-		workflowEnvironment.loadBPMNModel("/bpmn/conditional_default_event.bpmn");
+		workflowEnvironment.loadBPMNModelFromFile("/bpmn/conditional_default_event.bpmn");
 
 		// load test workitem
 		ItemCollection workitem = workflowEnvironment.getDocumentService().load("W0000-00001");
@@ -150,7 +150,7 @@ public class TestWorkflowServiceGateways {
 	public void testSplitEvent1()
 			throws AccessDeniedException, ProcessingErrorException, PluginException, ModelException {
 
-		workflowEnvironment.loadBPMNModel("/bpmn/split_event1.bpmn");
+		workflowEnvironment.loadBPMNModelFromFile("/bpmn/split_event1.bpmn");
 
 		// load test workitem
 		ItemCollection workitem = workflowEnvironment.getDocumentService().load("W0000-00001");

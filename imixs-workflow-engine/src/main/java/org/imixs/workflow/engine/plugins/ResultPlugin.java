@@ -66,7 +66,8 @@ public class ResultPlugin extends AbstractPlugin {
 
     public ItemCollection run(ItemCollection documentContext, ItemCollection event) throws PluginException {
         // evaluate new items....
-        ItemCollection evalItemCollection = getWorkflowService().evalWorkflowResult(event, "item", documentContext,
+        ItemCollection evalItemCollection = getWorkflowContext().evalWorkflowResult(event, "item",
+                documentContext,
                 true);
 
         if (evalItemCollection != null) {

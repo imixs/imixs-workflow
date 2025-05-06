@@ -8,7 +8,8 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.MockWorkflowEngine;
+import org.imixs.workflow.MockWorkflowContext;
+import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.imixs.workflow.exceptions.WorkflowException;
@@ -28,14 +29,18 @@ public class TestBPMNSplitEvents {
 
 	private final static Logger logger = Logger.getLogger(TestBPMNSplitEvents.class.getName());
 
-	private BPMNModel model;
-
-	private MockWorkflowEngine workflowEngine;
+	MockWorkflowContext workflowEngine;
 
 	@BeforeEach
-	public void setup() throws PluginException {
-		workflowEngine = new MockWorkflowEngine();
-		workflowEngine.loadBPMNModel("/bpmn/split_event_with_condition.bpmn");
+	public void setup() {
+		try {
+			workflowEngine = new MockWorkflowContext();
+			workflowEngine.loadBPMNModelFromFile("/bpmn/split_event_with_condition.bpmn");
+			BPMNModel model = workflowEngine.fetchModel("1.0.0");
+			assertNotNull(model);
+		} catch (PluginException | ModelException e) {
+			fail(e.getMessage());
+		}
 	}
 
 	/**
@@ -44,9 +49,7 @@ public class TestBPMNSplitEvents {
 	 * The initial split event should not contain the exclusiveContiditions of task
 	 * 1100!
 	 * 
-	 * 
 	 */
-
 	@Test
 	public void testSplitWithConditions() {
 

@@ -13,62 +13,66 @@ import java.util.Set;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
+import org.imixs.workflow.exceptions.PluginException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
-import org.openbpmn.bpmn.exceptions.BPMNModelException;
-import org.openbpmn.bpmn.util.BPMNModelFactory;
 import org.xml.sax.SAXException;
 
 /**
+ * Test class to test the behavior of the ModelManager.
+ * 
  * Test class testing message elements
  * 
  * @author rsoika
  */
 public class TestBPMNParserMessageText {
+
 	BPMNModel model = null;
-	ModelManager openBPMNModelManager = null;
+	ModelManager modelManager = null;
+	MockWorkflowContext workflowContext;
 
 	@BeforeEach
-	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		openBPMNModelManager = new ModelManager();
+	public void setup() {
+		try {
+			workflowContext = new MockWorkflowContext();
+			modelManager = new ModelManager(workflowContext);
+			workflowContext.loadBPMNModelFromFile("/bpmn/message_example.bpmn");
+			model = workflowContext.fetchModel("1.0.0");
+			assertNotNull(model);
+
+		} catch (ModelException | PluginException e) {
+			fail(e.getMessage());
+		}
 	}
 
 	@Test
 	public void testSimple() throws ParseException,
 			ParserConfigurationException, SAXException, IOException, ModelException {
 
-		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/message_example.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
-			assertNotNull(model);
-		} catch (ModelException | BPMNModelException e) {
-			e.printStackTrace();
-			fail();
-		}
-
-		Set<String> groups = openBPMNModelManager.findAllGroupsByModel(model);
+		Set<String> groups = modelManager.findAllGroupsByModel(model);
 		assertTrue(groups.contains("Message Example"));
 
 		// test count of elements
 		assertEquals(2, model.findAllActivities().size());
 
 		// test task 1000
-		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
+		ItemCollection task = modelManager.findTaskByID(model, 1000);
 		assertNotNull(task);
 
 		// test activity for task 1000
 		List<ItemCollection> events;
 
-		events = openBPMNModelManager.findEventsByTask(model, 1000);
+		events = modelManager.findEventsByTask(model, 1000);
 
 		assertNotNull(events);
 		assertEquals(1, events.size());
 
 		// test event 1000.10 submit
-		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 10);
+		ItemCollection event = modelManager.findEventByID(model, 1000, 10);
 		assertNotNull(event);
 
 		assertEquals("Some MessageMessage-Text",

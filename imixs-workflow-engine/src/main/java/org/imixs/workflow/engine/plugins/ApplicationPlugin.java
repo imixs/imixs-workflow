@@ -29,6 +29,7 @@
 package org.imixs.workflow.engine.plugins;
 
 import java.util.logging.Logger;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -99,7 +100,7 @@ public class ApplicationPlugin extends AbstractPlugin {
         try {
             // itemColNextProcess = this.getWorkflowService().evalNextTask(adocumentContext,
             // adocumentActivity);
-            itemColNextProcess = this.getWorkflowService().evalNextTask(adocumentContext);
+            itemColNextProcess = this.getWorkflowContext().evalNextTask(adocumentContext);
         } catch (ModelException e) {
             throw new PluginException(ApplicationPlugin.class.getSimpleName(), e.getErrorCode(), e.getMessage());
         }

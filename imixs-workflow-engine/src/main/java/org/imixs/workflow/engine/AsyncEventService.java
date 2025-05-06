@@ -42,6 +42,7 @@ import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.jpa.EventLog;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
+import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.WorkflowException;
 
 import jakarta.annotation.security.DeclareRoles;
@@ -101,9 +102,6 @@ public class AsyncEventService {
     @Inject
     private WorkflowService workflowService;
 
-    @Inject
-    private ModelService modelService;
-
     /**
      * The observer method verifies if the current task contains a AsyncEvent
      * definition.
@@ -111,7 +109,7 @@ public class AsyncEventService {
      * @throws ModelException
      * 
      */
-    public void onProcess(@Observes ProcessingEvent processingEvent) throws ModelException {
+    public void onProcess(@Observes ProcessingEvent processingEvent) throws PluginException, ModelException {
 
         if (!enabled) {
             // no op
@@ -120,7 +118,13 @@ public class AsyncEventService {
         boolean debug = logger.isLoggable(Level.FINE);
         if (ProcessingEvent.AFTER_PROCESS == processingEvent.getEventType()) {
             // load target task
-            ItemCollection task = modelService.loadTask(processingEvent.getDocument());
+            ItemCollection task = workflowService.evalNextTask(processingEvent.getDocument());
+
+            // BPMNModel model =
+            // modelService.findModelVersionByWorkitem(processingEvent.getDocument());
+            // ItemCollection task =
+            // modelService.getModelManager().loadTask(processingEvent.getDocument(),
+            // model);
             if (task != null) {
                 int boundaryTarget = task.getItemValueInteger("boundaryEvent.targetEvent");
                 int boundaryDuration = task.getItemValueInteger("boundaryEvent.timerEventDefinition.timeDuration");

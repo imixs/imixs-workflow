@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.MockWorkflowEngine;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,13 +24,18 @@ import org.openbpmn.bpmn.BPMNModel;
  */
 public class TestBPMNModelSwitchEvent {
 
-	private MockWorkflowEngine workflowEngine;
+	MockWorkflowContext workflowEngine;
 
 	@BeforeEach
-	public void setup() throws PluginException {
-		workflowEngine = new MockWorkflowEngine();
-		workflowEngine.loadBPMNModel("/bpmn/model-switch-source.bpmn");
-		workflowEngine.loadBPMNModel("/bpmn/model-switch-target.bpmn");
+	public void setup() {
+		try {
+			workflowEngine = new MockWorkflowContext();
+			workflowEngine.loadBPMNModelFromFile("/bpmn/model-switch-source.bpmn");
+			workflowEngine.loadBPMNModelFromFile("/bpmn/model-switch-target.bpmn");
+
+		} catch (PluginException e) {
+			fail(e.getMessage());
+		}
 	}
 
 	/**
@@ -41,7 +46,7 @@ public class TestBPMNModelSwitchEvent {
 	@Test
 	public void testSimpleSwitch() throws ModelException {
 
-		BPMNModel model = workflowEngine.getModelManager().getModel("source-1.0.0");
+		BPMNModel model = workflowEngine.fetchModel("source-1.0.0");
 		assertNotNull(model);
 
 		// Test Environment
@@ -70,8 +75,9 @@ public class TestBPMNModelSwitchEvent {
 	@Test
 	public void testRegexSwitch() throws ModelException {
 
-		BPMNModel model = workflowEngine.getModelManager().getModel("source-1.0.0");
-
+		// load test models
+		workflowEngine.loadBPMNModelFromFile("/bpmn/link-event-basic.bpmn");
+		BPMNModel model = workflowEngine.fetchModel("source-1.0.0");
 		assertNotNull(model);
 
 		// Test Environment

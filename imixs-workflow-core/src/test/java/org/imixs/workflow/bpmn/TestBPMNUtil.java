@@ -5,13 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
+import org.imixs.workflow.exceptions.PluginException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
-import org.openbpmn.bpmn.exceptions.BPMNModelException;
-import org.openbpmn.bpmn.util.BPMNModelFactory;
 
 /**
  * Test class test the Imixs BPMNUtil basic behavior.
@@ -20,24 +20,22 @@ import org.openbpmn.bpmn.util.BPMNModelFactory;
  */
 public class TestBPMNUtil {
 
-	protected BPMNModel model = null;
-	ModelManager openBPMNModelManager = null;
+	BPMNModel model = null;
+	ModelManager modelManager = null;
+	MockWorkflowContext workflowContext;
 
-	/**
-	 * Loads the default model
-	 */
 	@BeforeEach
-	public void setUp() {
-		// load default model
-		openBPMNModelManager = new ModelManager();
+	public void setup() {
 		try {
-			model = BPMNModelFactory.read("/bpmn/simple.bpmn");
-			openBPMNModelManager.addModel(model);
-		} catch (BPMNModelException | ModelException e) {
-			e.printStackTrace();
-			fail();
-		}
+			workflowContext = new MockWorkflowContext();
+			modelManager = new ModelManager(workflowContext);
+			workflowContext.loadBPMNModelFromFile("/bpmn/simple.bpmn");
+			model = workflowContext.fetchModel("1.0.0");
+			assertNotNull(model);
 
+		} catch (ModelException | PluginException e) {
+			fail(e.getMessage());
+		}
 	}
 
 	/**
@@ -49,14 +47,14 @@ public class TestBPMNUtil {
 	public void testFindTasks() {
 		assertNotNull(model);
 
-		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1000);
+		ItemCollection task = modelManager.findTaskByID(model, 1000);
 		assertNotNull(task);
 
-		task = openBPMNModelManager.findTaskByID(model, 1100);
+		task = modelManager.findTaskByID(model, 1100);
 		assertNotNull(task);
 
 		// test non existing task
-		task = openBPMNModelManager.findTaskByID(model, 2000);
+		task = modelManager.findTaskByID(model, 2000);
 		assertNull(task);
 	}
 
@@ -69,17 +67,17 @@ public class TestBPMNUtil {
 	public void testFindEvents() {
 		assertNotNull(model);
 
-		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 10);
+		ItemCollection event = modelManager.findEventByID(model, 1000, 10);
 		assertNotNull(event);
 
-		event = openBPMNModelManager.findEventByID(model, 1000, 20);
+		event = modelManager.findEventByID(model, 1000, 20);
 		assertNotNull(event);
 
 		// test non existing event
-		event = openBPMNModelManager.findEventByID(model, 1100, 10);
+		event = modelManager.findEventByID(model, 1100, 10);
 		assertNull(event);
 
-		event = openBPMNModelManager.findEventByID(model, 2000, 10);
+		event = modelManager.findEventByID(model, 2000, 10);
 		assertNull(event);
 	}
 

@@ -4,23 +4,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.IOException;
-import java.text.ParseException;
-
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
+import org.imixs.workflow.exceptions.PluginException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
-import org.openbpmn.bpmn.exceptions.BPMNModelException;
-import org.openbpmn.bpmn.util.BPMNModelFactory;
-import org.xml.sax.SAXException;
 
 /**
- * Test class test the Imixs BPMNParser.
+ * Test class to test the behavior of the ModelManager.
  * 
  * The test verifies if a annotation assigned to a task will update the
  * documentation field of the task (in case it is not explicit filled by the
@@ -32,16 +26,19 @@ import org.xml.sax.SAXException;
  */
 public class TestBPMNParserTaskAnnotation {
 	BPMNModel model = null;
-	ModelManager openBPMNModelManager = null;
+	ModelManager modelManager = null;
+	MockWorkflowContext workflowContext;
 
 	@BeforeEach
-	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		openBPMNModelManager = new ModelManager();
+	public void setup() {
 		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/annotation_example.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
+			workflowContext = new MockWorkflowContext();
+			modelManager = new ModelManager(workflowContext);
+			workflowContext.loadBPMNModelFromFile("/bpmn/annotation_example.bpmn");
+			model = workflowContext.fetchModel("1.0.0");
 			assertNotNull(model);
-		} catch (ModelException | BPMNModelException e) {
+
+		} catch (ModelException | PluginException e) {
 			fail(e.getMessage());
 		}
 	}
@@ -59,7 +56,7 @@ public class TestBPMNParserTaskAnnotation {
 		// Test Environment
 		ItemCollection profile;
 		try {
-			profile = openBPMNModelManager.loadDefinition(model);
+			profile = modelManager.loadDefinition(model);
 			assertNotNull(profile);
 			assertEquals(VERSION, profile.getItemValueString("$ModelVersion"));
 		} catch (ModelException e) {
@@ -70,20 +67,14 @@ public class TestBPMNParserTaskAnnotation {
 		assertEquals(3, model.findAllActivities().size());
 
 		// test task 1200
-		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1200);
+		ItemCollection task = modelManager.findTaskByID(model, 1200);
 		assertNotNull(task);
 		assertEquals("<b>inner sample text</b>", task.getItemValueString("rtfdescription"));
 
 		// test Task 1100 (overwrite annotation)
-		task = openBPMNModelManager.findTaskByID(model, 1100);
+		task = modelManager.findTaskByID(model, 1100);
 		assertNotNull(task);
 		assertEquals("<b>custom text task2</b>", task.getItemValueString("rtfdescription"));
-
-		// test Task 1000 (annotation)
-		// task = openBPMNModelManager.findTaskByID(model, 1000);
-		// assertNotNull(task);
-		// assertEquals("<b>sample text1</b>",
-		// task.getItemValueString("rtfdescription"));
 
 	}
 

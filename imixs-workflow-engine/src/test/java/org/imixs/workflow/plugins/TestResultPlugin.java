@@ -15,7 +15,7 @@ import javax.script.ScriptException;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
-import org.imixs.workflow.engine.WorkflowMockEnvironment;
+import org.imixs.workflow.engine.MockWorkflowEnvironment;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.engine.plugins.ResultPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
@@ -41,14 +41,14 @@ public class TestResultPlugin {
 
     ItemCollection event;
     ItemCollection workitem;
-    protected WorkflowMockEnvironment workflowEnvironment;
+    protected MockWorkflowEnvironment workflowEnvironment;
 
     @BeforeEach
     public void setUp() throws PluginException, ModelException {
 
-        workflowEnvironment = new WorkflowMockEnvironment();
+        workflowEnvironment = new MockWorkflowEnvironment();
         workflowEnvironment.setUp();
-        workflowEnvironment.loadBPMNModel("/bpmn/TestResultPlugin.bpmn");
+        workflowEnvironment.loadBPMNModelFromFile("/bpmn/TestResultPlugin.bpmn");
 
         resultPlugin = new ResultPlugin();
         try {

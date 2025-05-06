@@ -5,20 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.IOException;
-import java.text.ParseException;
-
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
+import org.imixs.workflow.exceptions.PluginException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
-import org.openbpmn.bpmn.exceptions.BPMNModelException;
-import org.openbpmn.bpmn.util.BPMNModelFactory;
-import org.xml.sax.SAXException;
 
 /**
  * Test class test the Imixs BPMNModel properties
@@ -28,20 +22,23 @@ import org.xml.sax.SAXException;
  * @author rsoika
  */
 public class TestBPMNProperties {
+
 	BPMNModel model = null;
-	ModelManager openBPMNModelManager = null;
+	ModelManager modelManager = null;
+	MockWorkflowContext workflowContext;
 
 	@BeforeEach
-	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		openBPMNModelManager = new ModelManager();
+	public void setup() {
 		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/properties.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
-		} catch (ModelException | BPMNModelException e) {
-			e.printStackTrace();
-			fail();
-		}
+			workflowContext = new MockWorkflowContext();
+			modelManager = new ModelManager(workflowContext);
+			workflowContext.loadBPMNModelFromFile("/bpmn/properties.bpmn");
+			model = workflowContext.fetchModel("1.0.0");
+			assertNotNull(model);
 
+		} catch (ModelException | PluginException e) {
+			fail(e.getMessage());
+		}
 	}
 
 	/**
@@ -57,7 +54,7 @@ public class TestBPMNProperties {
 		assertNotNull(model);
 
 		// test task 1000
-		ItemCollection task = openBPMNModelManager.findTaskByID(model, 1100);
+		ItemCollection task = modelManager.findTaskByID(model, 1100);
 		assertNotNull(task);
 		// assertEquals("1.0.0", task.getItemValueString("$ModelVersion"));
 		// assertEquals("Simple", task.getItemValueString("txtworkflowgroup"));
@@ -101,7 +98,7 @@ public class TestBPMNProperties {
 		assertNotNull(model);
 
 		// test event 1000,20
-		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 20);
+		ItemCollection event = modelManager.findEventByID(model, 1000, 20);
 		assertNotNull(event);
 
 		assertEquals("submit", event.getItemValueString(BPMNUtil.EVENT_ITEM_NAME));

@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.MockPlugin;
 import org.imixs.workflow.MockPluginNull;
-import org.imixs.workflow.MockWorkflowEngine;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -25,6 +25,7 @@ import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.imixs.workflow.exceptions.WorkflowException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.openbpmn.bpmn.BPMNModel;
 
 /**
  * Test class for Imixs WorkflowKernel using a static default model. The test
@@ -37,13 +38,18 @@ public class TestWorkflowKernelBasic {
 
     private static final Logger logger = Logger.getLogger(TestWorkflowKernelBasic.class.getName());
 
-    private MockWorkflowEngine workflowEngine;
+    MockWorkflowContext workflowEngine;
 
     @BeforeEach
-    public void setup() throws PluginException {
-        workflowEngine = new MockWorkflowEngine();
-        // load default model
-        workflowEngine.loadBPMNModel("/bpmn/simple.bpmn");
+    public void setup() {
+        try {
+            workflowEngine = new MockWorkflowContext();
+            workflowEngine.loadBPMNModelFromFile("/bpmn/simple.bpmn");
+            BPMNModel model = workflowEngine.fetchModel("1.0.0");
+            assertNotNull(model);
+        } catch (PluginException | ModelException e) {
+            fail(e.getMessage());
+        }
     }
 
     /**
@@ -167,6 +173,27 @@ public class TestWorkflowKernelBasic {
     }
 
     /**
+     * Test case testing a kind of corrupted model file
+     * 
+     * Model Manager is unable to load event 20
+     * 
+     * @throws ModelException
+     */
+    @Test
+    public void testRecursiveBug() throws ModelException {
+
+        workflowEngine.loadBPMNModelFromFile("/bpmn/recursive_issue1.bpmn");
+        BPMNModel model = workflowEngine.fetchModel("1.0.0");
+        assertNotNull(model);
+
+        ItemCollection workitem = new ItemCollection().model("1.0.0").task(100).event(10);
+        assertEquals(3, model.findAllEvents().size());
+        ItemCollection event = this.workflowEngine.getWorkflowKernel().loadEvent(workitem, model);
+        assertNotNull(event);
+
+    }
+
+    /**
      * This test tests a worktIem without $modelversion and without $workflowgroup.
      * An Exception is expected!
      **/
@@ -236,8 +263,8 @@ public class TestWorkflowKernelBasic {
                 .event(10);
 
         try {
-            // MokWorkflowContext ctx = new MokWorkflowContext();
-            // kernel = new WorkflowKernel(workflowContext);
+            // MokworkflowEngine ctx = new MokworkflowEngine();
+            // kernel = new WorkflowKernel(workflowEngine);
 
             MockPluginNull mokPlugin = new MockPluginNull();
             workflowEngine.getWorkflowKernel().registerPlugin(mokPlugin);
@@ -296,19 +323,27 @@ public class TestWorkflowKernelBasic {
      */
     @Test
     public void testFollowup() {
-
-        // load followup model
-        workflowEngine.loadBPMNModel("/bpmn/followup_001.bpmn");
-        ItemCollection workItem = new ItemCollection();
-        workItem.replaceItemValue("txtTitel", "Hello");
-        workItem.model("1.0.0")
-                .task(1000)
-                .event(10);
-
-        assertEquals(workItem.getItemValueString("txttitel"), "Hello");
-
         try {
+            // load followup model
+            workflowEngine.loadBPMNModelFromFile("/bpmn/followup_001.bpmn");
+            BPMNModel model = workflowEngine.fetchModel("1.0.0");
+            assertNotNull(model);
+
+            ItemCollection workItem = new ItemCollection();
+            workItem.replaceItemValue("txtTitel", "Hello");
+            workItem.model("1.0.0")
+                    .task(1000)
+                    .event(10);
+
+            assertEquals(workItem.getItemValueString("txttitel"), "Hello");
+
             workItem = workflowEngine.getWorkflowKernel().process(workItem);
+
+            // runs should be 2
+            assertEquals(2, workItem.getItemValueInteger("runs"));
+            // test next state
+            assertEquals(1100, workItem.getTaskID());
+
         } catch (WorkflowException e) {
             fail();
             e.printStackTrace();
@@ -317,10 +352,6 @@ public class TestWorkflowKernelBasic {
             e.printStackTrace();
         }
 
-        // runs should be 2
-        assertEquals(2, workItem.getItemValueInteger("runs"));
-        // test next state
-        assertEquals(1100, workItem.getTaskID());
     }
 
     /**
@@ -331,19 +362,26 @@ public class TestWorkflowKernelBasic {
      */
     @Test
     public void testFollowupMultipleGateways() {
-
-        // load followup model
-        workflowEngine.loadBPMNModel("/bpmn/followup_002.bpmn");
-        ItemCollection workItem = new ItemCollection();
-        workItem.replaceItemValue("txtTitel", "Hello");
-        workItem.model("1.0.0")
-                .task(1000)
-                .event(10);
-
-        assertEquals(workItem.getItemValueString("txttitel"), "Hello");
-
         try {
+            // load followup model
+            workflowEngine.loadBPMNModelFromFile("/bpmn/followup_002.bpmn");
+            BPMNModel model = workflowEngine.fetchModel("1.0.0");
+            assertNotNull(model);
+
+            ItemCollection workItem = new ItemCollection();
+            workItem.replaceItemValue("txtTitel", "Hello");
+            workItem.model("1.0.0")
+                    .task(1000)
+                    .event(10);
+
+            assertEquals(workItem.getItemValueString("txttitel"), "Hello");
+
             workItem = workflowEngine.getWorkflowKernel().process(workItem);
+
+            // runs should be 2
+            assertEquals(2, workItem.getItemValueInteger("runs"));
+            // test next state
+            assertEquals(1100, workItem.getTaskID());
         } catch (WorkflowException e) {
             fail();
             e.printStackTrace();
@@ -352,10 +390,6 @@ public class TestWorkflowKernelBasic {
             e.printStackTrace();
         }
 
-        // runs should be 2
-        assertEquals(2, workItem.getItemValueInteger("runs"));
-        // test next state
-        assertEquals(1100, workItem.getTaskID());
     }
 
     @Test

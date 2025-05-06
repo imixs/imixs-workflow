@@ -4,20 +4,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.IOException;
-import java.text.ParseException;
-
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.ModelManager;
-import org.imixs.workflow.exceptions.ModelException;
+import org.imixs.workflow.exceptions.PluginException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.exceptions.BPMNModelException;
 import org.openbpmn.bpmn.util.BPMNModelFactory;
-import org.xml.sax.SAXException;
 
 /**
  * Test class test the Imixs BPMNParser with an Adapter definition in a Event
@@ -25,29 +20,35 @@ import org.xml.sax.SAXException;
  * 
  * @author rsoika
  */
-public class TestBPMNParserAdapter {
+public class TestModelManagerParserAdapter {
 
 	BPMNModel model = null;
-	ModelManager openBPMNModelManager = null;
+	ModelManager modelManager = null;
+	MockWorkflowContext workflowContext;
 
 	@BeforeEach
-	public void setup() throws ParseException, ParserConfigurationException, SAXException, IOException {
-		openBPMNModelManager = new ModelManager();
+	public void setup() {
+		try {
+			workflowContext = new MockWorkflowContext();
+			modelManager = new ModelManager(workflowContext);
+		} catch (PluginException e) {
+			fail(e.getMessage());
+		}
 	}
 
 	@Test
-	public void testEventAdapter()
-			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
+	public void testEventAdapter() {
 		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/adapter.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
-		} catch (ModelException | BPMNModelException e) {
+			model = BPMNModelFactory.read("/bpmn/adapter.bpmn");
+			assertNotNull(model);
+		} catch (BPMNModelException e) {
 			e.printStackTrace();
-			fail();
+			fail(e.getMessage());
 		}
+
 		assertNotNull(model);
 		// test activity 1000.20 submit
-		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 20);
+		ItemCollection event = modelManager.findEventByID(model, 1000, 20);
 		assertNotNull(event);
 		assertEquals("submit", event.getItemValueString("name"));
 
@@ -57,35 +58,33 @@ public class TestBPMNParserAdapter {
 	}
 
 	@Test
-	public void testEventMulitAdapter()
-			throws ParseException, ParserConfigurationException, SAXException, IOException, ModelException {
-
+	public void testEventMulitAdapter() {
 		try {
-			openBPMNModelManager.addModel(BPMNModelFactory.read("/bpmn/adapter_multi.bpmn"));
-			model = openBPMNModelManager.getModel("1.0.0");
-		} catch (ModelException | BPMNModelException e) {
+			model = BPMNModelFactory.read("/bpmn/adapter_multi.bpmn");
+			assertNotNull(model);
+		} catch (BPMNModelException e) {
 			e.printStackTrace();
-			fail();
+			fail(e.getMessage());
 		}
 
 		assertNotNull(model);
 
 		// test activity 1000.20 submit
-		ItemCollection event = openBPMNModelManager.findEventByID(model, 1000, 20);
+		ItemCollection event = modelManager.findEventByID(model, 1000, 20);
 		assertNotNull(event);
 		assertEquals("adapter A", event.getItemValueString("txtname"));
 		// test adapter class.....
 		assertEquals("org.imixs.workflow.adapter.Example", event.getItemValueString("adapter.id"));
 
 		// test activity 1100.10 submit
-		event = openBPMNModelManager.findEventByID(model, 1100, 10);
+		event = modelManager.findEventByID(model, 1100, 10);
 		assertNotNull(event);
 		assertEquals("adapter A", event.getItemValueString("txtname"));
 		// test adapter class.....
 		assertEquals("org.imixs.workflow.adapter.Example", event.getItemValueString("adapter.id"));
 
 		// test activity 1000.20 submit
-		event = openBPMNModelManager.findEventByID(model, 1100, 20);
+		event = modelManager.findEventByID(model, 1100, 20);
 		assertNotNull(event);
 		assertEquals("adapter B", event.getItemValueString("txtname"));
 		// test adapter class.....

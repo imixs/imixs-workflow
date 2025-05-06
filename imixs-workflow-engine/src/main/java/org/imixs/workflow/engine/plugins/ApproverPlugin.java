@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.exceptions.PluginException;
 
@@ -94,7 +95,8 @@ public class ApproverPlugin extends AbstractPlugin {
         boolean refresh = false;
         boolean reset = false;
 
-        ItemCollection evalItemCollection = this.getWorkflowService().evalWorkflowResult(event, "item", workitem);
+        ItemCollection evalItemCollection = this.getWorkflowContext().evalWorkflowResult(event, "item",
+                workitem);
 
         // test for items with name 'approvedby'
         if (evalItemCollection != null && evalItemCollection.hasItem(EVAL_APPROVEDBY)) {
@@ -132,7 +134,8 @@ public class ApproverPlugin extends AbstractPlugin {
 
                 if (!workitem.hasItem(aGroup + APPROVERS) || reset) {
                     if (debug) {
-                        logger.log(Level.FINE, "creating new approver list: {0}={1}", new Object[]{aGroup, newAppoverList});
+                        logger.log(Level.FINE, "creating new approver list: {0}={1}",
+                                new Object[] { aGroup, newAppoverList });
                     }
                     workitem.replaceItemValue(aGroup + APPROVERS, newAppoverList);
                     workitem.removeItem(aGroup + APPROVEDBY);
@@ -159,7 +162,8 @@ public class ApproverPlugin extends AbstractPlugin {
                         workitem.replaceItemValue(aGroup + APPROVERS, listApprovers);
                         workitem.replaceItemValue(aGroup + APPROVEDBY, listApprovedBy);
                         if (debug) {
-                            logger.log(Level.FINE, "new list of approvedby: {0}={1}", new Object[]{aGroup, listApprovedBy});
+                            logger.log(Level.FINE, "new list of approvedby: {0}={1}",
+                                    new Object[] { aGroup, listApprovedBy });
                         }
                     }
                 }
@@ -197,7 +201,8 @@ public class ApproverPlugin extends AbstractPlugin {
             if (!listApprovedBy.contains(approver) && !listApprovers.contains(approver)) {
                 // add the new member to the existing approver list
                 if (debug) {
-                    logger.log(Level.FINE, "adding new approver to list ''{0}{1}''", new Object[]{sourceItem, APPROVERS});
+                    logger.log(Level.FINE, "adding new approver to list ''{0}{1}''",
+                            new Object[] { sourceItem, APPROVERS });
                 }
                 listApprovers.add(approver);
                 // remove empty entries...
@@ -208,7 +213,7 @@ public class ApproverPlugin extends AbstractPlugin {
         }
         if (update) {
             if (debug) {
-                logger.log(Level.FINE, "updating approver list ''{0}{1}''", new Object[]{sourceItem, APPROVERS});
+                logger.log(Level.FINE, "updating approver list ''{0}{1}''", new Object[] { sourceItem, APPROVERS });
             }
             workitem.replaceItemValue(sourceItem + APPROVERS, listApprovers);
         }

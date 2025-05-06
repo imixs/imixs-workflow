@@ -37,6 +37,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -49,7 +51,6 @@ import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.WorkflowKernel;
-import org.imixs.workflow.WorkflowManager;
 import org.imixs.workflow.bpmn.BPMNUtil;
 import org.imixs.workflow.engine.plugins.ResultPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
@@ -93,7 +94,7 @@ import jakarta.inject.Inject;
         "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
 @Stateless
 @LocalBean
-public class WorkflowService implements WorkflowManager, WorkflowContext {
+public class WorkflowService implements WorkflowContext {
 
     // workitem properties
     public static final String UNIQUEIDREF = "$uniqueidref";
@@ -418,91 +419,6 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
     }
 
     /**
-     * This returns a list of workflow events assigned to a given workitem. The
-     * method evaluates the events for the current $modelversion and $taskid. The
-     * result list is filtered by the properties 'keypublicresult' and
-     * 'keyRestrictedVisibility'.
-     * <p>
-     * If the property keyRestrictedVisibility exits the method test if the current
-     * username is listed in one of the namefields.
-     * <p>
-     * If the current user is in the role 'org.imixs.ACCESSLEVEL.MANAGERACCESS' the
-     * property keyRestrictedVisibility will be ignored.
-     * <p>
-     * If the model version does not exist the model is resolved by regular
-     * expressions using the method findModelByWorkitem
-     * <p>
-     * If not model can be found or the $taskID is not defined by the model a
-     * ModelException is thrown.
-     * 
-     * @see imixs-bpmn
-     * @param workitem
-     * @return
-     * @throws ModelException if model is not found or task is not defined by the
-     *                        given model
-     */
-    @SuppressWarnings("unchecked")
-    public List<ItemCollection> getEvents(ItemCollection workitem) throws ModelException {
-        List<ItemCollection> result = new ArrayList<ItemCollection>();
-        if (workitem == null) {
-            return result;
-        }
-        // resolve model.....
-        BPMNModel model = modelService.getModelManager().findModelByWorkitem(workitem);
-        if (model == null) {
-            throw new ModelException(
-                    ModelException.INVALID_MODEL, "Model '" + workitem.getModelVersion() + "' not found.");
-        }
-
-        int processID = workitem.getTaskID();
-        ItemCollection task = modelService.getModelManager().findTaskByID(model, processID);
-        if (task == null) {
-            throw new ModelException(
-                    ModelException.UNDEFINED_MODEL_ENTRY,
-                    "Task " + processID + " not defined in model '" + workitem.getModelVersion() + "'.");
-        }
-        List<ItemCollection> eventList = modelService.getModelManager().findEventsByTask(model, processID);
-
-        String username = getUserName();
-        boolean bManagerAccess = ctx.isCallerInRole(DocumentService.ACCESSLEVEL_MANAGERACCESS);
-
-        // now filter events which are not public (keypublicresult==false) or
-        // restricted for current user (keyRestrictedVisibility).
-        for (ItemCollection event : eventList) {
-            // ad only activities with userControlled != No
-            if ("0".equals(event.getItemValueString("keypublicresult"))) {
-                continue;
-            }
-
-            // it is not necessary to evaluate $readaccess here (see Issue #832)
-
-            // test RestrictedVisibility
-            List<String> restrictedList = event.getItemValue("keyRestrictedVisibility");
-            if (!bManagerAccess && !restrictedList.isEmpty()) {
-                // test each item for the current user name...
-                List<String> totalNameList = new ArrayList<String>();
-                for (String itemName : restrictedList) {
-                    totalNameList.addAll(workitem.getItemValue(itemName));
-                }
-                // remove null and empty values....
-                totalNameList.removeAll(Collections.singleton(null));
-                totalNameList.removeAll(Collections.singleton(""));
-                if (!totalNameList.isEmpty() && !totalNameList.contains(username)) {
-                    // event is not visible for current user!
-                    continue;
-                }
-            }
-            result.add(event);
-        }
-
-        // sort by event id
-        Collections.sort(result, new ItemCollectionComparator("eventID", true));
-
-        return result;
-
-    }
-
-    /**
      * This method processes a workItem by the WorkflowKernel and saves the workitem
      * after the processing was finished successful. The workitem have to provide at
      * least the properties '$modelversion', '$taskid' and '$eventid'
@@ -588,10 +504,12 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
         }
 
         // Lookup current model. If not found update model by regex
-        BPMNModel model = modelService.getModelManager().findModelByWorkitem(workitem);
+        String version = this.findModelVersionByWorkitem(workitem);
+        BPMNModel model = this.fetchModel(version);
         WorkflowKernel workflowkernel = new WorkflowKernel(this);
+        ItemCollection profile = workflowkernel.getModelManager().loadDefinition(model);
         // register plugins...
-        registerPlugins(workflowkernel, model);
+        registerPlugins(workflowkernel, profile);
         // register adapters.....
         registerAdapters(workflowkernel);
         // udpate workitem metadata...
@@ -700,15 +618,15 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
         documentService.remove(aworkitem);
     }
 
-    /**
-     * This Method returns the modelManager Instance. The current ModelVersion is
-     * automatically updated during the Method updateProfileEntity which is called
-     * from the processWorktiem method.
-     * 
-     */
-    public ModelManager getModelManager() {
-        return modelService.getModelManager();
-    }
+    // /**
+    // * This Method returns the modelManager Instance. The current ModelVersion is
+    // * automatically updated during the Method updateProfileEntity which is called
+    // * from the processWorktiem method.
+    // *
+    // */
+    // public ModelManager getModelManager() {
+    // return modelService.getModelManager();
+    // }
 
     /**
      * Returns an instance of the EJB session context.
@@ -735,6 +653,328 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
      */
     public ReportService getReportService() {
         return reportService;
+    }
+
+    /**
+     * This method register all plugin classes listed in the model profile
+     * 
+     * @throws PluginException
+     * @throws ModelException
+     */
+    @SuppressWarnings("unchecked")
+    protected void registerPlugins(WorkflowKernel workflowkernel, ItemCollection profile)
+            throws PluginException, ModelException {
+        boolean debug = logger.isLoggable(Level.FINE);
+
+        // register plugins defined in the environment.profile ....
+        List<String> vPlugins = (List<String>) profile.getItemValue("txtPlugins");
+        for (int i = 0; i < vPlugins.size(); i++) {
+            String aPluginClassName = vPlugins.get(i);
+
+            Plugin aPlugin = findPluginByName(aPluginClassName);
+            // aPlugin=null;
+            if (aPlugin != null) {
+                // register injected CDI Plugin
+                if (debug) {
+                    logger.log(Level.FINEST, "......register CDI plugin class: {0}...", aPluginClassName);
+                }
+                workflowkernel.registerPlugin(aPlugin);
+            } else {
+                // register plugin by class name
+                workflowkernel.registerPlugin(aPluginClassName);
+            }
+        }
+    }
+
+    protected void registerAdapters(WorkflowKernel workflowkernel) {
+        boolean debug = logger.isLoggable(Level.FINE);
+        if (debug && (adapters == null || !adapters.iterator().hasNext())) {
+            logger.finest("......no CDI Adapters injected");
+        } else if (this.adapters != null) {
+            // iterate over all injected adapters....
+            for (Adapter adapter : this.adapters) {
+                if (debug) {
+                    logger.log(Level.FINEST, "......register CDI Adapter class ''{0}''", adapter.getClass().getName());
+                }
+                workflowkernel.registerAdapter(adapter);
+            }
+        }
+    }
+
+    /**
+     * This method updates the workitem metadata. The following items will be
+     * updated:
+     * 
+     * <ul>
+     * <li>$creator</li>
+     * <li>$editor</li>
+     * <li>$lasteditor</li>
+     * <li>$participants</li>
+     * </ul>
+     * <p>
+     * The method also migrates deprected items.
+     * 
+     * @param workitem
+     */
+    protected void updateMetadata(ItemCollection workitem) {
+
+        // identify Caller and update CurrentEditor
+        String nameEditor;
+        nameEditor = ctx.getCallerPrincipal().getName();
+
+        // add namCreator if empty
+        // migrate $creator (Backward compatibility)
+        if (workitem.getItemValueString("$creator").isEmpty() && !workitem.getItemValueString("namCreator").isEmpty()) {
+            workitem.replaceItemValue("$creator", workitem.getItemValue("namCreator"));
+        }
+
+        if (workitem.getItemValueString("$creator").isEmpty()) {
+            workitem.replaceItemValue("$creator", nameEditor);
+            // support deprecated fieldname
+            workitem.replaceItemValue("namCreator", nameEditor);
+        }
+
+        // update namLastEditor only if current editor has changed
+        if (!nameEditor.equals(workitem.getItemValueString("$editor"))
+                && !workitem.getItemValueString("$editor").isEmpty()) {
+            workitem.replaceItemValue("$lasteditor", workitem.getItemValueString("$editor"));
+            // deprecated
+            workitem.replaceItemValue("namlasteditor", workitem.getItemValueString("$editor"));
+        }
+
+        // update $editor
+        workitem.replaceItemValue("$editor", nameEditor);
+        // deprecated
+        workitem.replaceItemValue("namcurrenteditor", nameEditor);
+    }
+
+    /**
+     * This method returns an injected Plugin by name or null if no plugin with the
+     * requested class name is injected.
+     * 
+     * @param pluginClassName
+     * @return plugin class or null if not found
+     */
+    protected Plugin findPluginByName(String pluginClassName) {
+        if (pluginClassName == null || pluginClassName.isEmpty())
+            return null;
+        boolean debug = logger.isLoggable(Level.FINE);
+
+        if (plugins == null || !plugins.iterator().hasNext()) {
+            if (debug) {
+                logger.finest("......no CDI plugins injected");
+            }
+            return null;
+        }
+        // iterate over all injected plugins....
+        for (Plugin plugin : this.plugins) {
+            if (plugin.getClass().getName().equals(pluginClassName)) {
+                if (debug) {
+                    logger.log(Level.FINEST, "......CDI plugin ''{0}'' successful injected", pluginClassName);
+                }
+                return plugin;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * This method returns a exclusive thread save BPMNModel instance. The method
+     * must not return a shared model instance. The method must throw a
+     * ModelException in case no model matching the requested version exists. A
+     * client can call {@code findModelVersionByWorkitem} to resolve a valid model
+     * version for a workitem.
+     *
+     * @param version - valid model version
+     * @return an instance of a BPMNModel to be used in a thread save way
+     * @throws ModelException
+     */
+    public BPMNModel fetchModel(String version) throws ModelException {
+        return modelService.getBPMNModel(version);
+    }
+
+    /**
+     * Returns a Model matching the $modelversion of a given workitem. The
+     * $modelversion can optional be provided as a regular expression.
+     * <p>
+     * In case no matching model version exits, the method tries to find the highest
+     * Model Version matching the corresponding workflow group.
+     * <p>
+     * The method throws a ModelException in case the model version did not exits.
+     **/
+    public String findModelVersionByWorkitem(ItemCollection workitem) throws ModelException {
+
+        String version = workitem.getModelVersion();
+        // first try a direct fetch....
+        if (version != null && !version.isEmpty()) {
+            if (modelService.hasModelVersion(version)) {
+                return version;
+            }
+        }
+
+        // ...try to find model version by regex...
+        if (version != null && !version.isEmpty()) {
+            String matchingVersion = findModelVersionByRegEx(version);
+            if (matchingVersion != null && !matchingVersion.isEmpty()) {
+                // match - update $modelVersion
+                logger.log(Level.INFO, "Update model version by regex: ''{0}'' ▶ ''{1}'',"
+                        + "  $workflowgroup: ''{2}'', $uniqueid: {3}",
+                        new Object[] { version, matchingVersion, workitem.getWorkflowGroup(),
+                                workitem.getUniqueID() });
+                workitem.model(matchingVersion);
+                return matchingVersion;
+            }
+        }
+
+        // ...try to find model version by group
+        if (!workitem.getWorkflowGroup().isEmpty()) {
+            String matchingVersion = findModelVersionByGroup(workitem.getWorkflowGroup());
+            if (matchingVersion != null && !matchingVersion.isEmpty()) {
+                // match - update $modelVersion
+                logger.log(Level.INFO, "Update model version by group ''{0}'' ▶ ''{1}'',"
+                        + "  $workflowgroup: ''{2}'', $uniqueid: {3}",
+                        new Object[] { workitem.getWorkflowGroup(), matchingVersion, workitem.getWorkflowGroup(),
+                                workitem.getUniqueID() });
+                workitem.model(matchingVersion);
+                return matchingVersion;
+
+            }
+        }
+        // no match!
+        throw new ModelException(ModelException.UNDEFINED_MODEL_VERSION, "$modelversion '" + version + "' not found");
+    }
+
+    /**
+     * This method returns a sorted list of model versions matching a given regex
+     * for a model version. The result is sorted in reverse order, so the highest
+     * version number is the first in the result list.
+     * 
+     * @param group
+     * @return
+     */
+    @Override
+    public String findModelVersionByRegEx(String modelRegex) {
+        boolean debug = logger.isLoggable(Level.FINE);
+        // Sorted in reverse order
+        Set<String> result = new TreeSet<>(Collections.reverseOrder());
+        if (debug) {
+            logger.log(Level.FINEST, "......searching model versions for regex ''{0}''...", modelRegex);
+        }
+        // try to find matching model version by regex
+        List<String> modelVersions = modelService.getVersions();
+        for (String _version : modelVersions) {
+            if (Pattern.compile(modelRegex).matcher(_version).find()) {
+                result.add(_version);
+            }
+        }
+        if (result.size() > 0) {
+            return result.iterator().next();
+        }
+        return null;
+    }
+
+    /**
+     * Returns a version by Group.
+     * The method computes a sorted list of all model versions containing the
+     * requested
+     * workflow group. The result is sorted in reverse order, so the highest version
+     * number is the first in the result list.
+     * 
+     * @param group - name of the workflow group
+     * @return list of matching model versions
+     * @throws ModelException
+     */
+    @Override
+    public String findModelVersionByGroup(String group) throws ModelException {
+        return modelService.findVersionByGroup(group);
+    }
+
+    /**
+     * This returns a list of workflow events assigned to a given workitem. The
+     * method evaluates the events for the current $modelversion and $taskid. The
+     * result list is filtered by the properties 'keypublicresult' and
+     * 'keyRestrictedVisibility'.
+     * <p>
+     * If the property keyRestrictedVisibility exits the method test if the current
+     * username is listed in one of the namefields.
+     * <p>
+     * If the current user is in the role 'org.imixs.ACCESSLEVEL.MANAGERACCESS' the
+     * property keyRestrictedVisibility will be ignored.
+     * <p>
+     * If the model version does not exist the model is resolved by regular
+     * expressions using the method findModelByWorkitem
+     * <p>
+     * If not model can be found or the $taskID is not defined by the model a
+     * ModelException is thrown.
+     * 
+     * @see imixs-bpmn
+     * @param workitem
+     * @return
+     * @throws ModelException if model is not found or task is not defined by the
+     *                        given model
+     */
+    @SuppressWarnings("unchecked")
+    public List<ItemCollection> getEvents(ItemCollection workitem) throws ModelException {
+        List<ItemCollection> result = new ArrayList<ItemCollection>();
+        if (workitem == null) {
+            return result;
+        }
+        // resolve model.....
+        String version = findModelVersionByWorkitem(workitem);
+        BPMNModel model = fetchModel(version);
+        if (model == null) {
+            throw new ModelException(
+                    ModelException.INVALID_MODEL, "Model '" + workitem.getModelVersion() + "' not found.");
+        }
+
+        int taskId = workitem.getTaskID();
+        ModelManager modelManager = new ModelManager(this);
+        ItemCollection task = modelManager.findTaskByID(model, taskId);
+        if (task == null) {
+            throw new ModelException(
+                    ModelException.UNDEFINED_MODEL_ENTRY,
+                    "Task " + taskId + " not defined in model '" + workitem.getModelVersion() + "'.");
+        }
+        List<ItemCollection> eventList = modelManager.findEventsByTask(model, taskId);
+
+        String username = getUserName();
+        boolean bManagerAccess = ctx.isCallerInRole(DocumentService.ACCESSLEVEL_MANAGERACCESS);
+
+        // now filter events which are not public (keypublicresult==false) or
+        // restricted for current user (keyRestrictedVisibility).
+        for (ItemCollection event : eventList) {
+            // ad only activities with userControlled != No
+            if ("0".equals(event.getItemValueString("keypublicresult"))) {
+                continue;
+            }
+
+            // it is not necessary to evaluate $readaccess here (see Issue #832)
+
+            // test RestrictedVisibility
+            List<String> restrictedList = event.getItemValue("keyRestrictedVisibility");
+            if (!bManagerAccess && !restrictedList.isEmpty()) {
+                // test each item for the current user name...
+                List<String> totalNameList = new ArrayList<String>();
+                for (String itemName : restrictedList) {
+                    totalNameList.addAll(workitem.getItemValue(itemName));
+                }
+                // remove null and empty values....
+                totalNameList.removeAll(Collections.singleton(null));
+                totalNameList.removeAll(Collections.singleton(""));
+                if (!totalNameList.isEmpty() && !totalNameList.contains(username)) {
+                    // event is not visible for current user!
+                    continue;
+                }
+            }
+            result.add(event);
+        }
+
+        // sort by event id
+        Collections.sort(result, new ItemCollectionComparator("eventID", true));
+
+        return result;
+
     }
 
     /**
@@ -771,6 +1011,28 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
      */
     public List<String> getUserNameList() {
         return documentService.getUserNameList();
+    }
+
+    /**
+     * The method evaluates the next task for a process instance (workitem) based on
+     * the current model definition. A Workitem must at least provide the properties
+     * $TASKID and $EVENTID.
+     * <p>
+     * During the evaluation life-cycle more than one events can be evaluated. This
+     * depends on the model definition which can define follow-up-events,
+     * split-events and conditional events.
+     * <p>
+     * The method did not persist the process instance or execute any plugin or
+     * adapter classes.
+     * 
+     * @return Task entity
+     * @throws PluginException
+     * @throws ModelException
+     */
+    public ItemCollection evalNextTask(ItemCollection workitem) throws PluginException, ModelException {
+        WorkflowKernel workflowkernel = new WorkflowKernel(this);
+        ItemCollection task = workflowkernel.eval(workitem);
+        return task;
     }
 
     /**
@@ -852,6 +1114,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
      *         result.
      * @throws PluginException if the xml structure is invalid
      */
+    @Override
     public ItemCollection evalWorkflowResult(ItemCollection event, String xmlTag, ItemCollection documentContext,
             boolean resolveItemValues) throws PluginException {
         boolean debug = logger.isLoggable(Level.FINE);
@@ -1121,170 +1384,5 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
 
         return result;
 
-    }
-
-    @Deprecated
-    public ItemCollection evalWorkflowResult(ItemCollection event, ItemCollection documentContext,
-            boolean resolveItemValues) throws PluginException {
-        logger.warning(
-                "Method call evalWorkflowResult(event, workitem, resolve) is deprecated, use method evalWorkflowResult(event, tag, workitem, resolve) instead!");
-        return this.evalWorkflowResult(event, "item", documentContext, resolveItemValues);
-    }
-
-    @Deprecated
-    public ItemCollection evalWorkflowResult(ItemCollection event, ItemCollection documentContext)
-            throws PluginException {
-        logger.warning(
-                "Method call evalWorkflowResult(event, workitem) is deprecated, use method evalWorkflowResult(event, tag, workitem) instead!");
-        return this.evalWorkflowResult(event, "item", documentContext);
-    }
-
-    /**
-     * The method evaluates the next task for a process instance (workitem) based on
-     * the current model definition. A Workitem must at least provide the properties
-     * $TASKID and $EVENTID.
-     * <p>
-     * During the evaluation life-cycle more than one events can be evaluated. This
-     * depends on the model definition which can define follow-up-events,
-     * split-events and conditional events.
-     * <p>
-     * The method did not persist the process instance or execute any plugin or
-     * adapter classes.
-     * 
-     * @return Task entity
-     * @throws PluginException
-     * @throws ModelException
-     */
-    public ItemCollection evalNextTask(ItemCollection workitem) throws PluginException, ModelException {
-        WorkflowKernel workflowkernel = new WorkflowKernel(this);
-        ItemCollection task = workflowkernel.eval(workitem);
-        return task;
-    }
-
-    /**
-     * This method register all plugin classes listed in the model profile
-     * 
-     * @throws PluginException
-     * @throws ModelException
-     */
-    @SuppressWarnings("unchecked")
-    protected void registerPlugins(WorkflowKernel workflowkernel, BPMNModel model)
-            throws PluginException, ModelException {
-        boolean debug = logger.isLoggable(Level.FINE);
-        // Fetch the current Profile Entity for this version.
-
-        ItemCollection profile = modelService.loadDefinition(model);// model.getDefinition();
-
-        // register plugins defined in the environment.profile ....
-        List<String> vPlugins = (List<String>) profile.getItemValue("txtPlugins");
-        for (int i = 0; i < vPlugins.size(); i++) {
-            String aPluginClassName = vPlugins.get(i);
-
-            Plugin aPlugin = findPluginByName(aPluginClassName);
-            // aPlugin=null;
-            if (aPlugin != null) {
-                // register injected CDI Plugin
-                if (debug) {
-                    logger.log(Level.FINEST, "......register CDI plugin class: {0}...", aPluginClassName);
-                }
-                workflowkernel.registerPlugin(aPlugin);
-            } else {
-                // register plugin by class name
-                workflowkernel.registerPlugin(aPluginClassName);
-            }
-        }
-    }
-
-    protected void registerAdapters(WorkflowKernel workflowkernel) {
-        boolean debug = logger.isLoggable(Level.FINE);
-        if (debug && (adapters == null || !adapters.iterator().hasNext())) {
-            logger.finest("......no CDI Adapters injected");
-        } else if (this.adapters != null) {
-            // iterate over all injected adapters....
-            for (Adapter adapter : this.adapters) {
-                if (debug) {
-                    logger.log(Level.FINEST, "......register CDI Adapter class ''{0}''", adapter.getClass().getName());
-                }
-                workflowkernel.registerAdapter(adapter);
-            }
-        }
-    }
-
-    /**
-     * This method updates the workitem metadata. The following items will be
-     * updated:
-     * 
-     * <ul>
-     * <li>$creator</li>
-     * <li>$editor</li>
-     * <li>$lasteditor</li>
-     * <li>$participants</li>
-     * </ul>
-     * <p>
-     * The method also migrates deprected items.
-     * 
-     * @param workitem
-     */
-    protected void updateMetadata(ItemCollection workitem) {
-
-        // identify Caller and update CurrentEditor
-        String nameEditor;
-        nameEditor = ctx.getCallerPrincipal().getName();
-
-        // add namCreator if empty
-        // migrate $creator (Backward compatibility)
-        if (workitem.getItemValueString("$creator").isEmpty() && !workitem.getItemValueString("namCreator").isEmpty()) {
-            workitem.replaceItemValue("$creator", workitem.getItemValue("namCreator"));
-        }
-
-        if (workitem.getItemValueString("$creator").isEmpty()) {
-            workitem.replaceItemValue("$creator", nameEditor);
-            // support deprecated fieldname
-            workitem.replaceItemValue("namCreator", nameEditor);
-        }
-
-        // update namLastEditor only if current editor has changed
-        if (!nameEditor.equals(workitem.getItemValueString("$editor"))
-                && !workitem.getItemValueString("$editor").isEmpty()) {
-            workitem.replaceItemValue("$lasteditor", workitem.getItemValueString("$editor"));
-            // deprecated
-            workitem.replaceItemValue("namlasteditor", workitem.getItemValueString("$editor"));
-        }
-
-        // update $editor
-        workitem.replaceItemValue("$editor", nameEditor);
-        // deprecated
-        workitem.replaceItemValue("namcurrenteditor", nameEditor);
-    }
-
-    /**
-     * This method returns an injected Plugin by name or null if no plugin with the
-     * requested class name is injected.
-     * 
-     * @param pluginClassName
-     * @return plugin class or null if not found
-     */
-    private Plugin findPluginByName(String pluginClassName) {
-        if (pluginClassName == null || pluginClassName.isEmpty())
-            return null;
-        boolean debug = logger.isLoggable(Level.FINE);
-
-        if (plugins == null || !plugins.iterator().hasNext()) {
-            if (debug) {
-                logger.finest("......no CDI plugins injected");
-            }
-            return null;
-        }
-        // iterate over all injected plugins....
-        for (Plugin plugin : this.plugins) {
-            if (plugin.getClass().getName().equals(pluginClassName)) {
-                if (debug) {
-                    logger.log(Level.FINEST, "......CDI plugin ''{0}'' successful injected", pluginClassName);
-                }
-                return plugin;
-            }
-        }
-
-        return null;
     }
 }

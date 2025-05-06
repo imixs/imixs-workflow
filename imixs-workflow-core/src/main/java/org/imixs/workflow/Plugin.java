@@ -50,12 +50,11 @@ public interface Plugin {
      * This method is called before the WorkflowKernel starts the execution. A
      * plugin can for example initialize external resources or data.
      * 
-     * @param workflowContext defines the context in which the plugin runs. The
-     *                        context can be used to get information about the
-     *                        environment
+     * @param model provides an instance to the current bpmn model (Note: this
+     *              instance is not thread save!)
      *
      */
-    public void init(WorkflowContext workflowContext) throws PluginException;
+    public void init(WorkflowContext ctx) throws PluginException;
 
     /**
      * @param document the workitem to be processed

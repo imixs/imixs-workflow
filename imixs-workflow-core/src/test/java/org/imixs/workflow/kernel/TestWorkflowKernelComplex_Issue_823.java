@@ -1,6 +1,7 @@
 package org.imixs.workflow.kernel;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
@@ -9,11 +10,12 @@ import java.text.ParseException;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.MockWorkflowEngine;
+import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.openbpmn.bpmn.BPMNModel;
 import org.xml.sax.SAXException;
 
 /**
@@ -35,13 +37,19 @@ import org.xml.sax.SAXException;
  */
 public class TestWorkflowKernelComplex_Issue_823 {
 
-	private MockWorkflowEngine workflowEngine;
+	MockWorkflowContext workflowEngine;
 
 	@BeforeEach
-	public void setup() throws PluginException {
-		workflowEngine = new MockWorkflowEngine();
-		// load default model
-		workflowEngine.loadBPMNModel("/bpmn/conditional_complex_event0.bpmn");
+	public void setup() {
+		try {
+			workflowEngine = new MockWorkflowContext();
+			workflowEngine.loadBPMNModelFromFile("/bpmn/conditional_complex_event0.bpmn");
+			BPMNModel model = workflowEngine.fetchModel("1.0.0");
+			assertNotNull(model);
+
+		} catch (ModelException | PluginException e) {
+			fail(e.getMessage());
+		}
 	}
 
 	/**
