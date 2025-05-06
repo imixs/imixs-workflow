@@ -551,13 +551,13 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
                 // test for author access
                 if (!currentInstance.getItemValueBoolean(DocumentService.ISAUTHOR)) {
                     throw new AccessDeniedException(AccessDeniedException.OPERATION_NOTALLOWED, "$uniqueid: "
-                            + workitem.getItemValueInteger(WorkflowKernel.UNIQUEID) + " - No Author Access!");
+                            + workitem.getUniqueID() + " - No Author Access!");
                 }
                 // test if $taskID matches current instance
                 if (workitem.getTaskID() > 0 && currentInstance.getTaskID() != workitem.getTaskID()) {
                     throw new ProcessingErrorException(WorkflowService.class.getSimpleName(),
                             ProcessingErrorException.INVALID_PROCESSID,
-                            "$uniqueid: " + workitem.getItemValueInteger(WorkflowKernel.UNIQUEID) + " - $taskid="
+                            "$uniqueid: " + workitem.getUniqueID() + " - $taskid="
                                     + workitem.getTaskID() + " Did Not Match Expected $taskid="
                                     + currentInstance.getTaskID());
                 }
@@ -575,7 +575,7 @@ public class WorkflowService implements WorkflowManager, WorkflowContext {
                         || (workitem.getModelVersion().isEmpty() && workitem.getWorkflowGroup().isEmpty())) {
                     // user has no read access -> throw AccessDeniedException
                     throw new InvalidAccessException(InvalidAccessException.OPERATION_NOTALLOWED,
-                            "$uniqueid: " + workitem.getItemValueInteger(WorkflowKernel.UNIQUEID)
+                            "$uniqueid: " + workitem.getUniqueID()
                                     + " - Insufficient Data or Lack Of Permission!");
                 }
 
