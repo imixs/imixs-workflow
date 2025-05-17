@@ -419,6 +419,20 @@ public class WorkflowKernel {
                                 + " was called twice in one processing life cycle. Check your model!");
             }
             event = processEvent(workitem, event, model);
+            // verify if the model version has changed during the last processing cycle!
+            if (!workitem.getModelVersion().equals(BPMNUtil.getVersion(model))) {
+                // update model instance...
+                // logger.finest("Update Model Instance to: " + workitem.getModelVersion());
+
+                logger.log(Level.INFO, "\u2699 update model: ''{0}'' ▶ ''{1}'',"
+                        + "  $workflowgroup: ''{2}'', $uniqueid: {3}",
+                        new Object[] { BPMNUtil.getVersion(model), workitem.getModelVersion(),
+                                workitem.getWorkflowGroup(),
+                                workitem.getUniqueID() });
+
+                model = modelManager.getModelByWorkitem(workitem);
+            }
+
             loopDetector.add(id);
         }
 
@@ -498,12 +512,13 @@ public class WorkflowKernel {
 
         // test if a new model version was assigned by the last event
         if (updateModelVersionByEvent(workitem, event)) {
-            logger.log(Level.INFO, "\u2699 set new model : {0} ({1})",
+            logger.log(Level.FINE, "\u2699 set new model : {0} ({1})",
                     new Object[] { workitem.getItemValueString(UNIQUEID),
                             workitem.getItemValueString(MODELVERSION) });
+            // load new model instance...
+            model = modelManager.getModelByWorkitem(workitem);
             // write event log
             logEvent(workitem.getTaskID(), workitem.getEventID(), workitem.getTaskID(), workitem);
-            // load new Event and start new processing life cycle...
             event = this.loadEvent(workitem, model);
             workitem.event(event.getItemValueInteger(BPMNUtil.EVENT_ITEM_EVENTID));
             return event;
@@ -702,7 +717,8 @@ public class WorkflowKernel {
 
             // test if a new model version was assigned by the last event
             if (updateModelVersionByEvent(workitem, event)) {
-                // load new Event and start new processing life cycle...
+                // load new model instance
+                model = modelManager.getModelByWorkitem(workitem);
                 event = this.loadEvent(workitem, model);
                 workitem.event(event.getItemValueInteger("numactivityid"));
             } else {
