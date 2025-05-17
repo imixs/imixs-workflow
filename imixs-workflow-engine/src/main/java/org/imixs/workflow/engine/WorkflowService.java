@@ -818,7 +818,7 @@ public class WorkflowService implements WorkflowContext {
             String matchingVersion = findModelVersionByRegEx(version);
             if (matchingVersion != null && !matchingVersion.isEmpty()) {
                 // match - update $modelVersion
-                logger.log(Level.INFO, "Update model version by regex: ''{0}'' ▶ ''{1}'',"
+                logger.log(Level.FINE, "Update model version by regex: ''{0}'' ▶ ''{1}'',"
                         + "  $workflowgroup: ''{2}'', $uniqueid: {3}",
                         new Object[] { version, matchingVersion, workitem.getWorkflowGroup(),
                                 workitem.getUniqueID() });
@@ -832,7 +832,7 @@ public class WorkflowService implements WorkflowContext {
             String matchingVersion = findModelVersionByGroup(workitem.getWorkflowGroup());
             if (matchingVersion != null && !matchingVersion.isEmpty()) {
                 // match - update $modelVersion
-                logger.log(Level.INFO, "Update model version by group ''{0}'' ▶ ''{1}'',"
+                logger.log(Level.FINE, "Update model version by group ''{0}'' ▶ ''{1}'',"
                         + "  $workflowgroup: ''{2}'', $uniqueid: {3}",
                         new Object[] { workitem.getWorkflowGroup(), matchingVersion, workitem.getWorkflowGroup(),
                                 workitem.getUniqueID() });
