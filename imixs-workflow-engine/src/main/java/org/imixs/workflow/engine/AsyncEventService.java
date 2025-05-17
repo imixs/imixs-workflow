@@ -38,12 +38,14 @@ import java.util.logging.Logger;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.jpa.EventLog;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.WorkflowException;
+import org.openbpmn.bpmn.BPMNModel;
 
 import jakarta.annotation.security.DeclareRoles;
 import jakarta.annotation.security.RolesAllowed;
@@ -118,13 +120,9 @@ public class AsyncEventService {
         boolean debug = logger.isLoggable(Level.FINE);
         if (ProcessingEvent.AFTER_PROCESS == processingEvent.getEventType()) {
             // load target task
-            ItemCollection task = workflowService.evalNextTask(processingEvent.getDocument());
-
-            // BPMNModel model =
-            // modelService.findModelVersionByWorkitem(processingEvent.getDocument());
-            // ItemCollection task =
-            // modelService.getModelManager().loadTask(processingEvent.getDocument(),
-            // model);
+            ModelManager modelManager = new ModelManager(workflowService);
+            BPMNModel model = modelManager.getModelByWorkitem(processingEvent.getDocument());
+            ItemCollection task = modelManager.loadTask(processingEvent.getDocument(), model);
             if (task != null) {
                 int boundaryTarget = task.getItemValueInteger("boundaryEvent.targetEvent");
                 int boundaryDuration = task.getItemValueInteger("boundaryEvent.timerEventDefinition.timeDuration");
