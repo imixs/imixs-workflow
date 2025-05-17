@@ -120,30 +120,31 @@ public class RuleEngine {
     void init(final String languageId) {
         this.languageId = languageId;
         // lazy initialization - see getContext()
-        _context=null;
+        _context = null;
     }
 
     /**
      * Returns the current polyglot context
      * 
-     * This method implements a lazy initialization of the context. 
+     * This method implements a lazy initialization of the context.
      * See Issue #822
      * 
      * We also set the option 'WarnInterpreterOnly' to false.
      * See also here: https://www.graalvm.org/22.0/reference-manual/js/FAQ/
      * 
      * Issue #821
+     * 
      * @return
      */
     public Context getContext() {
         // init context the first time?
-        if (_context==null) {
-            long l=System.currentTimeMillis();
+        if (_context == null) {
+            long l = System.currentTimeMillis();
             _context = Context.newBuilder(languageId) //
-                .option("engine.WarnInterpreterOnly", "false") //
-                .allowAllAccess(true) //
-                .build();
-            logger.log(Level.INFO, "...init RuleEngine took {0}ms", System.currentTimeMillis()-l);
+                    .option("engine.WarnInterpreterOnly", "false") //
+                    .allowAllAccess(true) //
+                    .build();
+            logger.log(Level.FINEST, "...init RuleEngine took {0}ms", System.currentTimeMillis() - l);
         }
         return _context;
     }
@@ -190,7 +191,7 @@ public class RuleEngine {
         // Test if we have a deprecated Script...
         if (RuleEngineNashornConverter.isDeprecatedScript(script)) {
             // here we rewrite the script as best as we can.
-            script = RuleEngineNashornConverter.rewrite(script, workitem, null);            
+            script = RuleEngineNashornConverter.rewrite(script, workitem, null);
         }
 
         Value result = null;
@@ -255,7 +256,7 @@ public class RuleEngine {
             ItemCollection result = convertResult();
             return result;
         } catch (PolyglotException e) {
-            logger.log(Level.WARNING, "Script Error: {0} in: {1}", new Object[]{e.getMessage(), script});
+            logger.log(Level.WARNING, "Script Error: {0} in: {1}", new Object[] { e.getMessage(), script });
             // script not valid
             throw new PluginException(RuleEngine.class.getSimpleName(), INVALID_SCRIPT,
                     "BusinessRule contains invalid script:" + e.getMessage(), e);
