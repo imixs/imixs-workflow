@@ -55,3 +55,56 @@ The following statement adds the necessary indexes for a MySQL Database:
 The following statement adds the necessary indexes for a PostgreSQL Database:
 
     CREATE INDEX index_document1 ON document USING btree(created, modified, type , version);
+
+#### Optimizing Vacuum Settings
+
+In case you are handling a lot of documents (file attachments) in your workflow the largest part of you data will be caused by the TOAST data and indexes, not by the `document` table itself. For this reason it is recommended to optimize the vacuum settings for PostgreSQL.
+Autovacuum Settings:
+
+The default settings (autovacuum_vacuum_scale_factor = 0.2) is mostly too high for a table with large TOAST data. On the other side the
+memory settings (maintenance_work_mem = 65536 kB (64 MB)) will be too low for the size of your database, especially for VACUUM operations.
+
+1. First optimize the vacuum settings for the document table:
+
+```sql
+ALTER TABLE document SET (
+    autovacuum_vacuum_scale_factor = 0.01,
+    autovacuum_vacuum_threshold = 1000,
+    autovacuum_vacuum_cost_delay = 0,
+    autovacuum_vacuum_cost_limit = 2000
+);
+```
+
+2. Change global settings
+
+```sql
+ALTER SYSTEM SET maintenance_work_mem = '1GB';
+ALTER SYSTEM SET autovacuum_max_workers = 6;
+ALTER SYSTEM SET autovacuum_naptime = '30s';
+SELECT pg_reload_conf();
+```
+
+3. Verify teh result
+
+From time to time you can check the result of the settings:
+
+```sql
+# SELECT
+    relname,
+    n_dead_tup,
+    n_live_tup,
+    last_autovacuum,
+    autovacuum_count,
+    pg_size_pretty(pg_total_relation_size(relid)) as total_size
+FROM pg_stat_user_tables
+WHERE relname = 'document';
+```
+
+The result may look like this:
+
+```
+ relname  | n_dead_tup | n_live_tup |        last_autovacuum        | autovacuum_count | total_size
+----------+------------+------------+-------------------------------+------------------+------------
+ document |          2 |     629039 | 2025-05-25 07:37:27.292062+00 |                1 | 224 GB
+(1 row)
+```
