@@ -26,7 +26,30 @@ Both files contain the Imixs-Workflow settings for formatting and clean-up of Ja
 
 ### Maven
 
-For Maven projects just add the following two plugins. This will format you code automatically during build:
+For Maven projects you can add the formatter plugin
+
+```xml
+			<!-- Imixs Code Formatter and Checkstyle -->
+			<plugin>
+				<groupId>net.revelc.code.formatter</groupId>
+				<artifactId>formatter-maven-plugin</artifactId>
+				<version>2.26.0</version>
+				<configuration>
+					<configFile>
+						https://raw.githubusercontent.com/imixs/imixs-workflow/refs/heads/master/imixs-code-style.xml</configFile>
+					<lineEnding>LF</lineEnding>
+					<includes>
+						<include>**/*.java</include>
+					</includes>
+				</configuration>
+			</plugin>
+```
+
+and run the formatter with
+
+    $ mvn formatter:format
+
+or you can add the following two plugin to format your code automatically during build:
 
 ```xml
 			<!-- Imixs Code Formatter and Checkstyle -->
@@ -73,12 +96,23 @@ For Maven projects just add the following two plugins. This will format you code
 If you do not use maven, the imixs-checkstyle settings can optional also be adapted in VSCode using the [Checkstyle for Java](https://marketplace.visualstudio.com/items?itemName=shengchen.vscode-checkstyle).
 To activate the checkstyle rules add the following configuration into your `.vscode/settings.json` file
 
+<!-- prettier-ignore -->
 ```yaml
-{ ? // Organize Java Imports
-    "editor.codeActionsOnSave"
-  : { "source.organizeImports": true }, ? // Format with Checkstyle
-    "java.checkstyle.configuration"
-  : "https://raw.githubusercontent.com/imixs/imixs-workflow/master/imixs-checkstyle-8.44.xml", "editor.formatOnSave": true }
+{
+  // Organize Java Imports
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+  "java.format.settings.url": "https://raw.githubusercontent.com/imixs/imixs-workflow/refs/heads/master/imixs-code-style.xml"
+}
+```
+
+You can avoid formatting by adding the following line
+
+```
+<!-- prettier-ignore -->
+.... your code
 ```
 
 ## Naming Conventions

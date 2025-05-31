@@ -5,10 +5,9 @@
 // - Mac: $HOME/Library/Application Support/Code/User/settings.json
 {
   // Organize Java Imports
+  "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.organizeImports": "explicit"
   },
-  // Checkstile
-  "java.checkstyle.configuration": "https://raw.githubusercontent.com/imixs/imixs-workflow/master/imixs-checkstyle-8.44.xml",
-  "editor.formatOnSave": true
+  "java.format.settings.url": "https://raw.githubusercontent.com/imixs/imixs-workflow/refs/heads/master/imixs-code-style.xml"
 }
