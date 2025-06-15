@@ -45,37 +45,15 @@ import jakarta.interceptor.Interceptor;
 
 /**
  * The TextForEachAdapter can be used to format text fragments with the
- * 'for-each' tag. The adapter will iterate over the value list of a specified
- * item.
+ * 'for-each-child' tag. The adapter will iterate over the embedded child items
+ * specified by the tag item.
  * 
- * <pre>
- * {@code
- <for-each item="_partid">
-  Order-No: <itemvalue>_orderid</itemvalue> - Part ID: <itemvalue>_partid</itemvalue><br />
- </for-each>  
- * }
- * </pre>
- * 
- * In this example, the for-each block will be executed for each single value of
- * the item '_partid'. Within the for-each block it is possible to access the
- * current value of the iteration as also any other values of the current
- * document. The result may look like in the following example:
- * <p>
- * 
- * <pre>
- * {@code 
- * Order-No: 111222 - Part ID: A123
- * Order-No: 111222 - Part ID: B456
- * }
- * </pre>
- * <p>
- * In case the item contains an embedded list of child ItemCollections the
- * content of the for-each block will be processed in the context for each
+ * The content of the for-each block will be processed in the context for each
  * embedded ItemCollection:
  * 
  * <pre>
  * {@code
-  <for-each item="_orderitems">
+  <for-each-child item="_orderitems">
     <itemvalue>_orderid</itemvalue>: <itemvalue>_price</itemvalue>
   </for-each>  
  * }
@@ -97,7 +75,7 @@ import jakarta.interceptor.Interceptor;
  *
  */
 @Stateless
-public class TextForEachAdapter {
+public class TextForEachChildAdapter {
 
     private static final Logger logger = Logger.getLogger(TextForEachAdapter.class.getName());
 
@@ -109,39 +87,33 @@ public class TextForEachAdapter {
      * for xml tag <for-each>. Those tags will be replaced with the corresponding
      * system property value.
      * <p>
-     * The priority of the CDI event is set to (APPLICATION-5) to ensure that the
-     * for-each adapter is triggered before the TextItemValueAdapter but after the
-     * new ForEachChild|Ref|Value adapter classes
+     * The priority of the CDI event is set to (APPLICATION-10) to ensure that the
+     * for-each adapter is triggered before the TextItemValueAdapter
      * 
      */
     @SuppressWarnings("unchecked")
-    @Deprecated
-    public void onEvent(@Observes @Priority(Interceptor.Priority.APPLICATION - 5) TextEvent event) {
+    public void onEvent(@Observes @Priority(Interceptor.Priority.APPLICATION - 10) TextEvent event) {
 
         String text = event.getText();
         String textResult = "";
         boolean debug = logger.isLoggable(Level.FINE);
 
-        List<String> tagList = XMLParser.findNoEmptyTags(text, "for-each");
+        List<String> tagList = XMLParser.findNoEmptyTags(text, "for-each-child");
         if (debug) {
             logger.log(Level.FINEST, "......{0} tags found", tagList.size());
-        }
-
-        if (tagList.size() > 0) {
-            logger.warning("TextAdapter 'for-each' is deprecated. Use instead 'for-each-value'");
         }
         // test if a <for-each> tag exists...
         for (String tag : tagList) {
             // find the item value list...
             String itemName = XMLParser.findAttribute(tag, "item");
-            String innervalue = XMLParser.findTagValue(tag, "for-each");
+            String innervalue = XMLParser.findTagValue(tag, "for-each-child");
 
             // next we iterate over all item values and test for each value if the value is
             // a basic value or an embedded ItemCollection.
             List<Object> values = event.getDocument().getItemValue(itemName);
             for (Object _value : values) {
                 ItemCollection _tempDoc = null;
-                // test if the value defines an embedded ItemCollection....
+                // we expect an embedded ItemCollection....
                 if (_value instanceof Map<?, ?>) {
                     try {
                         _tempDoc = new ItemCollection((Map<String, List<Object>>) _value);
@@ -151,12 +123,9 @@ public class TextForEachAdapter {
                         continue;
                     }
                 } else {
-                    // We treat the value as a normal object and delegate the processing by firing
-                    // a TextEvent.
-                    // Here we need to create a temporary document for processing....
-                    _tempDoc = new ItemCollection(event.getDocument());
-                    // replace the for-each item value with the current iteration!
-                    _tempDoc.setItemValue(itemName, _value);
+                    // not supported!
+                    logger.warning(
+                            "for-each-child is not supported for simple value lists! Use instead: for-each-value ");
                 }
 
                 // now we fire a recursive text event to process the content....
