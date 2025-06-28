@@ -94,7 +94,7 @@
 	<licenses>
 		<license>
 			<name>Eclipse Public License 2.0</name>
-			<url>https://www.eclipse.org/legal/epl-2.0/</url>
+			<url>https://www.imixs.org/license.html</url>
 			<distribution>repo</distribution>
 			<comments>All the results of the imixs workflow project are subject to the EPL 2.0 licensing model. </comments>
 		</license>
@@ -122,7 +122,8 @@
 					<archive>
 						<addMavenDescriptor>true</addMavenDescriptor>
 						<manifestEntries>
-							<Bundle-License>https://www.eclipse.org/legal/epl-2.0/</Bundle-License>
+							<Bundle-License>
+								https://www.imixs.org/license.html</Bundle-License>
 						</manifestEntries>
 					</archive>
 				</configuration>
