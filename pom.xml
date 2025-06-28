@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.imixs.workflow</groupId>
 	<artifactId>imixs-workflow</artifactId>
@@ -91,10 +93,10 @@
 
 	<licenses>
 		<license>
-			<name>GNU General Public License</name>
-			<url>http://www.gnu.org/licenses/gpl-2.0.txt</url>
+			<name>Eclipse Public License 2.0</name>
+			<url>https://www.eclipse.org/legal/epl-2.0/</url>
 			<distribution>repo</distribution>
-			<comments>All the results of the imixs workflow project are subject to the GPL licensing model. </comments>
+			<comments>All the results of the imixs workflow project are subject to the EPL 2.0 licensing model. </comments>
 		</license>
 	</licenses>
 
@@ -109,6 +111,20 @@
 				<configuration>
 					<source>17</source>
 					<target>17</target>
+				</configuration>
+			</plugin>
+			<!-- License -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.3.0</version>
+				<configuration>
+					<archive>
+						<addMavenDescriptor>true</addMavenDescriptor>
+						<manifestEntries>
+							<Bundle-License>https://www.eclipse.org/legal/epl-2.0/</Bundle-License>
+						</manifestEntries>
+					</archive>
 				</configuration>
 			</plugin>
 			<!-- Testing JUnit 5 -->
@@ -205,7 +221,8 @@
 							<stylesheet>${project.basedir}/src/site/site-to-sitemap.xsl</stylesheet>
 							<outputDir>${project.build.directory}/site</outputDir>
 							<fileMappers>
-								<fileMapper implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
+								<fileMapper
+									implementation="org.codehaus.plexus.components.io.filemappers.FileExtensionMapper">
 									<targetExtension>.xml</targetExtension>
 								</fileMapper>
 							</fileMappers>
