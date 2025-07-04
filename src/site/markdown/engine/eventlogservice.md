@@ -81,3 +81,31 @@ For example an AsyncEvent must only be executed if the _$transactionID_ matches 
 ## Timeout
 
 The optional data attribute _timeout_ of an EventLog entry can be used to delay its execution. The EventLogService method `findEventsByTimeout` can request only eventLogEntries with a timeout indicator which are in due.
+
+# Remote Call
+
+Even from a remote System you can use the Event Log Service to create events. This can be helpful to send asynchron transactional messages to the workflow instance. The following example code uses the [Melman EventLogClient](https://github.com/imixs/imixs-melman) to send an event.
+
+```java
+    try {
+        // create a new client
+        client = new EventLogClient(restAPI);
+        client.registerClientRequestFilter(new FormAuthenticator(
+                "http://localhost:8080/api",
+                userID,
+                password));
+        // set payload data....
+        ItemCollection payLoad = new ItemCollection();
+        payLoad.setItemValue("some-data", "abc");
+        // send event
+        client.createEventLogEntry(
+                "TOPIC_INVOICE",
+                WorkflowKernel.generateUniqueID(),
+                payLoad);
+    } catch (RestAPIException e) {
+        logger.severe("Failed to send event log entry: " + e.getMessage());
+        e.printStackTrace();
+    }
+```
+
+Through the [Imixs Rest API](../restapi/index.html) you can send a new Event Log entry from any platform.

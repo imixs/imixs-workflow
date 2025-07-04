@@ -40,7 +40,7 @@ The methods PUT and POST are used to write and update a model:
 
 Using the `curl` command a model file can be uploaded with:
 
-```
+```bash
 $ curl --user admin:adminadmin --request POST -Tticket-en-1.0.0.bpmn http://localhost:8080/api/model/bpmn/
 ```
 
