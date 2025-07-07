@@ -92,6 +92,13 @@ public class HistoryPlugin extends AbstractPlugin {
         if (!documentContext.hasItem(ITEM_HISTORY_LOG) && documentContext.hasItem("txtworkflowhistory")) {
             // migrate deprecated field name
             temp = documentContext.getItemValue("txtworkflowhistory");
+            // validate data structure
+            if (temp.size() > 0) {
+                if (!(temp.get(0) instanceof List)) {
+                    // ignore old data structure
+                    temp = documentContext.getItemValue(ITEM_HISTORY_LOG);
+                }
+            }
         } else {
             temp = documentContext.getItemValue(ITEM_HISTORY_LOG);
         }
