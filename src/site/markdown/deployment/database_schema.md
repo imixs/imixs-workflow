@@ -55,6 +55,7 @@ The following statement adds the necessary indexes for a MySQL Database:
 The following statement adds the necessary indexes for a PostgreSQL Database:
 
     CREATE INDEX index_document1 ON document USING btree(created, modified, type , version);
+    CREATE INDEX idx_eventlog_topic_created ON eventlog (topic, created);
 
 #### Optimizing Vacuum Settings
 
