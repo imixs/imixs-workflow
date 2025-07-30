@@ -171,14 +171,14 @@ public class ModelService {
     public ItemCollection loadModelMetaData(String version) throws ModelException {
         if (version == null || version.isBlank()) {
             throw new ModelException(ModelException.INVALID_ID,
-                    "findModelEntity - model version is empty!");
+                    "Failed to load model - model version is empty!");
         }
         BPMNModelData modelData = modelDataStore.get(version);
         ItemCollection result = modelData.metadata;
         if (result == null) {
             logger.severe("invalid model version!");
             throw new ModelException(ModelException.INVALID_ID,
-                    "findModelEntity - invalid model version: " + version);
+                    "Failed to load model - invalid model version: '" + version + "'");
         }
         return result;
     }
@@ -186,7 +186,6 @@ public class ModelService {
     /**
      * This method should return a thread save version of a stored BPMN Model
      * 
-     * @TODO implement a deep copy mechanism
      * @param version
      * @return
      * @throws ModelException
@@ -194,16 +193,16 @@ public class ModelService {
     public BPMNModel getBPMNModel(String version) throws ModelException {
         if (version == null || version.isBlank()) {
             throw new ModelException(ModelException.INVALID_ID,
-                    "findModelEntity - model version is empty!");
+                    "Failed to get model - version is empty!");
         }
         BPMNModelData modelData = modelDataStore.get(version);
         if (modelData == null) {
             throw new ModelException(ModelException.INVALID_ID,
-                    "Model not found - invalid model version: " + version);
+                    "Failed to get model, not found in modelDataStore: '" + version + "'");
         }
         if (modelData.metadata.getFileData().size() == 0) {
             throw new ModelException(ModelException.INVALID_ID,
-                    "Missing BPMN raw data for model version: " + version);
+                    "Failed to get model, BPMN raw data for model version: '" + version + "'' is empty");
         }
         // get raw data from metadata
         FileData fileData = modelData.metadata.getFileData().get(0);
@@ -214,7 +213,7 @@ public class ModelService {
             modelClone = BPMNModelFactory.read(inputStream);
         } catch (BPMNModelException e) {
             throw new ModelException(ModelException.INVALID_ID,
-                    "Failed to load BPMN raw data for model version: " + version, e);
+                    "Failed to get model, BPMN raw data invalid for model version: '" + version + "'", e);
         }
         return modelClone;
 
@@ -297,9 +296,14 @@ public class ModelService {
         }
 
         if (result.size() > 0) {
+            // return first match
             return result.iterator().next();
         }
-        return null;
+
+        // not found
+        throw new ModelException(ModelException.INVALID_ID,
+                "Failed to find version for group '" + group + "', no matching model available.");
+
     }
 
     /**
