@@ -39,7 +39,6 @@ import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.bpmn.BPMNUtil;
-import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.elements.BPMNProcess;
@@ -167,13 +166,18 @@ public class ModelService {
      * {@code getModel(version)}
      * 
      * @return the ItemCollection with the model meta data
+     * @throws ModelException
      */
-    public ItemCollection loadModelMetaData(String version) {
+    public ItemCollection loadModelMetaData(String version) throws ModelException {
+        if (version == null || version.isBlank()) {
+            throw new ModelException(ModelException.INVALID_ID,
+                    "findModelEntity - model version is empty!");
+        }
         BPMNModelData modelData = modelDataStore.get(version);
         ItemCollection result = modelData.metadata;
         if (result == null) {
             logger.severe("invalid model version!");
-            throw new InvalidAccessException(InvalidAccessException.INVALID_ID,
+            throw new ModelException(ModelException.INVALID_ID,
                     "findModelEntity - invalid model version: " + version);
         }
         return result;
@@ -185,17 +189,20 @@ public class ModelService {
      * @TODO implement a deep copy mechanism
      * @param version
      * @return
+     * @throws ModelException
      */
-    public BPMNModel getBPMNModel(String version) {
-        // logger.warning("Not thread save! - missing implementation!");
+    public BPMNModel getBPMNModel(String version) throws ModelException {
+        if (version == null || version.isBlank()) {
+            throw new ModelException(ModelException.INVALID_ID,
+                    "findModelEntity - model version is empty!");
+        }
         BPMNModelData modelData = modelDataStore.get(version);
-
         if (modelData == null) {
-            throw new InvalidAccessException(InvalidAccessException.INVALID_ID,
-                    "Invalid model version: " + version);
+            throw new ModelException(ModelException.INVALID_ID,
+                    "Model not found - invalid model version: " + version);
         }
         if (modelData.metadata.getFileData().size() == 0) {
-            throw new InvalidAccessException(InvalidAccessException.INVALID_ID,
+            throw new ModelException(ModelException.INVALID_ID,
                     "Missing BPMN raw data for model version: " + version);
         }
         // get raw data from metadata
@@ -206,8 +213,8 @@ public class ModelService {
             // create a new instance of BPMNModel
             modelClone = BPMNModelFactory.read(inputStream);
         } catch (BPMNModelException e) {
-            throw new InvalidAccessException(InvalidAccessException.INVALID_ID,
-                    "Faild to load BPMN raw data for model version: " + version, e);
+            throw new ModelException(ModelException.INVALID_ID,
+                    "Failed to load BPMN raw data for model version: " + version, e);
         }
         return modelClone;
 
@@ -375,8 +382,9 @@ public class ModelService {
      * will also remove the model from the ModelManager
      * 
      * @param bpmnModel
+     * @throws ModelException
      */
-    public void deleteModelData(String version) {
+    public void deleteModelData(String version) throws ModelException {
         if (version != null && !version.isEmpty()) {
             boolean debug = logger.isLoggable(Level.FINE);
             if (debug) {
@@ -393,7 +401,7 @@ public class ModelService {
             this.removeModelData(version);
         } else {
             logger.severe("deleteModel - invalid model version!");
-            throw new InvalidAccessException(InvalidAccessException.INVALID_ID, "deleteModel - invalid model version!");
+            throw new ModelException(ModelException.INVALID_ID, "deleteModel - invalid model version!");
         }
     }
 

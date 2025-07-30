@@ -185,7 +185,13 @@ public class ModelRestService {
         List<ItemCollection> result = new ArrayList<>();
 
         BPMNModel model;
-        model = modelService.getBPMNModel(version);
+        try {
+            model = modelService.getBPMNModel(version);
+        } catch (ModelException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Model version not found: " + e.getMessage())
+                    .build();
+        }
 
         // find all tasks
         Set<Activity> activities = model.findAllActivities();
@@ -211,7 +217,14 @@ public class ModelRestService {
     public Response getModelFile(@PathParam("version") String version, @Context UriInfo uriInfo) {
 
         // lookup model
-        BPMNModel bpmnModel = modelService.getBPMNModel(version);
+        BPMNModel bpmnModel;
+        try {
+            bpmnModel = modelService.getBPMNModel(version);
+        } catch (ModelException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Model version not found: " + e.getMessage())
+                    .build();
+        }
         if (bpmnModel != null) {
             StreamingOutput stream = output -> {
                 try {
@@ -306,7 +319,14 @@ public class ModelRestService {
             @QueryParam("items") String items, @QueryParam("format") String format) {
         List<ItemCollection> result = null;
 
-        BPMNModel model = modelService.getBPMNModel(version);
+        BPMNModel model;
+        try {
+            model = modelService.getBPMNModel(version);
+        } catch (ModelException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Model version not found: " + e.getMessage())
+                    .build();
+        }
         ModelManager modelManager = new ModelManager(workflowService);
         result = modelManager.findEventsByTask(model, taskID);
 
