@@ -294,7 +294,7 @@ public class MockWorkflowEnvironment {
 	 * be helpful if a junit test needs a reduced plugin list to reduce complexity
 	 * of a test.
 	 */
-	public void xupdatePluginDefinition(BPMNModel model, List<String> newPlugins) {
+	public void updatePluginDefinition(BPMNModel model, List<String> newPlugins) {
 
 		Element rootElement = model.getDefinitions();
 		String imixsNamespace = "http://www.imixs.org/bpmn2";
