@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -76,7 +77,7 @@ public class TestSplitAndJoinPlugin {
 		list.add("anna");
 		workitem.replaceItemValue("namTeam", list);
 		workitem.replaceItemValue("namCreator", "ronny");
-		workitem.replaceItemValue("$snapshotid", "11112222");
+		workitem.replaceItemValue("", "11112222");
 		workitem.replaceItemValue(WorkflowKernel.MODELVERSION, "1.0.0");
 		workitem.replaceItemValue(WorkflowKernel.UNIQUEID, WorkflowKernel.generateUniqueID());
 		workflowEnvironment.getDocumentService().save(workitem);
@@ -99,16 +100,18 @@ public class TestSplitAndJoinPlugin {
 			fail(e.getMessage());
 		}
 
-		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
-		assertEquals(1, workitemRefList.size());
-		String subprocessUniqueid = workitemRefList.get(0);
+		// List<String> workitemRefList =
+		// workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
+
 		// get the subprocess...
-		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
+		List<ItemCollection> externalReferences = findWorkitemsByWorkitemRef(workitem.getUniqueID());
+
+		ItemCollection subprocess = externalReferences.get(0);// workflowEnvironment.getDocumentService().load(subprocessUniqueid);
 		// test data in subprocess
 		assertNotNull(subprocess);
 
 		// test the new action result based on the new subprocess uniqueid....
-		assertEquals("/pages/workitems/workitem.jsf?id=" + subprocessUniqueid,
+		assertEquals("/pages/workitems/workitem.jsf?id=" + subprocess.getUniqueID(),
 				workitem.getItemValueString("action"));
 		assertEquals(100, subprocess.getTaskID());
 		logger.log(Level.INFO, "Created Subprocess UniqueID={0}", subprocess.getUniqueID());
@@ -154,11 +157,13 @@ public class TestSplitAndJoinPlugin {
 		}
 		assertNotNull(workitem);
 		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
-		assertEquals(1, workitemRefList.size());
-		String subprocessUniqueid = workitemRefList.get(0);
+		assertEquals(0, workitemRefList.size());
+		// String subprocessUniqueid = workitemRefList.get(0);
 
 		// get the subprocess...
-		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
+		List<ItemCollection> externalReferences = findWorkitemsByWorkitemRef(workitem.getUniqueID());
+		assertEquals(1, externalReferences.size());
+		ItemCollection subprocess = externalReferences.get(0);
 
 		// test data in subprocess
 		assertNotNull(subprocess);
@@ -196,12 +201,13 @@ public class TestSplitAndJoinPlugin {
 		}
 
 		assertNotNull(workitem);
-		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
-		assertEquals(1, workitemRefList.size());
-		String subprocessUniqueid = workitemRefList.get(0);
 
 		// get the subprocess...
-		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
+		// get the subprocess...
+		List<ItemCollection> externalReferences = findWorkitemsByWorkitemRef(workitem.getUniqueID());
+		assertEquals(1, externalReferences.size());
+		ItemCollection subprocess = externalReferences.get(0);
+
 		// test data in subprocess
 		assertNotNull(subprocess);
 		assertEquals(100, subprocess.getTaskID());
@@ -227,7 +233,6 @@ public class TestSplitAndJoinPlugin {
 	 * @throws ModelException
 	 * 
 	 ***/
-	@SuppressWarnings("unchecked")
 	@Test
 	public void testCreateMultiSubProcess() throws ModelException {
 		try {
@@ -239,21 +244,26 @@ public class TestSplitAndJoinPlugin {
 
 		assertNotNull(workitem);
 
-		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
+		// List<String> workitemRefList =
+		// workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
 
-		// two subprocesses should be created...
-		assertEquals(2, workitemRefList.size());
+		// // two subprocesses should be created...
+		// assertEquals(2, workitemRefList.size());
+
+		// get the subprocess...
+		List<ItemCollection> externalReferences = findWorkitemsByWorkitemRef(workitem.getUniqueID());
+		assertEquals(2, externalReferences.size());
 
 		// test first subprocess instance...
-		String subprocessUniqueid = workitemRefList.get(0);
-		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
+		// String subprocessUniqueid = externalReferences.get(0);
+		ItemCollection subprocess = externalReferences.get(0);// workflowEnvironment.getDocumentService().load(subprocessUniqueid);
 		assertNotNull(subprocess);
 		assertEquals(100, subprocess.getTaskID());
 		logger.log(Level.INFO, "Created Subprocess UniqueID={0}", subprocess.getUniqueID());
 
-		// test second subprocess instance... 100.20 -> $processId=200
-		subprocessUniqueid = workitemRefList.get(1);
-		subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
+		// test second subprocess instance... 100.20 -> =200
+		// subprocessUniqueid = externalReferences.get(1);
+		subprocess = externalReferences.get(1);// workflowEnvironment.getDocumentService().load(subprocessUniqueid);
 		assertNotNull(subprocess);
 		assertEquals(100, subprocess.getTaskID());
 		logger.log(Level.INFO, "Created Subprocess UniqueID={0}", subprocess.getUniqueID());
@@ -288,14 +298,13 @@ public class TestSplitAndJoinPlugin {
 	 * @throws ModelException
 	 * 
 	 **/
-	@SuppressWarnings("unchecked")
 	@Test
 	public void testUpdateOriginProcess() throws ModelException {
 		String originUniqueID = workitem.getUniqueID();
 
 		/*
 		 * 1.) create test result for new subprcoess.....
-		 * The Origin Workitem will be assigned to $taskID=200
+		 * The Origin Workitem will be assigned to =200
 		 */
 		try {
 			workitem.event(20);
@@ -307,9 +316,13 @@ public class TestSplitAndJoinPlugin {
 		}
 
 		// now load the subprocess
-		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
-		String subprocessUniqueid = workitemRefList.get(0);
-		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
+		// List<String> workitemRefList =
+		// workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
+
+		// String subprocessUniqueid = workitemRefList.get(0);
+		List<ItemCollection> externalReferences = findWorkitemsByWorkitemRef(workitem.getUniqueID());
+
+		ItemCollection subprocess = externalReferences.get(0);// workflowEnvironment.getDocumentService().load(subprocessUniqueid);
 		assertNotNull(subprocess);
 		assertEquals(100, subprocess.getTaskID());
 
@@ -344,7 +357,6 @@ public class TestSplitAndJoinPlugin {
 	 * 
 	 * @throws ModelException
 	 ***/
-	@SuppressWarnings("unchecked")
 	@Test
 	public void testUpdateSubProcess() throws ModelException {
 
@@ -358,10 +370,13 @@ public class TestSplitAndJoinPlugin {
 		}
 
 		// load the new subprocess....
-		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
-		assertEquals(1, workitemRefList.size());
-		String subprocessUniqueid = workitemRefList.get(0);
-		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
+		// List<String> workitemRefList =
+		// workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
+		// assertEquals(1, workitemRefList.size());
+		List<ItemCollection> externalReferences = findWorkitemsByWorkitemRef(workitem.getUniqueID());
+
+		// String subprocessUniqueid = workitemRefList.get(0);
+		ItemCollection subprocess = externalReferences.get(0);// workflowEnvironment.getDocumentService().load(subprocessUniqueid);
 		assertNotNull(subprocess);
 		assertEquals(100, subprocess.getTaskID());
 
@@ -378,7 +393,7 @@ public class TestSplitAndJoinPlugin {
 		// now we load the subprocess and test if it was updated (new taskid
 		// expected is 300)
 		assertNotNull(subprocess);
-		subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
+		subprocess = workflowEnvironment.getDocumentService().load(subprocess.getUniqueID());
 		assertNotNull(subprocess);
 		assertEquals(200, subprocess.getTaskID());
 		assertEquals("Walter", subprocess.getItemValueString("namTEAM"));
@@ -390,7 +405,6 @@ public class TestSplitAndJoinPlugin {
 	 * @throws ModelException
 	 * 
 	 ***/
-	@SuppressWarnings("unchecked")
 	@Test
 	public void testCreateSubProcessCopyItemByRegex() throws ModelException {
 		try {
@@ -402,18 +416,18 @@ public class TestSplitAndJoinPlugin {
 		assertNotNull(workitem);
 
 		// load the new subprocess....
-		List<String> workitemRefList = workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
-		assertEquals(1, workitemRefList.size());
-		String subprocessUniqueid = workitemRefList.get(0);
-		ItemCollection subprocess = workflowEnvironment.getDocumentService().load(subprocessUniqueid);
+		// List<String> workitemRefList =
+		// workitem.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY);
+		// assertEquals(1, workitemRefList.size());
+		// String subprocessUniqueid = workitemRefList.get(0);
+		List<ItemCollection> externalReferences = findWorkitemsByWorkitemRef(workitem.getUniqueID());
+
+		ItemCollection subprocess = externalReferences.get(0);// workflowEnvironment.getDocumentService().load(subprocessUniqueid);
 
 		assertEquals("manfred", subprocess.getItemValue("namTeam", String.class));
 		assertEquals("ronny", subprocess.getItemValue("namcreator", String.class));
-		assertEquals("", subprocess.getItemValueString("$snapshotid"));
+		assertEquals("", subprocess.getItemValueString(""));
 
-		// test the deprecated LIst
-		List<String> workitemRefListDeprecated = workitem.getItemValue("txtworkitemref");
-		assertEquals(workitemRefList, workitemRefListDeprecated);
 	}
 
 	/**
@@ -447,11 +461,35 @@ public class TestSplitAndJoinPlugin {
 		assertTrue(Pattern.compile("(^txt|^num)").matcher("txtTitle").find());
 		assertTrue(Pattern.compile("(^txt|^num)").matcher("numTitle").find());
 		assertTrue(Pattern.compile("(^txt|^num|^_)").matcher("_subject").find());
-		assertFalse(Pattern.compile("(^txt|^num|^_)").matcher("$taskid").find());
+		assertFalse(Pattern.compile("(^txt|^num|^_)").matcher("").find());
 		assertTrue(Pattern.compile("(^[a-z]|^num)").matcher("txtTitle").find());
 		assertTrue(Pattern.compile("(^[a-zA-Z]|^_)").matcher("TXTTitle").find());
 		assertTrue(Pattern.compile("(^[a-zA-Z]|^_)").matcher("_title").find());
 		assertTrue(Pattern.compile("(^requester[a-zA-Z])").matcher("requesterName").find());
 		assertFalse(Pattern.compile("(^requester[a-zA-Z])").matcher("creatorName").find());
+	}
+
+	/**
+	 * This helper method loads all workitem form the dataStore with a
+	 * pointing to a given .
+	 * This method is for this JUnit test only!
+	 * 
+	 * This is equal to the query
+	 * 
+	 * (type:"workitem" OR type:"workitemarchive")
+	 * AND ($workitemref:<UNIQUEID_ORIGIN>)
+	 *
+	 * @param uniqueid
+	 * @return
+	 */
+	private List<ItemCollection> findWorkitemsByWorkitemRef(String uniqueid) {
+		List<ItemCollection> result = new ArrayList<>();
+		Collection<ItemCollection> allDocuments = workflowEnvironment.getDatabase().values();
+		for (ItemCollection doc : allDocuments) {
+			if (doc.getItemValue(SplitAndJoinPlugin.LINK_PROPERTY).contains(uniqueid)) {
+				result.add(doc);
+			}
+		}
+		return result;
 	}
 }

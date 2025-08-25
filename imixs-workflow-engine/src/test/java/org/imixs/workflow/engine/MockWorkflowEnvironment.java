@@ -193,6 +193,15 @@ public class MockWorkflowEnvironment {
 	}
 
 	/**
+	 * Returns the internal in-memory database
+	 * 
+	 * @return
+	 */
+	public Map<String, ItemCollection> getDatabase() {
+		return database;
+	}
+
+	/**
 	 * Can be used to register an Adapter before Setup
 	 * 
 	 * @param adapter

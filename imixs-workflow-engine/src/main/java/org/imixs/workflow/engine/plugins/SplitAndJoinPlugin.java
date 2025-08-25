@@ -188,9 +188,8 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 
     /**
      * This method expects a list of Subprocess definitions and create for each
-     * definition a new subprocess. The reference of the created subprocess will be
-     * stored in the property txtworkitemRef of the origin workitem
-     * 
+     * definition a new subprocess. The new created subProcess holds a reference to
+     * the origin workitem in the item '$workitemref"
      * 
      * The definition is expected in the following format
      * 
@@ -204,10 +203,13 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
      * 
      *
      * Both workitems are connected to each other. The subprocess will contain the
-     * $UniqueID of the origin process stored in the property $uniqueidRef. The
-     * origin process will contain a link to the subprocess stored in the property
-     * txtworkitemRef.
+     * $UniqueID of the origin process stored in the property $workitemRef.
+     * This allows also to query all connected sub process from the origin workitem
+     * 
+     * (type:"workitem" OR type:"workitemarchive")
+     * AND ($workitemref:<UNIQUEID_ORIGIN>)
      *
+     * 
      * The tag 'action' is optional and allows to overwrite the action result
      * evaluated by the ResultPlugin.
      * 
@@ -269,7 +271,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
                 workitemSubProcess.setEventID(Integer.valueOf(event_pattern));
 
                 // add the origin reference
-                workitemSubProcess.replaceItemValue(WorkflowService.UNIQUEIDREF, originWorkitem.getUniqueID());
+                workitemSubProcess.replaceItemValue(LINK_PROPERTY, originWorkitem.getUniqueID());
 
                 // process the new subprocess...
                 workitemSubProcess = getWorkflowService().processWorkItem(workitemSubProcess);
@@ -278,7 +280,8 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
                 }
                 // finally add the new workitemRef into the origin
                 // documentContext
-                addWorkitemRef(workitemSubProcess.getUniqueID(), originWorkitem);
+                // DISABLED - See new DataGroup concept!
+                // addWorkitemRef(workitemSubProcess.getUniqueID(), originWorkitem);
 
                 // test for optional action result..
                 if (processData.hasItem("action")) {
@@ -416,7 +419,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
     }
 
     /**
-     * This method syncs the items from the parent worktiem referred by $workitemref
+     * This method syncs the items from the parent workitem referred by $workitemref
      * into this process instance
      * 
      * In this case the $uniqueidref is ignored as it is not relevant and provides
@@ -503,7 +506,10 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
         }
 
         // first we need to lookup the corresponding origin process instance
-        List<String> refs = subprocessWorkitem.getItemValue(WorkflowService.UNIQUEIDREF);
+        List<String> refs = subprocessWorkitem.getItemValue(LINK_PROPERTY);
+        // backward compatibillity - support $uniqueidref
+        refs.addAll(subprocessWorkitem.getItemValue(WorkflowService.UNIQUEIDREF));
+
         // iterate over all refs and identify the origin workItem
         for (String ref : refs) {
             originWorkitem = getWorkflowService().getWorkItem(ref);
@@ -611,30 +617,31 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
     /**
      * This methods adds a new workItem reference into a workitem
      */
-    @SuppressWarnings("unchecked")
-    protected void addWorkitemRef(String aUniqueID, ItemCollection workitem) {
-        boolean debug = logger.isLoggable(Level.FINE);
-        if (debug) {
-            logger.log(Level.FINE, "LinkController add workitem reference: {0}", aUniqueID);
-        }
+    // @SuppressWarnings("unchecked")
+    // protected void addWorkitemRef(String aUniqueID, ItemCollection workitem) {
+    // boolean debug = logger.isLoggable(Level.FINE);
+    // if (debug) {
+    // logger.log(Level.FINE, "LinkController add workitem reference: {0}",
+    // aUniqueID);
+    // }
 
-        List<String> refList = workitem.getItemValue(LINK_PROPERTY);
-        if (refList.isEmpty() && workitem.hasItem(LINK_PROPERTY_DEPRECATED)) {
-            // test for deprecated link property!
-            refList = workitem.getItemValue(LINK_PROPERTY_DEPRECATED);
-        }
+    // List<String> refList = workitem.getItemValue(LINK_PROPERTY);
+    // if (refList.isEmpty() && workitem.hasItem(LINK_PROPERTY_DEPRECATED)) {
+    // // test for deprecated link property!
+    // refList = workitem.getItemValue(LINK_PROPERTY_DEPRECATED);
+    // }
 
-        // clear empty entry if set
-        if (refList.size() == 1 && "".equals(refList.get(0)))
-            refList.remove(0);
+    // // clear empty entry if set
+    // if (refList.size() == 1 && "".equals(refList.get(0)))
+    // refList.remove(0);
 
-        // test if not yet a member of
-        if (refList.indexOf(aUniqueID) == -1) {
-            refList.add(aUniqueID);
-            workitem.replaceItemValue(LINK_PROPERTY, refList);
-            // support deprecated field name
-            workitem.replaceItemValue(LINK_PROPERTY_DEPRECATED, refList);
-        }
+    // // test if not yet a member of
+    // if (refList.indexOf(aUniqueID) == -1) {
+    // refList.add(aUniqueID);
+    // workitem.replaceItemValue(LINK_PROPERTY, refList);
+    // // support deprecated field name
+    // workitem.replaceItemValue(LINK_PROPERTY_DEPRECATED, refList);
+    // }
 
-    }
+    // }
 }
