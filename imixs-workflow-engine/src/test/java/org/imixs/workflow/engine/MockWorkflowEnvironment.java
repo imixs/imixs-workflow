@@ -45,13 +45,18 @@ import org.mockito.stubbing.Answer;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.exceptions.BPMNModelException;
 import org.openbpmn.bpmn.util.BPMNModelFactory;
+import org.w3c.dom.CDATASection;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import jakarta.ejb.SessionContext;
 import jakarta.enterprise.event.Event;
 import jakarta.enterprise.inject.Instance;
 
 /**
- * The {@code MockWorkflowEnvironment} can be used as a base class for junit
+ * The {@code MockWorkflowEnvironment} is used as a base class for junit
  * tests to mock the Imixs WorkflowService, WorkflowContextService and
  * ModelService.
  * <p>
@@ -59,9 +64,8 @@ import jakarta.enterprise.inject.Instance;
  * method implementations of the workflowService, Plugin classes or Adapters in
  * a easy way.
  * <p>
- * Because this is a abstract base test class we annotate the MockitoSettings
- * {@link Strictness} to avoid
- * org.mockito.exceptions.misusing.UnnecessaryStubbingException.
+ * External projects should use the imixs-mock library instead
+ * (https://github.com/imixs/imixs-mock)
  * 
  * @author rsoika
  */
@@ -285,4 +289,75 @@ public class MockWorkflowEnvironment {
 		when(sessionContext.getCallerPrincipal()).thenReturn(principal);
 	}
 
+	/**
+	 * This method updates the plugin definitions for a registered Model. This can
+	 * be helpful if a junit test needs a reduced plugin list to reduce complexity
+	 * of a test.
+	 */
+	public void xupdatePluginDefinition(BPMNModel model, List<String> newPlugins) {
+
+		Element rootElement = model.getDefinitions();
+		String imixsNamespace = "http://www.imixs.org/bpmn2";
+		Document doc = rootElement.getOwnerDocument();
+
+		// search for txtplugins Item
+		Element pluginItem = findPluginItem(rootElement, imixsNamespace);
+
+		if (pluginItem != null) {
+			// remove old values
+			removeOldValues(pluginItem, imixsNamespace);
+
+			// add new plugin list
+			for (String plugin : newPlugins) {
+				Element valueElement = doc.createElementNS(imixsNamespace, "imixs:value");
+				CDATASection cdata = doc.createCDATASection(plugin);
+				valueElement.appendChild(cdata);
+				pluginItem.appendChild(valueElement);
+			}
+		}
+
+		// Update model data
+		this.getModelService().addModelData(BPMNUtil.getVersion(model), model, null);
+	}
+
+	private static Element findPluginItem(Element parent, String namespace) {
+		NodeList children = parent.getChildNodes();
+
+		for (int i = 0; i < children.getLength(); i++) {
+			Node child = children.item(i);
+
+			if (child.getNodeType() == Node.ELEMENT_NODE) {
+				Element element = (Element) child;
+
+				// check if imixs:item name="txtplugins"
+				if ("item".equals(element.getLocalName()) &&
+						namespace.equals(element.getNamespaceURI()) &&
+						"txtplugins".equals(element.getAttribute("name"))) {
+					return element;
+				}
+
+				// Rekursiv search
+				Element found = findPluginItem(element, namespace);
+				if (found != null) {
+					return found;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	private static void removeOldValues(Element pluginItem, String namespace) {
+		NodeList children = pluginItem.getChildNodes();
+
+		for (int i = children.getLength() - 1; i >= 0; i--) {
+			Node child = children.item(i);
+
+			if (child.getNodeType() == Node.ELEMENT_NODE &&
+					"value".equals(child.getLocalName()) &&
+					namespace.equals(child.getNamespaceURI())) {
+				pluginItem.removeChild(child);
+			}
+		}
+	}
 }

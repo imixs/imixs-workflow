@@ -144,16 +144,26 @@ import org.junit.jupiter.api.Test;
 
 public class TestTemplate {
 
-  protected WorkflowMockEnvironment workflowEnvironment;
+  protected MockWorkflowEnvironment workflowMockEnvironment;
 
+	@InjectMocks
+	protected RulePlugin rulePlugin;
   /**
    * Setup the Mock environment
    */
   @BeforeEach
   public void setUp() throws PluginException, ModelException {
-    workflowEnvironment = new WorkflowMockEnvironment();
-    workflowEnvironment.setUp();
-    workflowEnvironment.loadBPMNModel("/bpmn/TestWorkflowService.bpmn");
+
+    MockitoAnnotations.openMocks(this);
+		workflowMockEnvironment = new MockworkflowMockEnvironment();
+
+		// Setup Environment
+		workflowMockEnvironment.setUp();
+		workflowMockEnvironment.registerPlugin(approverPlugin);
+		workflowMockEnvironment.registerPlugin(rulePlugin);
+
+    workflowMockEnvironment.loadBPMNModelFromFile(MODEL_PATH);
+		model = workflowMockEnvironment.getModelManager().getModel(MODEL_VERSION);
   }
 
   /**
@@ -164,7 +174,7 @@ public class TestTemplate {
     try {
       // load a test workitem
       ItemCollection workitem = new ItemCollection().model("1.0.0").task(100).event(10);
-      workitem = workflowEnvironment.workflowService.processWorkItem(workitem);
+      workitem = workflowMockEnvironment.workflowService.processWorkItem(workitem);
       // expected new task is 200
       assertEquals(200, workitem.getTaskID());
     } catch (AccessDeniedException | ProcessingErrorException | PluginException | ModelException e) {
@@ -185,12 +195,12 @@ public class TestTemplate {
     workitem.replaceItemValue("name","Imixs Software Solutions");
     workitem.replaceItemValue("budget", 1000.00);
     // test _budget<=1000 => 1200
-    workitem = workflowEnvironment.workflowService.processWorkItem(workitem);
+    workitem = workflowMockEnvironment.workflowService.processWorkItem(workitem);
     Assert.assertEquals(1200, workitem.getTaskID());
     // test _budget>1000 => 1100
     workitem = new ItemCollection().model("1.0.0").task(200).event(30);
     workitem.replaceItemValue("budget", 9999);
-    workitem = workflowEnvironment.workflowService.processWorkItem(workitem);
+    workitem = workflowMockEnvironment.workflowService.processWorkItem(workitem);
     Assert.assertEquals(1100, workitem.getTaskID());
   }
 }
@@ -204,9 +214,9 @@ To setup a test case the Imixs `WorkflowMockEnvironment` provides a setup method
 ```java
 @BeforeEach
 public void setUp() throws PluginException, ModelException {
-  workflowEnvironment = new WorkflowMockEnvironment();
-  workflowEnvironment.setUp();
-  workflowEnvironment.loadBPMNModel("/bpmn/TestWorkflowService.bpmn");
+  workflowMockEnvironment = new WorkflowMockEnvironment();
+  workflowMockEnvironment.setUp();
+  workflowMockEnvironment.loadBPMNModel("/bpmn/TestWorkflowService.bpmn");
 }
 ```
 
@@ -216,17 +226,18 @@ The main goal of the `WorkflowMockEnvironment` is to test business logic of a sp
 
 ```java
 // Load a test model
-workflowEnvironment.loadBPMNModel("/bpmn/myModel.bpmn");
+workflowMockEnvironment.loadBPMNModel("/bpmn/myModel.bpmn");
+workflowMockEnvironment.loadBPMNModelFromFile(MODEL_PATH);
 // Create a workflow instance with some business data
 ItemCollection workitem = new ItemCollection();
 workitem.replaceItemValue("_budget", 99);
 // process the workflow instance....
 workitem.model("1.0.0").task(1000).event(10);
-workitem = workflowEnvironment.workflowService.processWorkItem(workitem);
+workitem = workflowMockEnvironment.workflowService.processWorkItem(workitem);
 // evaluate the results....
 Assert.assertEquals(1200, workitem.getTaskID());
 String uniqueID=workitem.getUniqueID();
-workitem=workflowEnvironment.getDocumentService().load(uniqueID);
+workitem=workflowMockEnvironment.getDocumentService().load(uniqueID);
 Assert.notNull(workitem);
 ```
 
@@ -241,19 +252,49 @@ public class MyAdapterTest {
   @InjectMocks
   protected MyImixsAdapter myAdapter;
 
-  protected WorkflowMockEnvironment workflowEnvironment;
+  protected WorkflowMockEnvironment workflowMockEnvironment;
 
   @BeforeEach
   public void setUp() throws PluginException, ModelException {
     // Ensures that @Mock and @InjectMocks annotations are processed
     MockitoAnnotations.openMocks(this);
-    workflowEnvironment = new WorkflowMockEnvironment();
+    workflowMockEnvironment = new WorkflowMockEnvironment();
     // register AccessAdapter Mock
-    workflowEnvironment.registerAdapter(accessAdapter);
+    workflowMockEnvironment.registerAdapter(accessAdapter);
     // Setup Environment
-    workflowEnvironment.setUp();
+    workflowMockEnvironment.setUp();
   }
   .....
 }
 
 ```
+
+### Testing Specific Plugins Only
+
+You can overwrite the plug-in list defined by your model to test only specific plug-ins. This can be useful to reduce the complexity in a mock environment
+
+```java
+    // test only specific Plugins.....
+	List<String> newPlugins = Arrays.asList(
+		"org.imixs.workflow.engine.plugins.RulePlugin",
+		"org.imixs.workflow.engine.plugins.ResultPlugin",
+		"com.MyPlugin");
+	workflowMockEnvironment.updatePluginDefinition(model, newPlugins);
+```
+
+### Simulate User Login
+
+You can easily simulate a specific user in you test class by
+
+```java
+    .....
+    Principal principal = Mockito.mock(Principal.class);
+    when(workflowMockEnvironment.getWorkflowService().getUserName()).thenReturn("my.userid");
+    ....
+```
+
+### Set Log Level
+
+To set the log level in a unit test you can simply change the standard logger:
+
+    Logger.getLogger("org.imixs.workflow.*").setLevel(Level.FINEST);
