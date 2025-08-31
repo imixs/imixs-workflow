@@ -14,7 +14,6 @@ For a Maven project just add the following dependencies into your projects `pom.
     <jakarta.version>10.0.0</jakarta.version>
     <org.imixs.workflow.version>6.1.0</org.imixs.workflow.version>
     <microprofile.version>6.0</microprofile.version>
-    <microprofile-metrics.version>4.0</microprofile-metrics.version>
     <!-- test dependencies -->
     <junit.jupiter.version>5.9.2</junit.jupiter.version>
     <mockito.version>5.8.0</mockito.version>
