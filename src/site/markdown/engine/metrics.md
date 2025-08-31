@@ -4,7 +4,7 @@ Imixs-Workflow provides runtime metrics based on the [Microprofile Metric API](h
 
 The Imixs-Metric Serivce is disabled per default. To enable the feature set the property 'metrics.enabled' to 'true.
 
-	metrics.enabled=true
+    metrics.enabled=true
 
 ## How to access Imixs-Workflow Metrics
 
@@ -14,7 +14,6 @@ The Imxis-Workflow metrics can be collected by the metric rest endpoint dependin
     http://[HOST]:9990/metrics
     # Payara
     http://[HOST]:8080/metrics
-    
 
 This is an example how a Imixs-Workflow metric looks like:
 
@@ -31,57 +30,52 @@ application_transactions_total 5.0
 
 The Document and Workflow metrics are shown here. Each metric provides a set of tags defining the method and additional metadata like the WorkflowVersion or the current workflow event processed by the Imixs-Workflow Engine.
 
-
 ## Anonymised Metrics
 
-The metrics provided by the Imixs workflow platform are anonymized by default. This is important in order to comply with the data protection directives of many countries as well as within the European Union. But in some cases, it may be necessary to provide personalized metrics. For this purpose you can set the flag '_metrics.anonymised_' to 'false' (default = true). In this case, the metrics are supplemented with the  tag 'user' providing the corresponding userid. 
+The metrics provided by the Imixs workflow platform are anonymized by default. This is important in order to comply with the data protection directives of many countries as well as within the European Union. But in some cases, it may be necessary to provide personalized metrics. For this purpose you can set the flag '_metrics.anonymised_' to 'false' (default = true). In this case, the metrics are supplemented with the tag 'user' providing the corresponding userid.
 
-	METRICS_ENABLED: "true"
-	METRICS_ANONYMISED: "false"
-
-
+    METRICS_ENABLED: "true"
+    METRICS_ANONYMISED: "false"
 
 ## Metrics Endpoint
 
-The Metrics are based on the [Eclipse Microprofile Metric API](https://microprofile.io/project/eclipse/microprofile-metrics) which means that the metric api is part of your application server. Depending on your platform you will get a lot of hardware and environment metrics together with the Imixs-Workflow metrics. The endpoint to access the metrics depends on your server environment. 
+The Metrics are based on the [Eclipse Microprofile Metric API](https://microprofile.io/project/eclipse/microprofile-metrics) which means that the metric api is part of your application server. Depending on your platform you will get a lot of hardware and environment metrics together with the Imixs-Workflow metrics. The endpoint to access the metrics depends on your server environment.
 
 ### Prometheus Configuration for Widlfly
 
 The default metric api endpoint for Wildfly is:
 
-	https://[HOST]:9990/metrics
-	
+    https://[HOST]:9990/metrics
+
 A Prometheus configuration to scrape the metrics from Imixs-Workflow can look like in the following example:
 
-	global:
-	  scrape_interval:     15s # By default, scrape targets every 15 seconds
-	  # Attach these labels to any time series or alerts when communicating with
-	  # external systems (federation, remote storage, Alertmanager).
-	  external_labels:
-	    monitor: 'imixs-monitor'
-	
-	scrape_configs:
-	  # Prometheus itself
-	  - job_name: 'prometheus'
-	    scrape_interval: 5s
-	    static_configs:
-	      - targets: ['localhost:9090']
-	     
-	  # Imixs-Office Job
-	  - job_name: 'imixs'
-	    scrape_interval: 5s
-	    metrics_path: /metrics
-	    static_configs:
-	      - targets: ['app:9990']      
-   
+    global:
+      scrape_interval:     15s # By default, scrape targets every 15 seconds
+      # Attach these labels to any time series or alerts when communicating with
+      # external systems (federation, remote storage, Alertmanager).
+      external_labels:
+        monitor: 'imixs-monitor'
 
+    scrape_configs:
+      # Prometheus itself
+      - job_name: 'prometheus'
+        scrape_interval: 5s
+        static_configs:
+          - targets: ['localhost:9090']
+
+      # Imixs-Office Job
+      - job_name: 'imixs'
+        scrape_interval: 5s
+        metrics_path: /metrics
+        static_configs:
+          - targets: ['app:9990']
 
 ### Prometheus Configuration for Payara
 
 The default metric api endpoint for Payara Server is:
 
-	https://[HOST]:8080/metrics
-	
+    https://[HOST]:8080/metrics
+
 A Prometheus configuration to scrape the metrics from Imixs-Workflow can look like in the following example:
 
 ```
@@ -98,33 +92,31 @@ scrape_configs:
 	scrape_interval: 5s
 	static_configs:
 		- targets: ['localhost:9090']
-		
+
 	# Imixs-Office Job
 	- job_name: 'imixs'
 	scrape_interval: 5s
 	metrics_path: /metrics
 	static_configs:
-		- targets: ['app:8080']        
- ```
-
+		- targets: ['app:8080']
+```
 
 ### Prometheus Dashboard
-      
+
 To setup Prometheus with docker-compose you can add the container like shown in the following example:
 
-```yaml      
+```yaml
   prometheus:
     image: prom/prometheus:latest
     ports:
       - "9090:9090"
     volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml 
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheusdata:/prometheus/
 
 volumes:
   prometheusdata:
 ```
-
 
 From the Prometheus Dashboard you can test the data within your web browser:
 
@@ -132,23 +124,19 @@ From the Prometheus Dashboard you can test the data within your web browser:
 
 ### Monitoring Metrics with Grafana
 
-  
-  grafana:
-    image: grafana/grafana:7.1.0
-    ports: 
-      - "3000:3000" 
+grafana:
+image: grafana/grafana:7.1.0
+ports: - "3000:3000"
 
-To monitor you workflow you can easily connect your Prometheus server with a Grafana Instance. This allows you to visualize your metrics in an individual and more detailed dashboard. 
+To monitor you workflow you can easily connect your Prometheus server with a Grafana Instance. This allows you to visualize your metrics in an individual and more detailed dashboard.
 
 <img src="../images/engine/imixs-metrics-grafana-768x376.png" />
 
-There are a huge amount of functions available in Grafana to analyze and monitor data. You can also activate individual alerts to notify your process owner about the load of your business processes. 
-
+There are a huge amount of functions available in Grafana to analyze and monitor data. You can also activate individual alerts to notify your process owner about the load of your business processes.
 
 ## Custom Metric Service
 
 You can also implement your own custom metric service by just observing the #
-
 
 ```java
 
@@ -182,11 +170,11 @@ public class MyCustomMetricService {
 
 
 	/**
-	 * This method builds a custom Microprofile Metric 
+	 * This method builds a custom Microprofile Metric
 	 */
 	private Counter buildMetric(DocumentEvent event) {
 
-		
+
 		// create a metadata object....
 		Metadata metadata = Metadata.builder().withName(METRIC_DOCUMENTS)
 				.withDescription("My custom metric").build();
@@ -205,9 +193,7 @@ public class MyCustomMetricService {
 
 The Eclipse MicroProfile Metrics Framework supports the different metric types:
 
-
 **Counter:**
-
 
 A simple incrementing counter that can only be increased
 Useful for counting events like API calls or errors
@@ -263,7 +249,6 @@ public void processData() {
 }
 ```
 
-
 **Histogram**
 
 A histogram tracks the distribution of values over time
@@ -289,3 +274,5 @@ public void handleRequest() {
     // Concurrent request handling
 }
 ```
+
+Find out more about in the [Imixs-Metrics Sub Project](https://github.com/imixs/imixs-metrics).
