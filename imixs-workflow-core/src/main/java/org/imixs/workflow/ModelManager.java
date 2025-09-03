@@ -458,8 +458,10 @@ public class ModelManager {
         Set<BPMNProcess> processList = model.getProcesses();
         for (BPMNProcess _process : processList) {
             if (isImixsProcess(_process)) {
-                process = _process;
-                break;
+                if (processGroup.equals(_process.getName())) {
+                    process = _process;
+                    break;
+                }
             }
         }
 
@@ -600,8 +602,10 @@ public class ModelManager {
         Set<BPMNProcess> processList = model.getProcesses();
         for (BPMNProcess _process : processList) {
             if (isImixsProcess(_process)) {
-                process = _process;
-                break;
+                if (processGroup.equals(_process.getName())) {
+                    process = _process;
+                    break;
+                }
             }
         }
 
