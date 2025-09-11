@@ -102,6 +102,10 @@ public class MailPlugin extends AbstractPlugin {
     @ConfigProperty(name = "mail.charSet", defaultValue = "ISO-8859-1")
     String mailCharSet;
 
+    @Inject
+    @ConfigProperty(name = "mail.debug", defaultValue = "false")
+    boolean debug;
+
     private MimeMessage mailMessage = null;
     private Multipart mimeMultipart = null;
     private String charSet = "ISO-8859-1";
@@ -118,14 +122,13 @@ public class MailPlugin extends AbstractPlugin {
      */
     @SuppressWarnings({ "rawtypes" })
     public ItemCollection run(ItemCollection documentContext, ItemCollection documentActivity) throws PluginException {
-        boolean debug = logger.isLoggable(Level.FINE);
         mailMessage = null;
 
         // check if mail is active? This flag can be set by another plug-in
         if (documentActivity.getItemValueBoolean("keyMailInactive")
                 || "1".equals(documentActivity.getItemValueString("keyMailInactive"))) {
             if (debug) {
-                logger.finest("......keyMailInactive = true - cancel mail message.");
+                logger.info("├── keyMailInactive = true - cancel mail message.");
             }
             return documentContext;
         }
@@ -133,7 +136,7 @@ public class MailPlugin extends AbstractPlugin {
         List vectorRecipients = getRecipients(documentContext, documentActivity);
         if (vectorRecipients.isEmpty()) {
             if (debug) {
-                logger.finest("......No Receipients defined for this Activity - cancel mail message.");
+                logger.info("├── No Recipients defined for this event - cancel mail message.");
             }
             return documentContext;
         }
@@ -159,22 +162,22 @@ public class MailPlugin extends AbstractPlugin {
                 // of a RunAs Service EJB where the user context can not be resolved to a valid
                 // smtp address
                 if (debug) {
-                    logger.warning("│   ├── from address was resolved to null");
+                    logger.warning("│   ├── from address was resolved to null");
                 }
                 // we will force a MessagingException...
                 adr = new InternetAddress("");
             } else {
                 // Test if a mailAuthenticatedSender.isPresent())
                 if (mailAuthenticatedSender.isPresent()) {
-                    logger.info("│   ├── authenticatedSender:" + mailAuthenticatedSender.get());
+                    logger.info("│   ├── authenticatedSender:" + mailAuthenticatedSender.get());
                     mailMessage.setFrom(new InternetAddress(mailAuthenticatedSender.get()));
                 } else {
                     // default - current sender
                     mailMessage.setFrom(adr);
-                    logger.info("│   ├── authenticatedFrom:" + adr.getAddress());
+                    logger.info("│   ├── authenticatedFrom:" + adr.getAddress());
                 }
 
-                logger.info("│   ├── sender: " + adr.getAddress());
+                logger.info("│   ├── sender: " + adr.getAddress());
                 mailMessage.setHeader("Sender", adr.getAddress());
 
                 // Dow we have a replay to?
@@ -182,7 +185,7 @@ public class MailPlugin extends AbstractPlugin {
                 if ((sReplyTo == null) || (sReplyTo.isEmpty())) {
                     sReplyTo = adr.getAddress();
                 }
-                logger.info("│   ├── replyTo:" + sReplyTo);
+                logger.info("│   ├── replyTo:" + sReplyTo);
                 InternetAddress[] resplysAdrs = new InternetAddress[1];
                 resplysAdrs[0] = getInternetAddress(sReplyTo);
                 mailMessage.setReplyTo(resplysAdrs);
@@ -208,7 +211,7 @@ public class MailPlugin extends AbstractPlugin {
             // set mailbody
             MimeBodyPart messagePart = new MimeBodyPart();
             if (debug) {
-                logger.log(Level.FINEST, "......ContentType: ''{0}''", getContentType());
+                logger.log(Level.INFO, "│   ├── ContentType: ''{0}''", getContentType());
             }
             messagePart.setContent(aBodyText, getContentType());
             // append message part
@@ -230,12 +233,9 @@ public class MailPlugin extends AbstractPlugin {
     @Override
     public void close(boolean rollbackTransaction) throws PluginException {
         if (!rollbackTransaction && mailSession != null && mailMessage != null) {
-            boolean debug = logger.isLoggable(Level.FINE);
             // Send the message
             try {
-
                 // Check if we are running in a Test MODE
-
                 // test if TestReceipiens are defined...
                 if (mailTestRecipients.isPresent() && !mailTestRecipients.get().isEmpty()) {
                     List<String> vRecipients = new Vector<String>();
@@ -245,9 +245,9 @@ public class MailPlugin extends AbstractPlugin {
                         vRecipients.add(st.nextToken().trim());
                     }
 
-                    logger.info("│   ├── running in TestMode, forwarding to:");
+                    logger.info("│   ├── running in TestMode, forwarding to:");
                     for (String adr : vRecipients) {
-                        logger.log(Level.INFO, "│   │   ├── {0}", adr);
+                        logger.log(Level.INFO, "│   │   ├── {0}", adr);
                     }
                     try {
                         getMailMessage().setRecipients(Message.RecipientType.CC, null);
@@ -263,7 +263,7 @@ public class MailPlugin extends AbstractPlugin {
                     }
                 }
                 if (debug) {
-                    logger.finest("......sending message...");
+                    logger.info("│   ├── sending message...");
                 }
                 mailMessage.setContent(mimeMultipart, getContentType());
                 mailMessage.saveChanges();
@@ -289,7 +289,7 @@ public class MailPlugin extends AbstractPlugin {
                     trans.sendMessage(mailMessage, mailMessage.getAllRecipients());
                     trans.close();
                     if (debug) {
-                        logger.log(Level.FINEST, "...mail transfer in {0}ms", System.currentTimeMillis() - l);
+                        logger.log(Level.INFO, "│   ├── mail transfer in {0}ms", System.currentTimeMillis() - l);
                     }
                 }
                 logger.log(Level.INFO, "├── Send mail -> MessageID={0}", mailMessage.getMessageID());
@@ -312,7 +312,6 @@ public class MailPlugin extends AbstractPlugin {
      * @return String - mail seder
      */
     public String getFrom(ItemCollection documentContext, ItemCollection documentActivity) {
-        boolean debug = logger.isLoggable(Level.FINE);
         // test if namMailReplyToUser is defined by event
         String sFrom = documentActivity.getItemValueString("namMailFrom");
 
@@ -324,7 +323,7 @@ public class MailPlugin extends AbstractPlugin {
         if (sFrom == null || sFrom.isEmpty())
             sFrom = this.getWorkflowService().getUserName();
         if (debug) {
-            logger.log(Level.FINEST, "......From: {0}", sFrom);
+            logger.log(Level.INFO, "│   ├── From: {0}", sFrom);
         }
         return sFrom;
     }
@@ -354,11 +353,10 @@ public class MailPlugin extends AbstractPlugin {
      * @throws PluginException
      */
     public String getSubject(ItemCollection documentContext, ItemCollection documentActivity) throws PluginException {
-        boolean debug = logger.isLoggable(Level.FINE);
         String subject = getWorkflowService().adaptText(documentActivity.getItemValueString("txtMailSubject"),
                 documentContext);
         if (debug) {
-            logger.log(Level.FINEST, "......Subject: {0}", subject);
+            logger.log(Level.INFO, "│   ├── Subject: {0}", subject);
         }
         return subject;
     }
@@ -384,10 +382,10 @@ public class MailPlugin extends AbstractPlugin {
         mergeFieldList(documentContext, vectorRecipients, documentActivity.getItemValue("keyMailReceiverFields"));
 
         // write debug Log
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINEST, "......{0} Receipients: ", vectorRecipients.size());
+        if (debug) {
+            logger.log(Level.INFO, "│   ├── {0} Recipients: ", vectorRecipients.size());
             for (String rez : vectorRecipients)
-                logger.log(Level.FINEST, "     {0}", rez);
+                logger.log(Level.INFO, "│   │   ├── {0}", rez);
         }
 
         return vectorRecipients;
@@ -413,10 +411,10 @@ public class MailPlugin extends AbstractPlugin {
         mergeFieldList(documentContext, vectorRecipients, documentActivity.getItemValue("keyMailReceiverFieldsCC"));
 
         // write debug Log
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINEST, "......{0} ReceipientsCC: ", vectorRecipients.size());
+        if (debug) {
+            logger.log(Level.INFO, "│   ├── {0} RecipientsCC: ", vectorRecipients.size());
             for (String rez : vectorRecipients)
-                logger.log(Level.FINEST, "     {0}", rez);
+                logger.log(Level.INFO, "│   │   ├── {0}", rez);
         }
         return vectorRecipients;
     }
@@ -441,10 +439,10 @@ public class MailPlugin extends AbstractPlugin {
         mergeFieldList(documentContext, vectorRecipients, documentActivity.getItemValue("keyMailReceiverFieldsBCC"));
 
         // write debug Log
-        if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINEST, "......{0} ReceipientsBCC: ", vectorRecipients.size());
+        if (debug) {
+            logger.log(Level.INFO, "│   ├── {0} ReceipientsBCC: ", vectorRecipients.size());
             for (String rez : vectorRecipients)
-                logger.log(Level.FINEST, "     {0}", rez);
+                logger.log(Level.INFO, "│   │   ├── {0}", rez);
         }
         return vectorRecipients;
     }
@@ -500,10 +498,9 @@ public class MailPlugin extends AbstractPlugin {
         String encoding;
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         encoding = "UTF-8";
-        boolean debug = logger.isLoggable(Level.FINE);
 
         if (debug) {
-            logger.finest("......transfor mail body based on XSL template....");
+            logger.info("│   ├── transform mail body based on XSL template....");
         }
         // Transform XML per XSL and generate output
         XMLDocument xml;
@@ -540,9 +537,8 @@ public class MailPlugin extends AbstractPlugin {
      * @throws MessagingException
      */
     public void initMailMessage() throws AddressException, MessagingException {
-        boolean debug = logger.isLoggable(Level.FINE);
         if (debug) {
-            logger.finest("......initializeMailMessage...");
+            logger.info("│   ├── initializeMailMessage...");
         }
         if (mailSession == null) {
             logger.warning(" Lookup MailSession '" + MAIL_SESSION_NAME + "' failed: ");
@@ -561,12 +557,12 @@ public class MailPlugin extends AbstractPlugin {
                 Enumeration<Object> enumer = props.keys();
                 while (enumer.hasMoreElements()) {
                     String aKey = enumer.nextElement().toString();
-                    logger.log(Level.FINEST, "...... ProperyName= {0}", aKey);
+                    logger.log(Level.INFO, "│   │   ├── PropertyName= {0}", aKey);
                     Object value = props.getProperty(aKey);
                     if (value == null)
-                        logger.finest("...... PropertyValue=null");
+                        logger.info("│   │   ├── PropertyValue=null");
                     else
-                        logger.log(Level.FINEST, "...... PropertyValue= {0}", props.getProperty(aKey));
+                        logger.log(Level.INFO, "│   │   ├── PropertyValue= {0}", props.getProperty(aKey));
                 }
             }
             mailMessage = new MimeMessage(mailSession);

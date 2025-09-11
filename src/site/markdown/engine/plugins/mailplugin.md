@@ -143,6 +143,12 @@ Example (imixs.properties):
     #Testmode
     mail.testRecipients=test@development.com
 
+### Debug Mode
+
+During development you can switch the Imixs-MailPlugin into a Debug-Mode to log details about the mail message transfer by defining the imixs property:
+
+    mail.debug=true
+
 ### CharSet
 
 The default character-set used for the mail subject and body parts is set to 'ISO-8859-1'.
