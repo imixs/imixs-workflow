@@ -23,7 +23,6 @@ import java.io.ObjectOutputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.text.NumberFormat;
-import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -974,107 +973,6 @@ public class ItemCollection implements Cloneable {
         }
 
         return true; // All groups after first have exactly 3 digits
-    }
-
-    /**
-     * Check if string is a simple number without thousand separators
-     */
-    private static boolean isSimpleNumber(String input) {
-        return SIMPLE_NUMBER_PATTERN.matcher(input).matches() &&
-                !input.contains(",") ||
-                (input.contains(",") && input.indexOf(',') == input.lastIndexOf(',')) &&
-                        !input.contains(".")
-                ||
-                (input.contains(".") && input.indexOf('.') == input.lastIndexOf('.'));
-    }
-
-    /**
-     * Smart detection based on decimal separator position and pattern
-     */
-    private static double parseWithSmartDetection(String input) throws ParseException {
-        // Count commas and periods
-        long commaCount = input.chars().filter(ch -> ch == ',').count();
-        long periodCount = input.chars().filter(ch -> ch == '.').count();
-
-        // Simple case: only one separator
-        if (commaCount + periodCount <= 1) {
-            return Double.parseDouble(input.replace(',', '.'));
-        }
-
-        // Determine decimal separator by position (last separator is usually decimal)
-        int lastComma = input.lastIndexOf(',');
-        int lastPeriod = input.lastIndexOf('.');
-
-        if (lastComma > lastPeriod) {
-            // German format likely: comma is decimal separator
-            return GERMAN_FORMAT.parse(input).doubleValue();
-        } else {
-            // US format likely: period is decimal separator
-            return US_FORMAT.parse(input).doubleValue();
-        }
-    }
-
-    /**
-     * Last resort parsing - only handle valid number-like strings
-     * Returns 0.0 for strings that contain non-numeric characters (except
-     * separators)
-     */
-    private static double parseWithFallback(String input) {
-        try {
-            // Check if input contains any letters or invalid characters
-            if (input.matches(".*[a-zA-Z].*")) {
-                return 0.0; // Contains letters - not a valid number
-            }
-
-            // Only allow digits, commas, periods, spaces, and minus sign
-            if (!input.matches("^[\\d\\s,.+-]*$")) {
-                return 0.0; // Contains invalid characters
-            }
-
-            // Remove all non-digit characters except commas and periods
-            String digitsAndSeparators = input.replaceAll("[^\\d,.]", "");
-
-            if (digitsAndSeparators.isEmpty()) {
-                return 0.0;
-            }
-
-            // Count separators - if too many, treat as concatenated number
-            long commaCount = digitsAndSeparators.chars().filter(ch -> ch == ',').count();
-            long periodCount = digitsAndSeparators.chars().filter(ch -> ch == '.').count();
-
-            // If more than 2 separators total, concatenate all digits
-            if (commaCount + periodCount > 2) {
-                String allDigits = digitsAndSeparators.replaceAll("[,.]", "");
-                // Insert decimal point before last 2 digits if length > 2
-                if (allDigits.length() > 2) {
-                    String intPart = allDigits.substring(0, allDigits.length() - 2);
-                    String decPart = allDigits.substring(allDigits.length() - 2);
-                    return Double.parseDouble(intPart + "." + decPart);
-                } else {
-                    return Double.parseDouble("0." + allDigits);
-                }
-            }
-
-            // Normal case: find last separator and treat as decimal
-            int lastSeparator = Math.max(digitsAndSeparators.lastIndexOf(','), digitsAndSeparators.lastIndexOf('.'));
-
-            if (lastSeparator == -1) {
-                return Double.parseDouble(digitsAndSeparators);
-            }
-
-            String integerPart = digitsAndSeparators.substring(0, lastSeparator).replaceAll("[,.]", "");
-            String decimalPart = digitsAndSeparators.substring(lastSeparator + 1);
-
-            // Validate that decimal part contains only digits
-            if (!decimalPart.matches("^\\d*$")) {
-                return 0.0;
-            }
-
-            return Double.parseDouble(integerPart + "." + decimalPart);
-
-        } catch (Exception e) {
-            return 0.0; // Give up gracefully
-        }
     }
 
     /**
