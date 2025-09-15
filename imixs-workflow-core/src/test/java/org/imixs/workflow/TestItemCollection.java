@@ -117,6 +117,128 @@ public class TestItemCollection {
     }
 
     /**
+     * This test verifies different formats to get a double
+     */
+    @Test
+    public void testGetItemValueDoubleDifferentFormats() {
+        ItemCollection itemCollection = new ItemCollection();
+
+        // German decimal format (comma as decimal separator)
+        itemCollection.setItemValue("german1", "9,6");
+        assertEquals(9.6, itemCollection.getItemValueDouble("german1"), 0.001);
+
+        itemCollection.setItemValue("german2", "0,99");
+        assertEquals(0.99, itemCollection.getItemValueDouble("german2"), 0.001);
+
+        // German thousand separator with decimal
+        itemCollection.setItemValue("german3", "9.000,60");
+        assertEquals(9000.6, itemCollection.getItemValueDouble("german3"), 0.001);
+
+        itemCollection.setItemValue("german4", "1.234.567,89");
+        assertEquals(1234567.89, itemCollection.getItemValueDouble("german4"), 0.001);
+
+        itemCollection.setItemValue("german5", "123.456,78");
+        assertEquals(123456.78, itemCollection.getItemValueDouble("german5"), 0.001);
+
+        // US decimal format (period as decimal separator)
+        itemCollection.setItemValue("us1", "9.6");
+        assertEquals(9.6, itemCollection.getItemValueDouble("us1"), 0.001);
+
+        itemCollection.setItemValue("us2", "0.99");
+        assertEquals(0.99, itemCollection.getItemValueDouble("us2"), 0.001);
+
+        // US thousand separator with decimal
+        itemCollection.setItemValue("us3", "9,000.60");
+        assertEquals(9000.6, itemCollection.getItemValueDouble("us3"), 0.001);
+
+        itemCollection.setItemValue("us4", "1,234,567.89");
+        assertEquals(1234567.89, itemCollection.getItemValueDouble("us4"), 0.001);
+
+        itemCollection.setItemValue("us5", "123,456.78");
+        assertEquals(123456.78, itemCollection.getItemValueDouble("us5"), 0.001);
+
+        // Simple integers
+        itemCollection.setItemValue("int1", "42");
+        assertEquals(42.0, itemCollection.getItemValueDouble("int1"), 0.001);
+
+        itemCollection.setItemValue("int2", "0");
+        assertEquals(0.0, itemCollection.getItemValueDouble("int2"), 0.001);
+
+        itemCollection.setItemValue("int3", "12345");
+        assertEquals(12345.0, itemCollection.getItemValueDouble("int3"), 0.001);
+
+        // Simple decimals without thousand separators
+        itemCollection.setItemValue("simple1", "123.45");
+        assertEquals(123.45, itemCollection.getItemValueDouble("simple1"), 0.001);
+
+        itemCollection.setItemValue("simple2", "123,45");
+        assertEquals(123.45, itemCollection.getItemValueDouble("simple2"), 0.001);
+
+        // Edge cases - whitespace handling
+        itemCollection.setItemValue("edge1", "  123.45  ");
+        assertEquals(123.45, itemCollection.getItemValueDouble("edge1"), 0.001);
+
+        itemCollection.setItemValue("edge2", "\t123,45\n");
+        assertEquals(123.45, itemCollection.getItemValueDouble("edge2"), 0.001);
+
+        // Edge cases - leading zeros
+        itemCollection.setItemValue("edge3", "0123.45");
+        assertEquals(123.45, itemCollection.getItemValueDouble("edge3"), 0.001);
+
+        itemCollection.setItemValue("edge4", "0,45");
+        assertEquals(0.45, itemCollection.getItemValueDouble("edge4"), 0.001);
+
+        // Large numbers
+        itemCollection.setItemValue("large1", "1.000.000");
+        assertEquals(1000000.0, itemCollection.getItemValueDouble("large1"), 0.001);
+
+        itemCollection.setItemValue("large2", "1,000,000");
+        assertEquals(1000000.0, itemCollection.getItemValueDouble("large2"), 0.001);
+
+        itemCollection.setItemValue("large3", "1.000.000,99");
+        assertEquals(1000000.99, itemCollection.getItemValueDouble("large3"), 0.001);
+
+        itemCollection.setItemValue("large4", "1,000,000.99");
+        assertEquals(1000000.99, itemCollection.getItemValueDouble("large4"), 0.001);
+
+        // Invalid inputs should return 0.0
+        itemCollection.setItemValue("invalid1", "");
+        assertEquals(0.0, itemCollection.getItemValueDouble("invalid1"), 0.001);
+
+        itemCollection.setItemValue("invalid2", "invalid");
+        assertEquals(0.0, itemCollection.getItemValueDouble("invalid2"), 0.001);
+
+        itemCollection.setItemValue("invalid3", "abc123");
+        assertEquals(0.0, itemCollection.getItemValueDouble("invalid3"), 0.001);
+
+        itemCollection.setItemValue("invalid4", "not a number");
+        assertEquals(0.0, itemCollection.getItemValueDouble("invalid4"), 0.001);
+
+        itemCollection.setItemValue("invalid5", "€123.45");
+        assertEquals(0.0, itemCollection.getItemValueDouble("invalid5"), 0.001);
+
+        // Fallback handling for multiple decimal separators
+        itemCollection.setItemValue("fallback1", "12.34.56");
+        assertEquals(1234.56, itemCollection.getItemValueDouble("fallback1"), 0.001);
+
+        itemCollection.setItemValue("fallback2", "12,34,56");
+        assertEquals(1234.56, itemCollection.getItemValueDouble("fallback2"), 0.001);
+
+        // Test with actual numeric types (not strings)
+        itemCollection.setItemValue("double_obj", 123.45);
+        assertEquals(123.45, itemCollection.getItemValueDouble("double_obj"), 0.001);
+
+        itemCollection.setItemValue("float_obj", 123.45f);
+        assertEquals(123.45, itemCollection.getItemValueDouble("float_obj"), 0.01);
+
+        itemCollection.setItemValue("int_obj", 123);
+        assertEquals(123.0, itemCollection.getItemValueDouble("int_obj"), 0.001);
+
+        itemCollection.setItemValue("long_obj", 123L);
+        assertEquals(123.0, itemCollection.getItemValueDouble("long_obj"), 0.001);
+    }
+
+    /**
      * This test verifies if the method getItemValueFloat returns the expected
      * values
      */

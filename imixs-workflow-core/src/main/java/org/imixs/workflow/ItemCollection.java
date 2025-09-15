@@ -22,6 +22,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -36,6 +38,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -78,6 +81,19 @@ public class ItemCollection implements Cloneable {
     private static final Logger logger = Logger.getLogger(ItemCollection.class.getName());
 
     private Map<String, List<Object>> hash = new Hashtable<String, List<Object>>();
+
+    private static final Pattern GERMAN_NUMBER_PATTERN = Pattern.compile("^\\d{1,3}(\\.\\d{3})*(,\\d+)?$");
+    private static final Pattern US_NUMBER_PATTERN = Pattern.compile("^\\d{1,3}(,\\d{3})*(\\.\\d+)?$");
+    private static final Pattern SIMPLE_NUMBER_PATTERN = Pattern.compile("^\\d*[,.]?\\d+$");
+
+    // Pre-configured formatters for performance
+    private static final NumberFormat GERMAN_FORMAT;
+    private static final NumberFormat US_FORMAT;
+
+    static {
+        GERMAN_FORMAT = NumberFormat.getInstance(Locale.GERMANY);
+        US_FORMAT = NumberFormat.getInstance(Locale.US);
+    }
 
     /**
      * Creates a new empty ItemCollection
@@ -838,6 +854,9 @@ public class ItemCollection implements Cloneable {
      * <p>
      * The ItemName is not case sensitive. Use hasItem to verify the existence of an
      * item.
+     * <p>
+     * The method works with robust string parsing and handles German, US, and
+     * simple number formats automatically
      * 
      * @param itemName The name of an item.
      * @return the double value of the item
@@ -862,15 +881,199 @@ public class ItemCollection implements Cloneable {
                 if (o instanceof Integer)
                     return (Integer) o;
 
-                // try to parse string.....
-                try {
-                    return Double.valueOf(v.get(0).toString());
-                } catch (ClassCastException | NumberFormatException e) {
-                    return 0.0;
-                }
+                // Robust string parsing for various formats
+                return parseStringToDouble(o.toString());
             }
         } catch (ClassCastException e) {
             return 0.0;
+        }
+    }
+
+    /**
+     * Robust string to double parser that handles:
+     * - German format: "9,6", "9.000,60"
+     * - US format: "9.6", "9,000.60"
+     * - Simple formats: "9.6", "9,6"
+     * - Edge cases: leading/trailing spaces, empty strings
+     */
+    public static double parseStringToDouble(String input) {
+        if (input == null || input.trim().isEmpty()) {
+            return 0.0;
+        }
+
+        String cleaned = input.trim();
+
+        try {
+            // Check for invalid characters (letters, special chars except numbers, comma,
+            // period)
+            if (cleaned.matches(".*[a-zA-Z].*") || !cleaned.matches("^[\\d\\s,.+-]*$")) {
+                return 0.0;
+            }
+
+            // Remove all whitespace and plus signs
+            cleaned = cleaned.replaceAll("[\\s+]", "");
+
+            // Find last decimal separator (comma or period)
+            int lastComma = cleaned.lastIndexOf(',');
+            int lastPeriod = cleaned.lastIndexOf('.');
+            int lastSeparator = Math.max(lastComma, lastPeriod);
+
+            if (lastSeparator == -1) {
+                // No decimal separator - simple integer
+                return Double.parseDouble(cleaned);
+            }
+
+            // Check if this looks like thousand separators pattern
+            if (isThousandSeparatorPattern(cleaned, lastSeparator)) {
+                // Remove all separators and parse as integer
+                String allDigits = cleaned.replaceAll("[,.]", "");
+                return Double.parseDouble(allDigits);
+            }
+
+            // Split at last separator (treat as decimal separator)
+            String integerPart = cleaned.substring(0, lastSeparator);
+            String decimalPart = cleaned.substring(lastSeparator + 1);
+
+            // Remove all remaining separators from integer part
+            integerPart = integerPart.replaceAll("[,.]", "");
+
+            // Validate decimal part contains only digits
+            if (!decimalPart.matches("^\\d*$")) {
+                return 0.0;
+            }
+
+            // Build final number string and parse
+            String finalNumber = integerPart + "." + decimalPart;
+            return Double.parseDouble(finalNumber);
+
+        } catch (NumberFormatException e) {
+            return 0.0;
+        }
+    }
+
+    /**
+     * Check if the pattern looks like thousand separators
+     * e.g. "1.000.000" or "1,234,567"
+     */
+    private static boolean isThousandSeparatorPattern(String input, int lastSeparator) {
+        // If there's only one separator, it's likely decimal
+        String beforeLast = input.substring(0, lastSeparator);
+        if (!beforeLast.contains(",") && !beforeLast.contains(".")) {
+            return false;
+        }
+
+        // Split by separators and check if all groups (except first) have exactly 3
+        // digits
+        String[] parts = input.split("[,.]");
+
+        // First part can have 1-3 digits, all others must have exactly 3
+        for (int i = 1; i < parts.length; i++) {
+            if (parts[i].length() != 3) {
+                return false; // Not a valid thousand separator pattern
+            }
+        }
+
+        return true; // All groups after first have exactly 3 digits
+    }
+
+    /**
+     * Check if string is a simple number without thousand separators
+     */
+    private static boolean isSimpleNumber(String input) {
+        return SIMPLE_NUMBER_PATTERN.matcher(input).matches() &&
+                !input.contains(",") ||
+                (input.contains(",") && input.indexOf(',') == input.lastIndexOf(',')) &&
+                        !input.contains(".")
+                ||
+                (input.contains(".") && input.indexOf('.') == input.lastIndexOf('.'));
+    }
+
+    /**
+     * Smart detection based on decimal separator position and pattern
+     */
+    private static double parseWithSmartDetection(String input) throws ParseException {
+        // Count commas and periods
+        long commaCount = input.chars().filter(ch -> ch == ',').count();
+        long periodCount = input.chars().filter(ch -> ch == '.').count();
+
+        // Simple case: only one separator
+        if (commaCount + periodCount <= 1) {
+            return Double.parseDouble(input.replace(',', '.'));
+        }
+
+        // Determine decimal separator by position (last separator is usually decimal)
+        int lastComma = input.lastIndexOf(',');
+        int lastPeriod = input.lastIndexOf('.');
+
+        if (lastComma > lastPeriod) {
+            // German format likely: comma is decimal separator
+            return GERMAN_FORMAT.parse(input).doubleValue();
+        } else {
+            // US format likely: period is decimal separator
+            return US_FORMAT.parse(input).doubleValue();
+        }
+    }
+
+    /**
+     * Last resort parsing - only handle valid number-like strings
+     * Returns 0.0 for strings that contain non-numeric characters (except
+     * separators)
+     */
+    private static double parseWithFallback(String input) {
+        try {
+            // Check if input contains any letters or invalid characters
+            if (input.matches(".*[a-zA-Z].*")) {
+                return 0.0; // Contains letters - not a valid number
+            }
+
+            // Only allow digits, commas, periods, spaces, and minus sign
+            if (!input.matches("^[\\d\\s,.+-]*$")) {
+                return 0.0; // Contains invalid characters
+            }
+
+            // Remove all non-digit characters except commas and periods
+            String digitsAndSeparators = input.replaceAll("[^\\d,.]", "");
+
+            if (digitsAndSeparators.isEmpty()) {
+                return 0.0;
+            }
+
+            // Count separators - if too many, treat as concatenated number
+            long commaCount = digitsAndSeparators.chars().filter(ch -> ch == ',').count();
+            long periodCount = digitsAndSeparators.chars().filter(ch -> ch == '.').count();
+
+            // If more than 2 separators total, concatenate all digits
+            if (commaCount + periodCount > 2) {
+                String allDigits = digitsAndSeparators.replaceAll("[,.]", "");
+                // Insert decimal point before last 2 digits if length > 2
+                if (allDigits.length() > 2) {
+                    String intPart = allDigits.substring(0, allDigits.length() - 2);
+                    String decPart = allDigits.substring(allDigits.length() - 2);
+                    return Double.parseDouble(intPart + "." + decPart);
+                } else {
+                    return Double.parseDouble("0." + allDigits);
+                }
+            }
+
+            // Normal case: find last separator and treat as decimal
+            int lastSeparator = Math.max(digitsAndSeparators.lastIndexOf(','), digitsAndSeparators.lastIndexOf('.'));
+
+            if (lastSeparator == -1) {
+                return Double.parseDouble(digitsAndSeparators);
+            }
+
+            String integerPart = digitsAndSeparators.substring(0, lastSeparator).replaceAll("[,.]", "");
+            String decimalPart = digitsAndSeparators.substring(lastSeparator + 1);
+
+            // Validate that decimal part contains only digits
+            if (!decimalPart.matches("^\\d*$")) {
+                return 0.0;
+            }
+
+            return Double.parseDouble(integerPart + "." + decimalPart);
+
+        } catch (Exception e) {
+            return 0.0; // Give up gracefully
         }
     }
 
@@ -909,12 +1112,9 @@ public class ItemCollection implements Cloneable {
                 if (o instanceof Integer)
                     return (Integer) o;
 
-                // try to parse string.....
-                try {
-                    return Float.valueOf(v.get(0).toString());
-                } catch (ClassCastException | NumberFormatException e) {
-                    return (float) 0.0;
-                }
+                // Use our robust string parsing and convert to float
+                double parsed = parseStringToDouble(o.toString());
+                return (float) parsed;
 
             }
         } catch (ClassCastException e) {
