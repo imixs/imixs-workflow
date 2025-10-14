@@ -688,6 +688,27 @@ public class DocumentService {
 	}
 
 	/**
+	 * This method removes an ItemCollection by its UniqueID from the database. If
+	 * the CallerPrincipal is not allowed to access the ItemColleciton the method
+	 * throws an AccessDeniedException.
+	 * <p>
+	 * The CallerPrincipial should have at least the access Role
+	 * org.imixs.ACCESSLEVEL.AUTHORACCESS
+	 * <p>
+	 * Also the method removes the document form the lucene index.
+	 * 
+	 * @see remove(ItemCollection document)
+	 * @param ItemCollection to be removed
+	 * @throws AccessDeniedException
+	 */
+	public void remove(String uniqueId) throws AccessDeniedException {
+		if (uniqueId == null || uniqueId.isEmpty()) {
+			return;
+		}
+		remove(load(uniqueId));
+	}
+
+	/**
 	 * Returns the total hits for a given search query. The provided search term
 	 * will be extended with a users roles to test the read access level of each
 	 * workitem matching the search term. The usernames and user roles will be
