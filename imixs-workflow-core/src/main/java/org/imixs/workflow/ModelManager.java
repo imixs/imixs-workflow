@@ -47,14 +47,14 @@ import org.w3c.dom.Element;
  * {@code org.openbpmn.bpmn.BPMNModel} and provides convenience methods to
  * resolve model flow details.
  * <p>
- * The ModelManager is used by the {@link WorkflowKernel} to
- * manage the processing life cycle of a workitem.
+ * The ModelManager is used by the {@link WorkflowKernel} to manage the
+ * processing life cycle of a workitem.
  * <p>
  * A client can use the {@linke WorkflowContext} to resolve a valid model
- * version and fetch a thread save instance of a model.
- * The model version is defined in the item `$modelversion` of a workitem. This
- * may also be a regular expression. Also a valid model version can be resolved
- * by the WorkflowContext based on the $workflowGroup.
+ * version and fetch a thread save instance of a model. The model version is
+ * defined in the item `$modelversion` of a workitem. This may also be a regular
+ * expression. Also a valid model version can be resolved by the WorkflowContext
+ * based on the $workflowGroup.
  * <p>
  * The ModelManager provides methods to get instances of ItemCollection for
  * Tasks and Events and other common BPMNElements.
@@ -89,8 +89,8 @@ public class ModelManager {
 
     /**
      * This method returns a thread save instance of a BPMNModel based on the given
-     * workitem meta data.
-     * The method lookups the matching model version by the {@link WorkflowContext}
+     * workitem meta data. The method lookups the matching model version by the
+     * {@link WorkflowContext}
      * 
      * @param workitem
      * @return
@@ -142,8 +142,8 @@ public class ModelManager {
      * The method throws a {@link ModelException} if no Process can be resolved
      * based on the given model information.
      * <p>
-     * The method is called by the {@link WorkflowKernel} during the processing
-     * life cycle to update the process group information.
+     * The method is called by the {@link WorkflowKernel} during the processing life
+     * cycle to update the process group information.
      * 
      * @param workitem
      * @return BPMN Event entity - {@link ItemCollection}
@@ -161,15 +161,15 @@ public class ModelManager {
 
     /**
      * Returns the BPMN Process entity associated with a given workitem, based on
-     * its attributes "$modelVersion", "$taskID". The process holds the name
-     * for the attribute $worklfowGroup
+     * its attributes "$modelVersion", "$taskID". The process holds the name for the
+     * attribute $worklfowGroup
      * <p>
      * The taskID has to be unique in a process. The method throws a
      * {@link ModelException} if no Process can be resolved based on the given model
      * information.
      * <p>
-     * The method is called by the {@link WorkflowKernel} during the processing
-     * life cycle to update the process group information.
+     * The method is called by the {@link WorkflowKernel} during the processing life
+     * cycle to update the process group information.
      * 
      * @param workitem
      * @return BPMN Event entity - {@link ItemCollection}
@@ -224,9 +224,9 @@ public class ModelManager {
      * The method is called by the {@link WorkflowKernel} to start the processing
      * life cycle.
      * <p>
-     * A Event is typically connected with a Task by outgoing SequenceFlows.
-     * A special case is a Start event followed by one or more Events connected with
-     * a Task (Start-Task) element.
+     * A Event is typically connected with a Task by outgoing SequenceFlows. A
+     * special case is a Start event followed by one or more Events connected with a
+     * Task (Start-Task) element.
      * 
      * @param workitem
      * @return BPMN Event entity - {@link ItemCollection}
@@ -380,9 +380,9 @@ public class ModelManager {
     // }
 
     /**
-     * This method finds a Imixs task element by its ID (imixs:activityid).
-     * The method returns a cloned Instance of the model entity to avoid
-     * manipulation by the client.
+     * This method finds a Imixs task element by its ID (imixs:activityid). The
+     * method returns a cloned Instance of the model entity to avoid manipulation by
+     * the client.
      * <p>
      * The method implements an effectively generic, thread-safe way of a
      * compute-once, cache-for-later pattern.
@@ -437,8 +437,8 @@ public class ModelManager {
      * 
      * @param model        - the BPMN model
      * @param processGroup - the name of the process group to match
-     * @return list of all Task entities or null if not process with the given
-     *         name was found.
+     * @return list of all Task entities or null if not process with the given name
+     *         was found.
      * @throws BPMNModelException
      */
     public List<ItemCollection> findTasks(final BPMNModel model, String processGroup) throws ModelException {
@@ -681,15 +681,21 @@ public class ModelManager {
     }
 
     /**
-     * Evaluates a condition
+     * Evaluates a BPMN sequence flow condition with extensible observer support.
      * 
-     * @param expression
-     * @param workitem
-     * @return
+     * 
+     * @param expression the condition expression from a BPMN SequenceFlow. Can be
+     *                   JavaScript code or a prompt for an observer.
+     * @param workitem   the workflow item providing context data for condition
+     *                   evaluation
+     * @return true if the condition evaluates to true, false otherwise
      */
     public boolean evaluateCondition(String expression, ItemCollection workitem) {
+
+        // delegate expression to the runtime
+        String finalExpression = this.workflowContext.evalConditionalExpression(expression, workitem);
         try {
-            return getRuleEngine().evaluateBooleanExpression(expression, workitem);
+            return getRuleEngine().evaluateBooleanExpression(finalExpression, workitem);
         } catch (PluginException e) {
             e.printStackTrace();
             logger.severe("Failed to evaluate Condition: " + e.getMessage());
@@ -702,8 +708,7 @@ public class ModelManager {
      * <p>
      * The method returns true if the given targetNode is connected with a
      * TASK_ELEMENT or with a EVENT_ELEMENT by a conditional flow that evaluates to
-     * true.
-     * These are the only two cases that indicate the Main Version flow!
+     * true. These are the only two cases that indicate the Main Version flow!
      * 
      * @param gatewayNode - ParallelGateway Node
      * @param targetNode  - Target Node (either a Task or a Event)

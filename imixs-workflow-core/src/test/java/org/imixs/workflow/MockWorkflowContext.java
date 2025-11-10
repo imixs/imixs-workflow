@@ -52,8 +52,7 @@ public class MockWorkflowContext implements WorkflowContext {
     private WorkflowKernel workflowKernel;
 
     /**
-     * Constructor creates a WorkflowKernel and registers
-     * a MockPlugin
+     * Constructor creates a WorkflowKernel and registers a MockPlugin
      * 
      * @throws PluginException
      */
@@ -146,9 +145,9 @@ public class MockWorkflowContext implements WorkflowContext {
 
     /**
      * This method returns a best match of a model version matching a given regex
-     * from the list of known versions.
-     * If multiple versions match the given regex the method returns the highest
-     * version number which is the first entry in the result list.
+     * from the list of known versions. If multiple versions match the given regex
+     * the method returns the highest version number which is the first entry in the
+     * result list.
      * 
      * @param group
      * @return
@@ -180,11 +179,9 @@ public class MockWorkflowContext implements WorkflowContext {
     }
 
     /**
-     * Returns a version by Group.
-     * The method computes a sorted list of all model versions containing the
-     * requested
-     * workflow group. The result is sorted in reverse order, so the highest version
-     * number is the first in the result list.
+     * Returns a version by Group. The method computes a sorted list of all model
+     * versions containing the requested workflow group. The result is sorted in
+     * reverse order, so the highest version number is the first in the result list.
      * 
      * @param group - name of the workflow group
      * @return list of matching model versions
@@ -247,6 +244,11 @@ public class MockWorkflowContext implements WorkflowContext {
             throws PluginException {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'evalWorkflowResult'");
+    }
+
+    @Override
+    public String evalConditionalExpression(String expression, ItemCollection workitem) {
+        return expression;
     }
 
 }

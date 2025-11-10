@@ -38,6 +38,7 @@ import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.WorkflowKernel;
+import org.imixs.workflow.bpmn.BPMNConditionalEvent;
 import org.imixs.workflow.bpmn.BPMNUtil;
 import org.imixs.workflow.engine.plugins.ResultPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
@@ -123,6 +124,9 @@ public class WorkflowService implements WorkflowContext {
     protected Event<ProcessingEvent> processingEvents;
 
     @Inject
+    protected Event<BPMNConditionalEvent> bpmnConditionEvents;
+
+    @Inject
     protected Event<TextEvent> textEvents;
 
     private static final Logger logger = Logger.getLogger(WorkflowService.class.getName());
@@ -179,9 +183,8 @@ public class WorkflowService implements WorkflowContext {
 
     /**
      * Returns a collection of workitems for which the specified user has explicit
-     * write permission.
-     * The name is a username or role contained in the $WriteAccess attribute of the
-     * workItem.
+     * write permission. The name is a username or role contained in the
+     * $WriteAccess attribute of the workItem.
      * 
      * The method returns only workitems the call has sufficient read access for.
      * 
@@ -255,8 +258,8 @@ public class WorkflowService implements WorkflowContext {
 
     /**
      * Returns a collection of workitems where the current user has a writeAccess.
-     * This means that at least one of the userNames is contained in
-     * the $writeaccess property.
+     * This means that at least one of the userNames is contained in the
+     * $writeaccess property.
      * 
      * 
      * @param pageSize    = optional page count (default 20)
@@ -862,11 +865,9 @@ public class WorkflowService implements WorkflowContext {
     }
 
     /**
-     * Returns a version by Group.
-     * The method computes a sorted list of all model versions containing the
-     * requested
-     * workflow group. The result is sorted in reverse order, so the highest version
-     * number is the first in the result list.
+     * Returns a version by Group. The method computes a sorted list of all model
+     * versions containing the requested workflow group. The result is sorted in
+     * reverse order, so the highest version number is the first in the result list.
      * 
      * @param group - name of the workflow group
      * @return list of matching model versions
@@ -1075,8 +1076,8 @@ public class WorkflowService implements WorkflowContext {
      * definition must contain at least a name attribute and may contain an optional
      * list of additional attributes.
      * <p>
-     * The method generates a item for each content element
-     * and attribute value. e.g.:
+     * The method generates a item for each content element and attribute value.
+     * e.g.:
      * <p>
      * {@code<item name="comment" ignore="true">text</item>}
      * <p>
@@ -1315,11 +1316,10 @@ public class WorkflowService implements WorkflowContext {
 
     /**
      * The method evaluates a XML tag from the WorkflowResult for a given BPMN
-     * event.
-     * The method returns a list of ItemCollecitons matching the given XML tag and
-     * name attribtue. A custom XML configuriaton may contain one or many XML tags
-     * with the same
-     * name. Each result ItemCollection holds the tag values of each XML tag.
+     * event. The method returns a list of ItemCollecitons matching the given XML
+     * tag and name attribtue. A custom XML configuriaton may contain one or many
+     * XML tags with the same name. Each result ItemCollection holds the tag values
+     * of each XML tag.
      * 
      * Example:
      * 
@@ -1371,5 +1371,50 @@ public class WorkflowService implements WorkflowContext {
 
         return result;
 
+    }
+
+    /**
+     * This method implements a flexible condition evaluation pattern:
+     * <ol>
+     * <li>Fires a CDI `BPMNConditionalEvent` to registered observers</li>
+     * <li>Observers can transform the condition</li>
+     * <li>The final conditional expression evaluated by the ModelManager through
+     * the RuleEngine</li>
+     * </ol>
+     * <p>
+     * Flow:
+     * 
+     * <pre>
+     * condition (from BPMN model)
+     *   ↓
+     * CDI Event fired to observers
+     *   ↓
+     * Observer transforms condition (optional, e.g. domain-specific condition → JavaScript)
+     *   ↓
+     * RuleEngine evaluates final expression
+     *   ↓
+     * boolean result
+     * </pre>
+     * <p>
+     * If no observer handles the event, the original condition is evaluated.
+     * <p>
+     * Example conditions:
+     * <ul>
+     * <li>JavaScript (direct): <code>"amount > 1000"</code></li>
+     * <li>JavaScript (direct): <code>"status == 'approved'"</code></li>
+     * </ul>
+     */
+    @Override
+    public String evalConditionalExpression(String expression, ItemCollection workitem) {
+        String finalExpression = expression;
+        // Fire CDI event - observers can transform the expression
+        if (bpmnConditionEvents != null) {
+            BPMNConditionalEvent event = new BPMNConditionalEvent(expression, workitem);
+            bpmnConditionEvents.fire(event);
+            // Update expression...
+            finalExpression = event.getCondition();
+        }
+
+        return finalExpression;
     }
 }

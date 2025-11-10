@@ -48,13 +48,13 @@ import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.elements.core.BPMNElementNode;
 
 /**
- * The WorkflowKernel is the core component to process a workitem based
- * on its associated BPMN Task ($taskId) and Event ($eventId) elements.
+ * The WorkflowKernel is the core component to process a workitem based on its
+ * associated BPMN Task ($taskId) and Event ($eventId) elements.
  * <p>
  * The WorkflowKernel operates on a Open BPMN model instance to navigate through
  * a BPMN 2.0 model. The model instance is identified by the attribute
- * $modelversion. The WorkflowKernel expects a {@link WorkflowContext} to
- * access the {@link ModelManager} and the runtime environment.
+ * $modelversion. The WorkflowKernel expects a {@link WorkflowContext} to access
+ * the {@link ModelManager} and the runtime environment.
  * <p>
  * An implementation of the {@link WorkflowManager} typical creates an instance
  * of a WorkflowKernel and register {@link Plugin} and {@link Adapter} classes
@@ -345,7 +345,7 @@ public class WorkflowKernel {
      * <p>
      * The method executes all plugin and adapter classes and returns an updated
      * instance of the workitem. The method did not persist the process instance.
-     * The persistance mechanism is covered by the {@code WorkflowService} witch is
+     * The persistence mechanism is covered by the {@code WorkflowService} witch is
      * not part of this core project.
      * 
      * @param workitem the process instance to be processed.
@@ -436,9 +436,9 @@ public class WorkflowKernel {
      * The method is called by the {@link WorkflowKernel} to start the processing
      * life cycle.
      * <p>
-     * A Event is typically connected with a Task by outgoing SequenceFlows.
-     * A special case is a Start event followed by one or more Events connected with
-     * a Task (Start-Task) element.
+     * A Event is typically connected with a Task by outgoing SequenceFlows. A
+     * special case is a Start event followed by one or more Events connected with a
+     * Task (Start-Task) element.
      * 
      * @param workitem
      * @return BPMN Event entity - {@link ItemCollection}
@@ -473,12 +473,11 @@ public class WorkflowKernel {
 
     /**
      * This method processes a single event on a given process instance and executes
-     * all assigned MicroKernels.
-     * After the execution was completed, the method loads the next BPMN element in
-     * the process flow. If the next BPMN element is again an event, the method
-     * returns the next event.
-     * In all other cases the method returns null to signal that the processing life
-     * cycle can be terminated.
+     * all assigned MicroKernels. After the execution was completed, the method
+     * loads the next BPMN element in the process flow. If the next BPMN element is
+     * again an event, the method returns the next event. In all other cases the
+     * method returns null to signal that the processing life cycle can be
+     * terminated.
      * 
      * @param workitem
      * @param event
@@ -555,9 +554,8 @@ public class WorkflowKernel {
      * This helper method resolves a ParallelGateway Situation.
      * 
      * The method verifies all outgoing flows and creates a new Split-WorkItem for
-     * each following Event.
-     * At least on Task element is expected. This is the final status of the main
-     * workItem.
+     * each following Event. At least on Task element is expected. This is the final
+     * status of the main workItem.
      * 
      * 
      * @param model
@@ -750,8 +748,8 @@ public class WorkflowKernel {
 
     /**
      * If the current workflow result of an Event defines a new model tag, this
-     * method updates the $modelversion, $taskID and $eventID and returns true.
-     * If no <model> tag was found, the method returns false.
+     * method updates the $modelversion, $taskID and $eventID and returns true. If
+     * no <model> tag was found, the method returns false.
      * 
      * <pre>
      * {@code
@@ -857,8 +855,7 @@ public class WorkflowKernel {
 
     /**
      * Helper method to update the items $taskid, $worklfowstatus, $workflowgroup
-     * and type.
-     * The given Element must be a Task. Otherwise the method throws a
+     * and type. The given Element must be a Task. Otherwise the method throws a
      * ModelException.
      * 
      * @throws ModelException
@@ -902,9 +899,8 @@ public class WorkflowKernel {
 
     /**
      * Helper method to update the item <code>$intermediateEvent</code> and
-     * <code>$intermediateEvent.elementId</code>.
-     * The given Element must be a Event. Otherwise the method throws a
-     * ModelException.
+     * <code>$intermediateEvent.elementId</code>. The given Element must be a Event.
+     * Otherwise the method throws a ModelException.
      * <p>
      * This method is called by the method processEvent() and indicates that we are
      * currently in an active processing life cycle. This status is evaluated by the
@@ -1042,8 +1038,8 @@ public class WorkflowKernel {
      * save the workitem!.
      * <p>
      * The new property $UniqueIDSource will be added to the new version, which
-     * points to the $uniqueID of the sourceWorkitem.
-     * In addition the item $created.version marks the point of time.
+     * points to the $uniqueID of the sourceWorkitem. In addition the item
+     * $created.version marks the point of time.
      * <p>
      * The new property $UniqueIDVersions will be added to the sourceWorkItem which
      * points to the id of the new version.
@@ -1087,8 +1083,7 @@ public class WorkflowKernel {
      * timestamp+timezone|model-version|sourcetask|eventid|targettask|actor|comment
      * </code>
      * <p>
-     * Example:
-     * <code>
+     * Example: <code>
      * 2024-08-27T12:04:20.469+02:00|requirement-1.0.0|2000|10|3000|admin@foo.com|approved
      * </code>
      * <p>
@@ -1183,9 +1178,8 @@ public class WorkflowKernel {
     }
 
     /**
-     * Converts a single log entry from old to new format
-     * Old: timestamp|model-version|1000.10|1000|comment
-     * New:
+     * Converts a single log entry from old to new format Old:
+     * timestamp|model-version|1000.10|1000|comment New:
      * timestamp+timezone|model-version|sourcetask|eventid|targettask|actor|comment
      */
     private String migrateDeprecatedLogEntry(String oldEntry) {

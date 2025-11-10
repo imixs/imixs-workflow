@@ -83,8 +83,8 @@ public interface WorkflowContext {
         public ItemCollection getWorkItem(String uniqueid);
 
         /**
-         * This method processes a workItem. A workitem have to provide at
-         * least the properties '$modelversion', '$taskid' and '$eventid'
+         * This method processes a workItem. A workitem have to provide at least the
+         * properties '$modelversion', '$taskid' and '$eventid'
          * 
          * @param workitem - the workItem to be processed
          * @return updated version of the processed workItem
@@ -146,4 +146,17 @@ public interface WorkflowContext {
         public ItemCollection evalWorkflowResult(ItemCollection event, String tag, ItemCollection documentContext)
                         throws PluginException;
 
+        /**
+         * Evaluates a BPMN sequence flow condition. This method is called by the
+         * ModelManager to delegate a conditional expression of a BPMN SequenceFlow to
+         * the Workflow Runtime.
+         * 
+         * @param expression the conditional expression from a BPMN SequenceFlow. Can be
+         *                   JavaScript code or any domain-specific condition for a
+         *                   specialized observer.
+         * @param workitem   the workflow item providing context data for condition
+         *                   evaluation
+         * @return conditional expression evaluated by the workflow runtime.
+         */
+        public String evalConditionalExpression(String expression, ItemCollection workitem);
 }
