@@ -38,7 +38,6 @@ import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowContext;
 import org.imixs.workflow.WorkflowKernel;
-import org.imixs.workflow.bpmn.BPMNConditionalEvent;
 import org.imixs.workflow.bpmn.BPMNUtil;
 import org.imixs.workflow.engine.plugins.ResultPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
@@ -124,7 +123,7 @@ public class WorkflowService implements WorkflowContext {
     protected Event<ProcessingEvent> processingEvents;
 
     @Inject
-    protected Event<BPMNConditionalEvent> bpmnConditionEvents;
+    protected Event<ConditionalExpressionEvent> bpmnConditionEvents;
 
     @Inject
     protected Event<TextEvent> textEvents;
@@ -1409,7 +1408,7 @@ public class WorkflowService implements WorkflowContext {
         String finalExpression = expression;
         // Fire CDI event - observers can transform the expression
         if (bpmnConditionEvents != null) {
-            BPMNConditionalEvent event = new BPMNConditionalEvent(expression, workitem);
+            ConditionalExpressionEvent event = new ConditionalExpressionEvent(expression, workitem);
             bpmnConditionEvents.fire(event);
             // Update expression...
             finalExpression = event.getCondition();

@@ -1,14 +1,14 @@
-package org.imixs.workflow.bpmn;
+package org.imixs.workflow.engine;
 
 import org.imixs.workflow.ItemCollection;
 
 /**
- * CDI Event for condition evaluation in BPMN process flows.
+ * CDI Event for conditional expression in BPMN process flows.
  * <p>
  * This event enables extensibility by allowing registered observers to
- * transform or interpret conditions before they are evaluated by the
- * RuleEngine. This design pattern decouples the core BPMN engine from specific
- * condition implementations.
+ * transform or interpret conditions in a BPMN SequenceFlow before they are
+ * evaluated by the RuleEngine. This design pattern decouples the core BPMN
+ * engine from specific condition implementations.
  * <p>
  * In this way observers can implement domain-specific condition logic or track
  * condition evaluations
@@ -17,7 +17,7 @@ import org.imixs.workflow.ItemCollection;
  * @author [Your Name]
  * @version 1.0
  */
-public class BPMNConditionalEvent {
+public class ConditionalExpressionEvent {
 
     /**
      * The condition expression from the BPMN model. Can be JavaScript code or any
@@ -42,7 +42,7 @@ public class BPMNConditionalEvent {
      * @param condition the condition expression from the BPMN SequenceFlow
      * @param workitem  the workflow item providing context and data
      */
-    public BPMNConditionalEvent(String condition, ItemCollection workitem) {
+    public ConditionalExpressionEvent(String condition, ItemCollection workitem) {
         this.condition = condition;
         this.workitem = workitem;
     }
