@@ -6,14 +6,11 @@ Async Events are modeled as BPMN Boundary Events.
 
 <img src="../images/modelling/example_13.png"/>
 
-The Async Event is identified by the following task attributes:
+In BPMN2 the definition of a Async Event can be modelled in the 'Timer Definition' like this:
 
-    boundaryEvent.timerEventDefinition.timeDuration=1000
-    boundaryEvent.targetEvent=30
+<img src="../images/modelling/example_13.1.png"/>
 
-The _timerEventDefinition_ is optional.
-
-In BPMN2 the definition of a Async Event looks like this:
+**BPMN 2.0 Definition**
 
 ```xml
     <bpmn2:boundaryEvent id="BoundaryEvent_1" name="" attachedToRef="Task_1">
@@ -24,6 +21,8 @@ In BPMN2 the definition of a Async Event looks like this:
     </bpmn2:boundaryEvent>
     <bpmn2:sequenceFlow id="SequenceFlow_8" sourceRef="BoundaryEvent_1" targetRef="IntermediateCatchEvent_3"/>
 ```
+
+**Note:** Imixs AsyncEvents are designed for short-running, time-critical transactional actions—typically ranging from a few milliseconds to a few minutes. They are ideal for triggering quick asynchronous follow-up tasks within a separate workflow transaction. For long-running or recurring processes lasting hours, days, or even years, the [Workflow Scheduler](./workflowscheduler.html) is the recommended solution, as it is specifically built for long-term timer and background job execution.
 
 ## The AsyncEventProcessor
 
