@@ -44,23 +44,19 @@ public class VectorConverter implements Converter {
 
     @SuppressWarnings({ "unchecked" })
     public Object getAsObject(FacesContext context, UIComponent component, String value) throws ConverterException {
-        // Return null for empty values to allow required validation to work
-        if (value == null || value.trim().isEmpty()) {
-            return null;
-        }
+
         // for backward compatibility we leave it a Vector even if a ArrayList would
         // make more sense here.
         Vector v = new Vector();
         String[] tokens = value.split(separator);
         for (int i = 0; i < tokens.length; i++) {
-            String token = tokens[i].trim();
-            // Optional: skip empty lines to avoid empty elements in the vector
-            if (!token.isEmpty()) {
-                v.addElement(token);
+            String val = tokens[i].trim();
+            if (!val.isEmpty()) {
+                v.addElement(tokens[i].trim());
             }
         }
-        // Return null if vector is empty after processing
-        return v.isEmpty() ? null : v;
+
+        return v;
     }
 
     /**
