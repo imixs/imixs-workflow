@@ -20,6 +20,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -109,25 +110,39 @@ public class SchedulerService {
     /**
      * Loads the scheduler configuration entity by name. The method returns null if
      * no scheduler configuration exits.
+     * <p>
+     * The method removes duplicates if exit.
      * 
-     * @return
+     * @param name - name of the scheduler configuration
+     * @return the configuration ItemCollection or null if not found
      */
     public ItemCollection loadConfiguration(String name) {
         try {
             // support deprecated txtname attribure
             String sQuery = "(type:\"" + DOCUMENT_TYPE + "\" AND (name:\"" + name + "\" OR txtname:\"" + name
                     + "\" ) )";
-            Collection<ItemCollection> col = documentService.find(sQuery, 1, 0);
+            Collection<ItemCollection> col = documentService.find(sQuery, 99, 0);
             // check if we found a scheduler configuration
-            if (col.size() > 0) {
-                ItemCollection configuration = col.iterator().next();
+            Iterator<ItemCollection> configIterator = col.iterator();
+            if (configIterator.hasNext()) {
+                ItemCollection configuration = configIterator.next();
                 // refresh timer details
                 updateTimerDetails(configuration);
+                // remove deprecated configuration if exits
+                while (configIterator.hasNext()) {
+                    ItemCollection deprecatedConfig = configIterator.next();
+                    if (deprecatedConfig != null) {
+                        logger.warning("├── Deprecated scheduler configuration '"
+                                + deprecatedConfig.getUniqueID() + "' - will be removed...");
+                        documentService.remove(deprecatedConfig);
+                    }
+                }
                 return configuration;
             }
         } catch (QueryException e1) {
             e1.printStackTrace();
         }
+        // no data found!
         return null;
     }
 
