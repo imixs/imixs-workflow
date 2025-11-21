@@ -1,19 +1,19 @@
 # The Imixs-Workflow Engine
 
-The Imixs-Workflow engine consists of different service components. Each component maps a specific functionality into your workflow application: 
+The Imixs-Workflow engine consists of different service components. Each component maps a specific functionality into your workflow application:
 
- * The [WorkflowService](./workflowservice.html) → the core component to create and update a process instance
- * The [ModelService](./modelservice.html) → the management component for BPMN models. 
- * The [DocumentService](./documentservice.html) → the data access layer to store workflow related data
- * The [ReportService](./reportservice.html) → a service component to create data reports
+- The [WorkflowService](./workflowservice.html) → the core component to create and update a process instance
+- The [ModelService](./modelservice.html) → the management component for BPMN models.
+- The [DocumentService](./documentservice.html) → the data access layer to store workflow related data
+- The [ReportService](./reportservice.html) → a service component to create data reports
 
-All services can either be injected into a Java Enterprise application or can be accessed through its [RESTfull service API](../restapi/index.html). 
+All services can either be injected into a Java Enterprise application or can be accessed through its [RESTfull service API](../restapi/index.html).
 
-Further more, all services are subject to the [Imixs-Workflow Security Model](./acl.html). In this way only an authenticated access to these service components is allowed. This concept ensures the protection of your business data. 
+Further more, all services are subject to the [Imixs-Workflow Security Model](./acl.html). In this way only an authenticated access to these service components is allowed. This concept ensures the protection of your business data.
 
- 
 ### The WorkflowService
-The `WorkflowService` is the core service to create, update and read a process instance. To create a process instance a workitem is assigned to a BPMN 2.0  model definition managed by the `ModelService`. 
+
+The `WorkflowService` is the core service to create, update and read a process instance. To create a process instance a workitem is assigned to a BPMN 2.0 model definition managed by the `ModelService`.
 
 ```java
 @Inject
@@ -21,12 +21,13 @@ WorkflowService workflowService;
 ItemCollection workitem=new ItemCollection().model("1.0.0").task(100).event(10);
 workitem=workflowService.processWorkItem(workitem);
 ```
- 
+
 Read more about in the section [Imixs WorkflowService](../engine/workflowservice.html).
- 
+
 ### The DocumentService
-The `DocumentService` is the general persistence layer of the Imixs-Workflow engine and provides an interface to store, load and query data objects (`Documents`) within a database. 
-The `DocumentService` is independent from the workflow engine and can not only be used to persist a process instance (`workitem`), but also any other kind of business data, not necessarily associated with the workflow engine (e.g configuration data). 
+
+The `DocumentService` is the general persistence layer of the Imixs-Workflow engine and provides an interface to store, load and query data objects (`Documents`) within a database.
+The `DocumentService` is independent from the workflow engine and can not only be used to persist a process instance (`workitem`), but also any other kind of business data, not necessarily associated with the workflow engine (e.g configuration data).
 
 ```java
 @Inject
@@ -35,7 +36,7 @@ ItemCollection myDocument=new ItemCollection;
 myDocument.setItemValue("type","product");
 myDocument.setItemValue("name","coffee");
 myDocument=documentService.save(myDocument);
-```	  
+```
 
 The `DocumentService` provides also a [Full-Text-Search](./luceneservice.html). In this way documents can be accessed through a search query:
 
@@ -44,9 +45,10 @@ List<ItemCollection> result=documentService.find("(type:'workitem')(imixs*)");
 ```
 
 Read more about in the section [DocumentService](../engine/documentservice.html).
- 
+
 ### The ModelService
-The _ModelService_ provides methods to manage BPMN model definitions. A model can be created with the Eclipse based modeling tool [Imixs-BPMN](../modelling/index.html). 
+
+The _ModelService_ provides methods to manage BPMN model definitions. A model can be created with the Eclipse based modeling tool [Imixs-BPMN](../modelling/index.html).
 
 ```java
 @Inject
@@ -54,7 +56,7 @@ ModelService modelService;
 InputStream inputStream = new FileInputStream(new File("ticket.bpmn"));
 ticketModel = BPMNParser.parseModel(inputStream, "UTF-8");
 modelService.addModel(model);
-```	
+```
 
 The `ModelService` is used internally by the `WorkflowService` but can also be used by your application to navigate through a model definition.
 
@@ -66,8 +68,7 @@ List<ItemCollection> tasks = modelService.findAllTasks();
 ```
 
 Read more about in the section [ModelService](../engine/modelservice.html).
- 
+
 ### The ReportService
 
-The `ReportService` component supports methods to create, find and execute business reports created with the Eclipse based [Imixs-Workflow Modeler](../modelling/index.html). A report is used to generate aggregated information from data objects managed by the `DocumentService`.  
-
+The `ReportService` component supports methods to create, find and execute business reports created with the Eclipse based [Imixs-Workflow Modeler](../modelling/index.html). A report is used to generate aggregated information from data objects managed by the `DocumentService`.

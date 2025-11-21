@@ -118,6 +118,7 @@
 				<item name="RestClient" href="./restapi/restclient.html" />
 				<item name="EventLog Service" href="./restapi/eventlogservice.html" />
 				<item name="AdminP Service" href="./restapi/adminp.html" />
+				<item name="Scheduler Service" href="./restapi/scheduler.html" />
 			</item>
 
 			<item name="Web Forms" href="./webforms/index.html" collapse="true">
