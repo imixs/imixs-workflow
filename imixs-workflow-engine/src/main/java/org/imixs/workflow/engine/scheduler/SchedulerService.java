@@ -225,7 +225,7 @@ public class SchedulerService {
             } catch (Exception e) {
                 logger.log(Level.WARNING, "...failed to stop existing timer for ''{0}''!", configuration.getUniqueID());
                 throw new InvalidAccessException(SchedulerService.class.getName(), SchedulerException.INVALID_WORKITEM,
-                        " failed to cancle existing timer!");
+                        " failed to cancel existing timer!");
             }
         }
 
@@ -244,7 +244,7 @@ public class SchedulerService {
             String msg = "started at " + dateFormatDE.format(calNow.getTime()) + " by "
                     + ctx.getCallerPrincipal().getName();
             configuration.replaceItemValue(Scheduler.ITEM_SCHEDULER_STATUS, msg);
-            logger.log(Level.INFO, "...Scheduler Service {0} ({1}) successfull started.",
+            logger.log(Level.INFO, "...Scheduler Service {0} ({1}) successful started.",
                     new Object[] { id, configuration.getItemValueString("Name") });
         }
         configuration.replaceItemValue(Scheduler.ITEM_SCHEDULER_ENABLED, true);
