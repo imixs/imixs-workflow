@@ -1104,181 +1104,12 @@ public class WorkflowService implements WorkflowContext {
     @Override
     public ItemCollection evalWorkflowResult(ItemCollection event, String xmlTag, ItemCollection documentContext,
             boolean resolveItemValues) throws PluginException {
-        boolean debug = logger.isLoggable(Level.FINE);
-        ItemCollection result = new ItemCollection();
         String workflowResult = event.getItemValueString(BPMNUtil.EVENT_ITEM_WORKFLOW_RESULT);
         // support deprecated itemname
         if (workflowResult.isEmpty()) {
             workflowResult = event.getItemValueString("txtActivityResult");
         }
-        if (workflowResult.trim().isEmpty()) {
-            return null;
-        }
-        if (xmlTag == null || xmlTag.isEmpty()) {
-            logger.warning("cannot eval workflow result - no tag name specified. Verify model!");
-            return null;
-        }
-
-        // if no <tag exists we skip the evaluation...
-        if (workflowResult.indexOf("<" + xmlTag) == -1) {
-            return null;
-        }
-
-        // replace dynamic values?
-        if (resolveItemValues) {
-            workflowResult = adaptText(workflowResult, documentContext);
-        }
-
-        boolean invalidPattern = false;
-        // Fast first test if the tag really exists....
-        Pattern patternSimple = Pattern.compile("<" + xmlTag + " (.*?)>(.*?)|<" + xmlTag + " (.*?)./>", Pattern.DOTALL);
-        Matcher matcherSimple = patternSimple.matcher(workflowResult);
-        if (matcherSimple.find()) {
-            invalidPattern = true;
-            // we found the starting tag.....
-
-            // Extract all tags with attributes using regex (including empty tags)
-            // see also:
-            // https://stackoverflow.com/questions/1732348/regex-match-open-tags-except-xhtml-self-contained-tags
-            // e.g. <item(.*?)>(.*?)</item>|<item(.*?)./>
-            Pattern pattern = Pattern
-                    .compile("(?s)(?:(<" + xmlTag + "(?>\\b(?:\".*?\"|'.*?'|[^>]*?)*>)(?<=/>))|(<" + xmlTag
-                            + "(?>\\b(?:\".*?\"|'.*?'|[^>]*?)*>)(?<!/>))(.*?)(</" + xmlTag + "\\s*>))", Pattern.DOTALL);
-            Matcher matcher = pattern.matcher(workflowResult);
-            while (matcher.find()) {
-                invalidPattern = false;
-                // we expect up to 4 different result groups
-                // group 0 contains complete tag string
-                // groups 1 or 2 contain the attributes
-
-                String content = "";
-                String attributes = matcher.group(1);
-                if (attributes == null) {
-                    attributes = matcher.group(2);
-                    content = matcher.group(3);
-                } else {
-                    content = matcher.group(2);
-                }
-
-                if (content == null) {
-                    content = "";
-                }
-
-                // now extract the attributes to verify the tag name..
-                if (attributes != null && !attributes.isEmpty()) {
-                    // parse attributes...
-                    String spattern = "(\\S+)=[\"']?((?:.(?![\"']?\\s+(?:\\S+)=|[>\"']))+.)[\"']?";
-                    Pattern attributePattern = Pattern.compile(spattern);
-                    Matcher attributeMatcher = attributePattern.matcher(attributes);
-                    Map<String, String> attrMap = new HashMap<String, String>();
-                    while (attributeMatcher.find()) {
-                        String attrName = attributeMatcher.group(1); // name
-                        String attrValue = attributeMatcher.group(2); // value
-                        attrMap.put(attrName, attrValue);
-                    }
-
-                    String tagName = attrMap.get("name");
-                    if (tagName == null) {
-                        throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_TAG_FORMAT,
-                                "<" + xmlTag + "> tag contains no name attribute.");
-                    }
-
-                    // now add optional attributes if available
-                    for (String attrName : attrMap.keySet()) {
-                        // we need to skip the 'name' attribute
-                        if (!"name".equals(attrName)) {
-                            result.appendItemValue(tagName + "." + attrName, attrMap.get(attrName));
-                        }
-                    }
-
-                    // test if the type attribute was provided to convert content?
-                    String sType = result.getItemValueString(tagName + ".type");
-                    String sFormat = result.getItemValueString(tagName + ".format");
-                    if (!sType.isEmpty()) {
-                        // convert content type
-                        if ("boolean".equalsIgnoreCase(sType)) {
-                            result.appendItemValue(tagName, Boolean.valueOf(content));
-                        } else if ("integer".equalsIgnoreCase(sType)) {
-                            try {
-                                result.appendItemValue(tagName, Integer.valueOf(content));
-                            } catch (NumberFormatException e) {
-                                // append 0 value
-                                result.appendItemValue(tagName, new Integer(0));
-                            }
-                        } else if ("double".equalsIgnoreCase(sType)) {
-                            try {
-                                result.appendItemValue(tagName, Double.valueOf(content));
-                            } catch (NumberFormatException e) {
-                                // append 0 value
-                                result.appendItemValue(tagName, new Double(0));
-                            }
-                        } else if ("float".equalsIgnoreCase(sType)) {
-                            try {
-                                result.appendItemValue(tagName, Float.valueOf(content));
-                            } catch (NumberFormatException e) {
-                                // append 0 value
-                                result.appendItemValue(tagName, new Float(0));
-                            }
-                        } else if ("long".equalsIgnoreCase(sType)) {
-                            try {
-                                result.appendItemValue(tagName, Long.valueOf(content));
-                            } catch (NumberFormatException e) {
-                                // append 0 value
-                                result.appendItemValue(tagName, new Long(0));
-                            }
-                        } else if ("date".equalsIgnoreCase(sType)) {
-                            if (content == null || content.isEmpty()) {
-                                // no value defined - remove item
-                                result.removeItem(tagName);
-                            } else {
-                                // convert content value to date object
-                                try {
-                                    if (debug) {
-                                        logger.finer("......convert string into date object");
-                                    }
-                                    Date dateResult = null;
-                                    if (sFormat == null || sFormat.isEmpty()) {
-                                        // use standard format short/short
-                                        dateResult = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
-                                                .parse(content);
-                                    } else {
-                                        // use given formatter (see: TextItemValueAdapter)
-                                        DateFormat dateFormat = new SimpleDateFormat(sFormat);
-                                        dateResult = dateFormat.parse(content);
-                                    }
-                                    result.appendItemValue(tagName, dateResult);
-                                } catch (ParseException e) {
-                                    if (debug) {
-                                        logger.log(Level.FINER, "failed to convert string into date object: {0}",
-                                                e.getMessage());
-                                    }
-                                }
-                            }
-
-                        } else
-                            // no type conversion
-                            result.appendItemValue(tagName, content);
-                    } else {
-                        // no type definition
-                        result.appendItemValue(tagName, content);
-                    }
-
-                } else {
-                    throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_TAG_FORMAT,
-                            "<" + xmlTag + "> tag contains no name attribute.");
-
-                }
-            }
-        }
-
-        // test for general invalid format
-        if (invalidPattern) {
-            throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_TAG_FORMAT,
-                    "invalid <" + xmlTag + "> tag format in workflowResult: " + workflowResult
-                            + "  , expected format is <"
-                            + xmlTag + " name=\"...\">...</item> ");
-        }
-        return result;
+        return evalXMLExpression(workflowResult, xmlTag, documentContext, resolveItemValues);
     }
 
     /**
@@ -1343,14 +1174,58 @@ public class WorkflowService implements WorkflowContext {
             ItemCollection documentContext,
             boolean resolveItemValues) throws PluginException {
 
-        List<ItemCollection> result = new ArrayList<ItemCollection>();
-        // find all xml configs with the given tat name
-        ItemCollection configItemCol = evalWorkflowResult(event, xmlTag, documentContext, resolveItemValues);
-        if (configItemCol == null) {
+        String workflowResult = event.getItemValueString(BPMNUtil.EVENT_ITEM_WORKFLOW_RESULT);
+        // support deprecated itemname
+        if (workflowResult.isEmpty()) {
+            workflowResult = event.getItemValueString("txtActivityResult");
+        }
+
+        try {
+            return evalXMLExpressionList(workflowResult, xmlTag, name, documentContext, resolveItemValues);
+        } catch (PluginException e) {
             // no configuration found!
             throw new PluginException(WorkflowService.class.getSimpleName(), INVALID_TAG_FORMAT,
                     "Missing XML definition '" + xmlTag + "' in Event " + event.getItemValueInteger("numprocessid")
                             + "." + event.getItemValueInteger("numactivityid"));
+        }
+
+    }
+
+    /**
+     * The method evaluates a XML expression and returns a list of ItemCollecitons
+     * matching the given XML tag and name attribtue. A custom XML configuriaton may
+     * contain one or many XML tags with the same name. Each result ItemCollection
+     * holds the tag values of each XML tag.
+     * 
+     * Example:
+     * 
+     * <pre>
+     * {@code
+     * <imixs-config name="CONFIG">
+     *   <textblock>....</textblock>
+     *   <template>....</template>
+     * </imixs-config>
+     * }
+     * </pre>
+     * 
+     * @param event
+     * @param xmlTag            - xml tag to be evaluated
+     * @param name              - value of the matching name attribute
+     * @param documentContext
+     * @param resolveItemValues - if true, itemValue tags will be resolved.
+     * @return list of ItemCollections
+     * @throws PluginException if the xml structure is invalid
+     */
+    public List<ItemCollection> evalXMLExpressionList(String xmlExpression, String xmlTag, String name,
+            ItemCollection documentContext, boolean resolveItemValues) throws PluginException {
+
+        List<ItemCollection> result = new ArrayList<ItemCollection>();
+        // find all xml configs with the given tat name
+        ItemCollection configItemCol = evalXMLExpression(xmlExpression, xmlTag, documentContext, resolveItemValues);
+        if (configItemCol == null) {
+            // no configuration found!
+            throw new PluginException(WorkflowService.class.getSimpleName(), INVALID_TAG_FORMAT,
+                    "Missing XML definition");
         }
 
         List<String> xmlDefinitions = configItemCol.getItemValueList(name, String.class);
@@ -1370,6 +1245,217 @@ public class WorkflowService implements WorkflowContext {
 
         return result;
 
+    }
+
+    /**
+     * The method evaluates a XML expression and returns a ItemColleciton containing
+     * all item values of a specified xml tag. Each tag definition must contain at
+     * least a name attribute and may contain an optional list of additional
+     * attributes.
+     * <p>
+     * The method generates a item for each content element and attribute value.
+     * e.g.:
+     * <p>
+     * {@code<item name="comment" ignore="true">text</item>}
+     * <p>
+     * This example will result in an ItemCollection with the attributes 'comment'
+     * with value 'text' and 'comment.ignore' with the value 'true'
+     * <p>
+     * Also embedded itemVaues can be resolved (resolveItemValues=true):
+     * <p>
+     * {@code
+     * 		<somedata>ABC<itemvalue>$uniqueid</itemvalue></somedata>
+     * }
+     * <p>
+     * This example will result in a new item 'somedata' with the $uniqueid prefixed
+     * with 'ABC'
+     * 
+     * You can also activate the debug mode with the optional tag 'debug="true"'
+     * 
+     * @see https://stackoverflow.com/questions/1732348/regex-match-open-tags-except-xhtml-self-contained-tags
+     * @param event
+     * @param xmlTag            - XML tag to be evaluated
+     * @param documentContext
+     * @param resolveItemValues - if true, itemValue tags will be resolved.
+     * @return eval itemCollection or null if no tags are contained in the workflow
+     *         result.
+     * @throws PluginException if the xml structure is invalid
+     */
+    public ItemCollection evalXMLExpression(String xmlExpression, String xmlTag, ItemCollection documentContext,
+            boolean resolveItemValues) throws PluginException {
+        boolean debug = logger.isLoggable(Level.FINE);
+        ItemCollection result = new ItemCollection();
+
+        if (xmlExpression.trim().isEmpty()) {
+            return null;
+        }
+
+        debug = xmlExpression.toLowerCase().contains("debug=\"ture\"");
+        if (xmlTag == null || xmlTag.isEmpty()) {
+            logger.warning("cannot eval workflow result - no tag name specified. Verify model!");
+            return null;
+        }
+
+        // if no <tag exists we skip the evaluation...
+        if (xmlExpression.indexOf("<" + xmlTag) == -1) {
+            return null;
+        }
+
+        // replace dynamic values?
+        if (resolveItemValues) {
+            xmlExpression = adaptText(xmlExpression, documentContext);
+        }
+
+        boolean invalidPattern = false;
+        // Fast first test if the tag really exists....
+        Pattern patternSimple = Pattern.compile("<" + xmlTag + " (.*?)>(.*?)|<" + xmlTag + " (.*?)./>", Pattern.DOTALL);
+        Matcher matcherSimple = patternSimple.matcher(xmlExpression);
+        if (matcherSimple.find()) {
+            invalidPattern = true;
+            // we found the starting tag.....
+
+            // Extract all tags with attributes using regex (including empty tags)
+            // see also:
+            // https://stackoverflow.com/questions/1732348/regex-match-open-tags-except-xhtml-self-contained-tags
+            // e.g. <item(.*?)>(.*?)</item>|<item(.*?)./>
+            Pattern pattern = Pattern
+                    .compile("(?s)(?:(<" + xmlTag + "(?>\\b(?:\".*?\"|'.*?'|[^>]*?)*>)(?<=/>))|(<" + xmlTag
+                            + "(?>\\b(?:\".*?\"|'.*?'|[^>]*?)*>)(?<!/>))(.*?)(</" + xmlTag + "\\s*>))", Pattern.DOTALL);
+            Matcher matcher = pattern.matcher(xmlExpression);
+            while (matcher.find()) {
+                invalidPattern = false;
+                // we expect up to 4 different result groups
+                // group 0 contains complete tag string
+                // groups 1 or 2 contain the attributes
+
+                String content = "";
+                String attributes = matcher.group(1);
+                if (attributes == null) {
+                    attributes = matcher.group(2);
+                    content = matcher.group(3);
+                } else {
+                    content = matcher.group(2);
+                }
+
+                if (content == null) {
+                    content = "";
+                }
+
+                // now extract the attributes to verify the tag name..
+                if (attributes != null && !attributes.isEmpty()) {
+                    // parse attributes...
+                    String spattern = "(\\S+)=[\"']?((?:.(?![\"']?\\s+(?:\\S+)=|[>\"']))+.)[\"']?";
+                    Pattern attributePattern = Pattern.compile(spattern);
+                    Matcher attributeMatcher = attributePattern.matcher(attributes);
+                    Map<String, String> attrMap = new HashMap<String, String>();
+                    while (attributeMatcher.find()) {
+                        String attrName = attributeMatcher.group(1); // name
+                        String attrValue = attributeMatcher.group(2); // value
+                        attrMap.put(attrName, attrValue);
+                    }
+
+                    String tagName = attrMap.get("name");
+                    if (tagName == null) {
+                        throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_TAG_FORMAT,
+                                "<" + xmlTag + "> tag contains no name attribute.");
+                    }
+
+                    // now add optional attributes if available
+                    for (String attrName : attrMap.keySet()) {
+                        // we need to skip the 'name' attribute
+                        if (!"name".equals(attrName)) {
+                            result.appendItemValue(tagName + "." + attrName, attrMap.get(attrName));
+                        }
+                    }
+
+                    // test if the type attribute was provided to convert content?
+                    String sType = result.getItemValueString(tagName + ".type");
+                    String sFormat = result.getItemValueString(tagName + ".format");
+                    if (!sType.isEmpty()) {
+                        // convert content type
+                        if ("boolean".equalsIgnoreCase(sType)) {
+                            result.appendItemValue(tagName, Boolean.valueOf(content));
+                        } else if ("integer".equalsIgnoreCase(sType)) {
+                            try {
+                                result.appendItemValue(tagName, Integer.valueOf(content));
+                            } catch (NumberFormatException e) {
+                                // append 0 value
+                                result.appendItemValue(tagName, Integer.valueOf(0));
+                            }
+                        } else if ("double".equalsIgnoreCase(sType)) {
+                            try {
+                                result.appendItemValue(tagName, Double.valueOf(content));
+                            } catch (NumberFormatException e) {
+                                // append 0 value
+                                result.appendItemValue(tagName, Double.valueOf(0));
+                            }
+                        } else if ("float".equalsIgnoreCase(sType)) {
+                            try {
+                                result.appendItemValue(tagName, Float.valueOf(content));
+                            } catch (NumberFormatException e) {
+                                // append 0 value
+                                result.appendItemValue(tagName, Float.valueOf(0));
+                            }
+                        } else if ("long".equalsIgnoreCase(sType)) {
+                            try {
+                                result.appendItemValue(tagName, Long.valueOf(content));
+                            } catch (NumberFormatException e) {
+                                // append 0 value
+                                result.appendItemValue(tagName, Long.valueOf(0));
+                            }
+                        } else if ("date".equalsIgnoreCase(sType)) {
+                            if (content == null || content.isEmpty()) {
+                                // no value defined - remove item
+                                result.removeItem(tagName);
+                            } else {
+                                // convert content value to date object
+                                try {
+                                    if (debug) {
+                                        logger.info("......convert string into date object");
+                                    }
+                                    Date dateResult = null;
+                                    if (sFormat == null || sFormat.isEmpty()) {
+                                        // use standard format short/short
+                                        dateResult = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
+                                                .parse(content);
+                                    } else {
+                                        // use given formatter (see: TextItemValueAdapter)
+                                        DateFormat dateFormat = new SimpleDateFormat(sFormat);
+                                        dateResult = dateFormat.parse(content);
+                                    }
+                                    result.appendItemValue(tagName, dateResult);
+                                } catch (ParseException e) {
+                                    if (debug) {
+                                        logger.log(Level.FINER, "failed to convert string into date object: {0}",
+                                                e.getMessage());
+                                    }
+                                }
+                            }
+
+                        } else
+                            // no type conversion
+                            result.appendItemValue(tagName, content);
+                    } else {
+                        // no type definition
+                        result.appendItemValue(tagName, content);
+                    }
+
+                } else {
+                    throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_TAG_FORMAT,
+                            "<" + xmlTag + "> tag contains no name attribute.");
+
+                }
+            }
+        }
+
+        // test for general invalid format
+        if (invalidPattern) {
+            throw new PluginException(ResultPlugin.class.getSimpleName(), INVALID_TAG_FORMAT,
+                    "invalid <" + xmlTag + "> tag format in workflowResult: " + xmlExpression
+                            + "  , expected format is <"
+                            + xmlTag + " name=\"...\">...</item> ");
+        }
+        return result;
     }
 
     /**

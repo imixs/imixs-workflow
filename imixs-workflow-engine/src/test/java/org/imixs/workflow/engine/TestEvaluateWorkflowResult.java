@@ -71,7 +71,7 @@ public class TestEvaluateWorkflowResult {
         ItemCollection activityEntity = new ItemCollection();
 
         try {
-            activityEntity.replaceItemValue("txtActivityResult",
+            activityEntity.replaceItemValue(BPMNUtil.EVENT_ITEM_WORKFLOW_RESULT,
                     "<item ignore=\"true\" name=\"comment\" >some data</item>");
             ItemCollection result = workflowEngine.workflowService.evalWorkflowResult(activityEntity,
                     "item", new ItemCollection());
@@ -86,7 +86,8 @@ public class TestEvaluateWorkflowResult {
 
         // test an empty item tag
         try {
-            activityEntity.replaceItemValue("txtActivityResult", "<item ignore=\"true\" name=\"comment\" />");
+            activityEntity.replaceItemValue(BPMNUtil.EVENT_ITEM_WORKFLOW_RESULT,
+                    "<item ignore=\"true\" name=\"comment\" />");
             ItemCollection result = workflowEngine.workflowService.evalWorkflowResult(activityEntity,
                     "item", new ItemCollection());
             assertNotNull(result);
@@ -110,7 +111,8 @@ public class TestEvaluateWorkflowResult {
 
         // test integer
         try {
-            activityEntity.replaceItemValue("txtActivityResult", "<item name=\"count\" type=\"integer\">55</item>");
+            activityEntity.replaceItemValue(BPMNUtil.EVENT_ITEM_WORKFLOW_RESULT,
+                    "<item name=\"count\" type=\"integer\">55</item>");
             ItemCollection result = workflowEngine.workflowService.evalWorkflowResult(activityEntity,
                     "item", new ItemCollection());
             assertNotNull(result);
@@ -123,7 +125,8 @@ public class TestEvaluateWorkflowResult {
 
         // test double
         try {
-            activityEntity.replaceItemValue("txtActivityResult", "<item name=\"count\" type=\"double\">55.11</item>");
+            activityEntity.replaceItemValue(BPMNUtil.EVENT_ITEM_WORKFLOW_RESULT,
+                    "<item name=\"count\" type=\"double\">55.11</item>");
             ItemCollection result = workflowEngine.workflowService.evalWorkflowResult(activityEntity,
                     "item", new ItemCollection());
             assertNotNull(result);
@@ -136,7 +139,8 @@ public class TestEvaluateWorkflowResult {
 
         // test empty string for Double
         try {
-            activityEntity.replaceItemValue("txtActivityResult", "<item name=\"count\" type=\"double\"></item>");
+            activityEntity.replaceItemValue(BPMNUtil.EVENT_ITEM_WORKFLOW_RESULT,
+                    "<item name=\"count\" type=\"double\"></item>");
             ItemCollection result = workflowEngine.workflowService.evalWorkflowResult(activityEntity,
                     "item", new ItemCollection());
             assertNotNull(result);
@@ -149,7 +153,8 @@ public class TestEvaluateWorkflowResult {
 
         // test empty string for Integer
         try {
-            activityEntity.replaceItemValue("txtActivityResult", "<item name=\"count\" type=\"integer\"></item>");
+            activityEntity.replaceItemValue(BPMNUtil.EVENT_ITEM_WORKFLOW_RESULT,
+                    "<item name=\"count\" type=\"integer\"></item>");
             ItemCollection result = workflowEngine.workflowService.evalWorkflowResult(activityEntity,
                     "item", new ItemCollection());
             assertNotNull(result);
@@ -177,7 +182,7 @@ public class TestEvaluateWorkflowResult {
 
         // test double
         try {
-            activityEntity.replaceItemValue("txtActivityResult",
+            activityEntity.replaceItemValue(BPMNUtil.EVENT_ITEM_WORKFLOW_RESULT,
                     "<item name=\"count\" type=\"double\"><itemvalue>amount</itemvalue></item>");
 
             activityEntity.replaceItemValue(BPMNUtil.EVENT_ITEM_WORKFLOW_RESULT,
@@ -209,7 +214,7 @@ public class TestEvaluateWorkflowResult {
         sResult += "\n<item name=\"txtname\">Sam</item>";
 
         ItemCollection activityEntity = new ItemCollection();
-        activityEntity.replaceItemValue("txtActivityResult", sResult);
+        activityEntity.replaceItemValue(BPMNUtil.EVENT_ITEM_WORKFLOW_RESULT, sResult);
 
         // expected txtname= Manfred,Anna,Sam
         ItemCollection evalItemCollection = new ItemCollection();
@@ -242,7 +247,7 @@ public class TestEvaluateWorkflowResult {
         sResult += "\n<item name=\"action\">home</item>";
 
         ItemCollection activityEntity = new ItemCollection();
-        activityEntity.replaceItemValue("txtActivityResult", sResult);
+        activityEntity.replaceItemValue(BPMNUtil.EVENT_ITEM_WORKFLOW_RESULT, sResult);
 
         // workflowEngine.getWorkflowService();
         long l = System.currentTimeMillis();
@@ -266,7 +271,7 @@ public class TestEvaluateWorkflowResult {
         sResult += "\n<item name=\"comment\" ignore=\"true\"/>";
 
         activityEntity = new ItemCollection();
-        activityEntity.replaceItemValue("txtActivityResult", sResult);
+        activityEntity.replaceItemValue(BPMNUtil.EVENT_ITEM_WORKFLOW_RESULT, sResult);
         l = System.currentTimeMillis();
         evalItemCollection = new ItemCollection();
         evalItemCollection = workflowEngine.workflowService.evalWorkflowResult(activityEntity, "item",
@@ -308,7 +313,7 @@ public class TestEvaluateWorkflowResult {
                     + "	    <activityid>100</activityid>" + "	    <items>_subject,_sender,_receipients,$file</items>"
                     + "	</item>";
 
-            activityEntity.replaceItemValue("txtActivityResult", activityResult);
+            activityEntity.replaceItemValue(BPMNUtil.EVENT_ITEM_WORKFLOW_RESULT, activityResult);
             ItemCollection result = workflowEngine.workflowService.evalWorkflowResult(activityEntity,
                     "item", new ItemCollection());
             assertNotNull(result);
@@ -322,7 +327,7 @@ public class TestEvaluateWorkflowResult {
                     + "	    <processid>1000</processid>\n" + "	    <activityid>100</activityid>\n"
                     + "	    <items>_subject,_sender,_receipients,$file</items>\n" + "	</item>";
 
-            activityEntity.replaceItemValue("txtActivityResult", activityResult);
+            activityEntity.replaceItemValue(BPMNUtil.EVENT_ITEM_WORKFLOW_RESULT, activityResult);
             result = workflowEngine.workflowService.evalWorkflowResult(activityEntity, "item",
                     new ItemCollection());
             assertNotNull(result);
