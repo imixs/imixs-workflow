@@ -508,7 +508,7 @@ public class TestEvaluateWorkflowResult {
     }
 
     /**
-     * This test evaluates a event XML result by calling the the method
+     * This test evaluates a event XML result by calling the method
      * evalWorkflowResultXMLTag
      * 
      * @throws PluginException
@@ -540,4 +540,84 @@ public class TestEvaluateWorkflowResult {
         }
 
     }
+
+    /**
+     * This test evaluates a event result with no XML text by calling the method
+     * evalWorkflowResultXMLTag. We expect an empty List of ItemCollections
+     * 
+     * @throws PluginException
+     */
+    @Test
+    public void testEvaluateWorkflowResultXMLWithPlainText() {
+        ItemCollection activityEntity = new ItemCollection();
+
+        try {
+            activityEntity.replaceItemValue("txtActivityResult",
+                    " Some Kind of Data, but no XML ");
+            List<ItemCollection> result = workflowEngine.workflowService.evalWorkflowResultXML(
+                    activityEntity,
+                    "imixs-config", "CONFIG", new ItemCollection(), false);
+            assertNotNull(result);
+
+            assertEquals(0, result.size());
+
+        } catch (PluginException e) {
+            e.printStackTrace();
+            fail();
+        }
+
+    }
+
+    /**
+     * This test evaluates a XML string with the method evalWorkflowResultXMLTag. We
+     * expect a List of ItemCollection with one element.
+     * 
+     * @throws PluginException
+     */
+    @Test
+    public void testEvalXMLExpressionList() {
+        try {
+            String xml = "  <imixs-config name=\"CONFIG\">\n"
+                    + "            <items>abc</items>\n"
+                    + "            <mode>123</mode>\n"
+                    + "        </imixs-config>";
+            List<ItemCollection> result = workflowEngine.workflowService.evalXMLExpressionList(
+                    xml,
+                    "imixs-config", "CONFIG", new ItemCollection(), false);
+            assertNotNull(result);
+            assertEquals(1, result.size());
+
+            ItemCollection config = result.get(0);
+            assertNotNull(config);
+            assertEquals("abc", config.getItemValueString("items"));
+
+        } catch (PluginException e) {
+            e.printStackTrace();
+            fail();
+        }
+
+    }
+
+    /**
+     * This test evaluates a plain text string with the method
+     * evalWorkflowResultXMLTag. We expect an empty List of ItemCollection
+     * 
+     * @throws PluginException
+     */
+    @Test
+    public void testEvalXMLExpressionListWithPlainText() {
+        try {
+            String xml = "  something <!-- some more --> nothing";
+            List<ItemCollection> result = workflowEngine.workflowService.evalXMLExpressionList(
+                    xml,
+                    "imixs-config", "CONFIG", new ItemCollection(), false);
+            assertNotNull(result);
+            assertEquals(0, result.size());
+        } catch (PluginException e) {
+            e.printStackTrace();
+            fail();
+        }
+
+    }
+
 }
