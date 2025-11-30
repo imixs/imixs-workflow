@@ -1196,8 +1196,9 @@ public class WorkflowService implements WorkflowContext {
      * matching the given XML tag and name attribtue. A custom XML configuriaton may
      * contain one or many XML tags with the same name. Each result ItemCollection
      * holds the tag values of each XML tag.
-     * 
+     * <p>
      * Example:
+     * <p>
      * 
      * <pre>
      * {@code
@@ -1207,6 +1208,10 @@ public class WorkflowService implements WorkflowContext {
      * </imixs-config>
      * }
      * </pre>
+     * <p>
+     * If the xmlExpression does not contain the requested XML tag, the method
+     * returns an empty list.
+     * 
      * 
      * @param event
      * @param xmlTag            - xml tag to be evaluated
@@ -1222,27 +1227,23 @@ public class WorkflowService implements WorkflowContext {
         List<ItemCollection> result = new ArrayList<ItemCollection>();
         // find all xml configs with the given tat name
         ItemCollection configItemCol = evalXMLExpression(xmlExpression, xmlTag, documentContext, resolveItemValues);
-        if (configItemCol == null) {
-            // no configuration found!
-            throw new PluginException(WorkflowService.class.getSimpleName(), INVALID_TAG_FORMAT,
-                    "Missing XML definition");
-        }
-
-        List<String> xmlDefinitions = configItemCol.getItemValueList(name, String.class);
-        if (xmlDefinitions != null) {
-            for (String definitionXML : xmlDefinitions) {
-                if (definitionXML.trim().isEmpty()) {
-                    // no definition
-                    continue;
-                }
-                // evaluate the definition (XML format expected here!)
-                ItemCollection xmlItemCol = XMLParser.parseItemStructure(definitionXML);
-                if (xmlItemCol != null) {
-                    result.add(xmlItemCol);
+        if (configItemCol != null) {
+            // configuration found, test definition name....
+            List<String> xmlDefinitions = configItemCol.getItemValueList(name, String.class);
+            if (xmlDefinitions != null) {
+                for (String definitionXML : xmlDefinitions) {
+                    if (definitionXML.trim().isEmpty()) {
+                        // no definition
+                        continue;
+                    }
+                    // evaluate the definition (XML format expected here!)
+                    ItemCollection xmlItemCol = XMLParser.parseItemStructure(definitionXML);
+                    if (xmlItemCol != null) {
+                        result.add(xmlItemCol);
+                    }
                 }
             }
         }
-
         return result;
 
     }
@@ -1269,8 +1270,11 @@ public class WorkflowService implements WorkflowContext {
      * <p>
      * This example will result in a new item 'somedata' with the $uniqueid prefixed
      * with 'ABC'
-     * 
+     * <p>
      * You can also activate the debug mode with the optional tag 'debug="true"'
+     * <P>
+     * If the xmlExpression does not contain the requested XML tag, the method
+     * returns null
      * 
      * @see https://stackoverflow.com/questions/1732348/regex-match-open-tags-except-xhtml-self-contained-tags
      * @param event
@@ -1289,17 +1293,15 @@ public class WorkflowService implements WorkflowContext {
         if (xmlExpression.trim().isEmpty()) {
             return null;
         }
-
-        debug = xmlExpression.toLowerCase().contains("debug=\"ture\"");
         if (xmlTag == null || xmlTag.isEmpty()) {
             logger.warning("cannot eval workflow result - no tag name specified. Verify model!");
             return null;
         }
-
         // if no <tag exists we skip the evaluation...
         if (xmlExpression.indexOf("<" + xmlTag) == -1) {
             return null;
         }
+        debug = xmlExpression.toLowerCase().contains("debug=\"true\"");
 
         // replace dynamic values?
         if (resolveItemValues) {
