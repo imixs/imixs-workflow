@@ -1,37 +1,131 @@
-# Installation
+# Installation Guide
 
-Imixs-BPMN is based on <a href="https://github.com/imixs/open-bpmn/" target="_blank" >Open-BPMN</a> - a free BPMN 2.0 modelling platform. It can be used in <strong>Visual Studio Code</strong>, as a <strong>Eclipse Plugin</strong> or in a Web Browser. Further more, Open BPMN provides an extension mechanism to adapt the modeling platform to the individual requirements in any business process project. Read more about <a href="https://github.com/imixs/open-bpmn/"
-target="_blank">Open BPMN</a>.
+The architecture of **Open BPMN** makes it possible to run the modeller on various IDEs and platforms. It can be installed on different IDEs such as [Visual Studio Code](https://code.visualstudio.com/) or [Eclipse Theia](https://theia-ide.org/) or it can be run as a standalone web application.
 
-## Visual Studio Code
+## Install Eclipse Theia (💥 Recommended)
 
-To install Imixs-BPMN in Visual Studio Code (VSCode), go to the 'Extensions Settings' and search for 'Open-BPMN' to install.
+[Eclipse Theia](https://theia-ide.org) is the recommended platform for **Open-BPMN**. It provides a highly flexible and modern IDE experience, featuring a powerful AI integration that significantly enhances the modeling and development workflow.
 
-<img src="../images/modelling/install-vscode-01.png"/>
+To install the **Theia IDE**, follow these steps:
 
-After installing the extension you can create and edit .bpmn and .bpmn2 files within your IDE.
-## Eclipse IDE
+1. Download the latest installer for your operating system from the [official Eclipse Theia website](https://theia-ide.org/).
+2. Run the installer and follow the on-screen instructions.
+3. Theia is cross-platform and runs on Windows, macOS, and Linux, providing a seamless experience across all environments.
+4. Once installed, launch the application to start your workspace.
 
-For installation of the Imixs-BPMN Modeler in Eclipse. If you do not have an Eclipse installation yet, you can download Eclipse from the [Eclipse website](http://www.eclipse.org/).
+**Installing the Open-BPMN Extension:** To run [Open BPMN Extension](https://open-vsx.org/extension/open-bpmn/open-bpmn-vscode-extension) in the Theia IDE, simply open the Extensions view from the sidebar (or press `Ctrl+Shift+X`). Search for **"Open-BPMN"** in the Open VSX Registry and click **Install**. After the installation, you can immediately start modeling by opening any .bpmn file.
 
-You can install Imixs-BPMN directly from the Eclipse Marketplace by dragging the install button to your running Eclipse workspace:
+<img src="../bpmn/theia-integration-install.png" width="500" />
 
-<a href="http://marketplace.eclipse.org/marketplace-client-intro?mpc_install=2309267" class="drag" title="Drag to your running Eclipse workspace to install Imixs-BPMN"><img class="img-responsive" src="https://marketplace.eclipse.org/sites/all/themes/solstice/public/images/marketplace/btn-install.png" alt="Drag to your running Eclipse workspace to install Imixs-BPMN" /></a>
- 
-### Installation from the Updatesite 
-Imixs-BPMN is installed the same way as any other Eclipse plugin.To install the Imixs-BPMN plugin select from the Eclipse Workbench main menu:  *Help -> Install New Software*. 
- 
-Enter the following update site URL:
- 
- * https://www.imixs.org/org.imixs.eclipse.bpmn2.updatesite/
- 
-<img src="../images/modelling/bpmn_screen_02.png"/>
+## Install in Visual Studio Code
+
+[Visual Studio Code](https://code.visualstudio.com/) (VS-Code) is a popular, lightweight editor that fully supports the Open-BPMN modeling suite through its extension mechanism.
+
+To install **Visual Studio Code**, follow these steps:
+
+1. Visit the VS-Code Download page and select the version for your OS (Windows, macOS, or Linux).
+2. Download and run the setup file to install the application on your local machine.
+3. Follow the installation wizard, which allows you to add VS-Code to your PATH for easy command-line access.
+4. Launch VS-Code and you are ready to customize your environment.
+
+**Installing the Open-BPMN Extension:** To add the [Open BPMN Extension](https://marketplace.visualstudio.com/items?itemName=open-bpmn.open-bpmn-vscode-extension), navigate to the **Extensions** view in the activity bar on the side of VS-Code. Search for "Open-BPMN" and click the Install button.
+
+<img src="../bpmn/vscode-integration-install.png" width="500" />
+
+## JDK 17 Support
+
+Note: The Open-BPMN extension is based on JDK 17. Please ensure you have [Java 17 or higher installed on your system](https://adoptium.net/).
+
+## Run With Docker
+
+Open-BPMN can also be run as a Web Application in a Docker Container. This solution includes the Eclipse Theia Platform. To run Open-BPMN with docker just start a local Docker container:
+
+    $ docker run -it --rm --name="open-bpmn" \
+      -p 3000:3000 \
+      imixs/open-bpmn
+
+After starting the container the application is accessible from your Web Browser:
+
+    http://localhost:3000
+
+<img src="../bpmn/imixs-bpmn-001.png" width="500" />
+
+### Workspace Directory
+
+The Theia Client is using a local workspace directory `/usr/src/app/open-bpmn.glsp-client/workspace`. The workspace directory is the place to create and edit the BPMN files. With Docker you can change the workspace directory and map it to a local directory with the Docker param -v
+
+In the following example the workspace is mapped to the local directory `/tmp/my-workspace`
+
+    $ docker run -it --rm --name="open-bpmn" \
+      -p 3000:3000 \
+      -v /tmp/my-workspace:/usr/src/app/open-bpmn.glsp-client/workspace \
+      imixs/open-bpmn
+
+## Kubernetes
+
+You can also run Open-BPMN in a Kubernetes cluster. The following is a deplyoment yaml file that you can use as a template for your own configuration. Note also in Kubernetes you can map the workspace directory to a persistence volume.
+
+```
+---
+###################################################
+# Deployment office-demo
+###################################################
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: modeler-app
+  namespace: open-bpmn
+  labels:
+    app: modeler-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: modeler-app
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: modeler-app
+    spec:
+      containers:
+      - image: imixs/open-bpmn:latest
+        name: modeler-app
+        imagePullPolicy: Always
+        env:
+        - name: TZ
+          value: Europe/Berlin
+        ports:
+          - name: web
+            containerPort: 3000
+        resources:
+          requests:
+            memory: "128M"
+          limits:
+            memory: "1G"
+      restartPolicy: Always
 
 
-Finally you have to restart your Eclipse IDE.
-  
-You will find additional information about the Eclipse BPMN2 Modeler 
-plugin at: https://www.eclipse.org/bpmn2-modeler/
+---
+###################################################
+# Service open-bpmn
+###################################################
+apiVersion: v1
+kind: Service
+metadata:
+  name: modeler-app
+  namespace: open-bpmn
+spec:
+  ports:
+  - protocol: TCP
+    name: web
+    port: 3000
+  selector:
+    app: modeler-app
+```
 
-	
- 
+To deploy Open-BPMN in your cluster create the namespace and apply your Pod configuration:
+
+    $ kubectl create namespace open-bpmn
+    $ kubectl apply -f apps/open-bpmn
