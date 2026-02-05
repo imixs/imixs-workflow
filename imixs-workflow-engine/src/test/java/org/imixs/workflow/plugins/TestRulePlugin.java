@@ -368,7 +368,7 @@ public class TestRulePlugin {
 		// set a business rule
 		// String script = "var result={}; result.isValid =event.keymailenabled[0]=='1';
 		// event.keymailenabled='0';";
-		String script = "var result={}; result.isValid =event.keymailenabled[0]=='1'; event.setItemValue('keymailenabled','0');";
+		String script = "var result={}; result.isValid =event.getItemValueString('keymailenabled')==='1'; event.setItemValue('keymailenabled','0');";
 
 		logger.log(Level.INFO, "Script={0}", script);
 		adocumentActivity.replaceItemValue("txtBusinessRUle", script);

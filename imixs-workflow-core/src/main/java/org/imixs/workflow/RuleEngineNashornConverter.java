@@ -58,7 +58,8 @@ public class RuleEngineNashornConverter {
         }
 
         // all other getter methods indicate new GraalVM
-        if (script.contains("workitem.get") || script.contains("event.get")) {
+        if (script.contains("workitem.get") || script.contains("event.get")
+                || script.contains("workitem.set") || script.contains("event.set")) {
             return false;
         }
 
@@ -75,7 +76,7 @@ public class RuleEngineNashornConverter {
             return true;
         }
 
-        // test for things like  workitem['space.team']  or  workitem['space.team'][0]
+        // test for things like workitem['space.team'] or workitem['space.team'][0]
         // workitem\['\w+'\]
         String regex = "workitem\\['[._\\w]+'\\]";
         Pattern pattern = Pattern.compile(regex);
@@ -83,8 +84,6 @@ public class RuleEngineNashornConverter {
         if (matcher.find()) {
             return true;
         }
-    
-
 
         // default to GaalVM
         return false;
@@ -102,11 +101,11 @@ public class RuleEngineNashornConverter {
     public static String rewrite(String script, ItemCollection workitem, ItemCollection event) {
 
         StringBuilder converterLog = new StringBuilder()
-        .append("\n***************************************************")
-        .append("\n*** DEPRECATED NASHORN SCRIPT FOUND:            ***")
-        .append("\n***************************************************\n")
+                .append("\n***************************************************")
+                .append("\n*** DEPRECATED NASHORN SCRIPT FOUND:            ***")
+                .append("\n***************************************************\n")
 
-        .append("\n").append(script).append("\n\n");
+                .append("\n").append(script).append("\n\n");
 
         script = convertByItemCollection(script, workitem, "workitem");
         script = convertByItemCollection(script, event, "event");
@@ -116,10 +115,10 @@ public class RuleEngineNashornConverter {
         script = script.replace(")[0]", ")");
 
         converterLog.append("\n***************************************************")
-        .append("\n*** PLEASE REPLACE YOUR SCRIPT WITH:            ***")
-        .append("\n***************************************************\n")
-        .append("\n").append(script).append("\n")
-        .append("\n***************************************************\n");
+                .append("\n*** PLEASE REPLACE YOUR SCRIPT WITH:            ***")
+                .append("\n***************************************************\n")
+                .append("\n").append(script).append("\n")
+                .append("\n***************************************************\n");
         logger.warning(converterLog.toString());
         return script;
 
@@ -164,12 +163,9 @@ public class RuleEngineNashornConverter {
             }
             script = script.replace(phrase, newPhrase);
 
-
-
-
             // CASE-2
             // replace :workitem['txtname'][0] => workitem.getItemValueString('txtname')
-            phrase = contextName + "['" + itemName +"'][0]";
+            phrase = contextName + "['" + itemName + "'][0]";
             // is it a number?
             if (documentContext.isItemValueNumeric(itemName)) {
                 newPhrase = contextName + ".getItemValueDouble('" + itemName + "')";
@@ -178,23 +174,20 @@ public class RuleEngineNashornConverter {
             }
             script = script.replace(phrase, newPhrase);
 
-
             // CASE-3
             // replace : workitem.txtname => workitem.hasItem('txtname')
             phrase = contextName + "." + itemName;
             newPhrase = contextName + ".hasItem('" + itemName + "')";
             script = script.replace(phrase, newPhrase);
 
-
-             // CASE-4
+            // CASE-4
             // replace : workitem['txtname'] => workitem.hasItem('txtname')
-            phrase = contextName + "['" + itemName +"']";
+            phrase = contextName + "['" + itemName + "']";
             newPhrase = contextName + ".hasItem('" + itemName + "')";
             script = script.replace(phrase, newPhrase);
 
-            
             // CASE-5
-            // replace : workitem.txtname 
+            // replace : workitem.txtname
             phrase = contextName + ".get(";
             // is it a number?
             if (documentContext.isItemValueNumeric(itemName)) {
