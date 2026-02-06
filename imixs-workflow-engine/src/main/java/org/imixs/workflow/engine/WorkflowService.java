@@ -1233,7 +1233,8 @@ public class WorkflowService implements WorkflowContext {
             if (xmlDefinitions != null) {
                 for (String definitionXML : xmlDefinitions) {
                     if (definitionXML.trim().isEmpty()) {
-                        // no definition
+                        // creaet empty definition
+                        result.add(new ItemCollection());
                         continue;
                     }
                     // evaluate the definition (XML format expected here!)
