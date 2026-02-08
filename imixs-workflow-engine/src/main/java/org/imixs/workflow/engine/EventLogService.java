@@ -86,8 +86,8 @@ public class EventLogService {
     /**
      * Creates/updates a new event log entry.
      * 
-     * @param refID - uniqueid of the document to be assigned to the event
      * @param topic - the topic of the event.
+     * @param refID - uniqueId of the workitem assigned to the event
      * @return - generated event log entry
      */
     public EventLog createEvent(String topic, String refID) {
@@ -97,8 +97,8 @@ public class EventLogService {
     /**
      * Creates/updates a new event log entry.
      * 
-     * @param refID   - uniqueid of the document to be assigned to the event
      * @param topic   - the topic of the event.
+     * @param refID   - uniqueId of the workitem assigned to the event
      * @param timeout - optional timeout calendar object
      * @return - generated event log entry
      */
@@ -109,8 +109,8 @@ public class EventLogService {
     /**
      * Creates/updates a new event log entry.
      *
-     * @param refID    - uniqueId of the document to be assigned to the event
      * @param topic    - the topic of the event.
+     * @param refID    - uniqueId of the workitem assigned to the event
      * @param document - optional document providing a data map
      * @return - generated event log entry
      */
@@ -121,8 +121,8 @@ public class EventLogService {
     /**
      * Creates/updates a new event log entry.
      *
-     * @param refID    - uniqueId of the document to be assigned to the event
      * @param topic    - the topic of the event.
+     * @param refID    - uniqueId of the workitem assigned to the event
      * @param document - optional document providing a data map
      * @param timeout  - optional timeout calendar object
      * @return - generated event log entry
@@ -134,9 +134,10 @@ public class EventLogService {
     /**
      * Creates/updates a new event log entry.
      *
-     * @param refID - uniqueId of the document to be assigned to the event
-     * @param topic - the topic of the event.
-     * @param data  - optional data map
+     * @param topic   - the topic of the event.
+     * @param refID   - uniqueId of the workitem assigned to the event
+     * @param data    - optional data map
+     * @param timeout - optional timeout calendar object
      * @return - generated event log entry
      */
     public EventLog createEvent(String topic, String refID, Map<String, List<Object>> data, Calendar timeout) {
