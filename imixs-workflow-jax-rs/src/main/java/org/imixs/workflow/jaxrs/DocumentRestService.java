@@ -15,18 +15,31 @@
 
 package org.imixs.workflow.jaxrs;
 
-import jakarta.annotation.Resource;
-import jakarta.ejb.SessionContext;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
-import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.WorkflowKernel;
+import org.imixs.workflow.engine.DocumentService;
+import org.imixs.workflow.engine.index.SchemaService;
+import org.imixs.workflow.engine.index.SearchService;
+import org.imixs.workflow.exceptions.AccessDeniedException;
+import org.imixs.workflow.exceptions.ImixsExceptionHandler;
+import org.imixs.workflow.exceptions.QueryException;
+import org.imixs.workflow.xml.XMLCount;
+import org.imixs.workflow.xml.XMLDataCollectionAdapter;
+import org.imixs.workflow.xml.XMLDocument;
+import org.imixs.workflow.xml.XMLDocumentAdapter;
+
+import jakarta.annotation.Resource;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -43,23 +56,6 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
-
-import org.imixs.workflow.ItemCollection;
-import org.imixs.workflow.WorkflowKernel;
-import org.imixs.workflow.engine.DocumentService;
-import org.imixs.workflow.engine.index.SchemaService;
-import org.imixs.workflow.engine.index.SearchService;
-import org.imixs.workflow.exceptions.AccessDeniedException;
-import org.imixs.workflow.exceptions.ImixsExceptionHandler;
-import org.imixs.workflow.exceptions.QueryException;
-import org.imixs.workflow.xml.XMLCount;
-import org.imixs.workflow.xml.XMLDataCollectionAdapter;
-import org.imixs.workflow.xml.XMLDocument;
-import org.imixs.workflow.xml.XMLDocumentAdapter;
-
-import jakarta.ejb.Stateless;
-import jakarta.servlet.http.HttpServletRequest;
-import java.util.logging.Level;
 
 /**
  * The DocumentService provides methods to access the DocumentService EJB
@@ -162,7 +158,7 @@ public class DocumentRestService {
             document = documentService.load(uniqueid);
             if (document == null) {
                 // document not found
-                return Response.status(Response.Status.NOT_FOUND).build();      
+                return Response.status(Response.Status.NOT_FOUND).build();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -170,7 +166,7 @@ public class DocumentRestService {
         }
         return convertResult(document, items, format);
     }
- 
+
     /**
      * Returns a resultset for a lucene Search Query
      * 
@@ -210,10 +206,10 @@ public class DocumentRestService {
     /**
      * Returns a resultset for a JPQL statement
      * 
-     * @param query - JPQL statement
-     * @param pageSize - page size
+     * @param query     - JPQL statement
+     * @param pageSize  - page size
      * @param pageIndex - page index (default = 0)
-     * @param items - optional list of items
+     * @param items     - optional list of items
      * @return result set.
      */
     @GET
@@ -384,7 +380,8 @@ public class DocumentRestService {
         // return workitem
         try {
             if (workitem.hasItem("$error_code")) {
-                logger.log(Level.SEVERE, "{0}: {1}", new Object[]{workitem.getItemValueString("$error_code"), workitem.getItemValueString("$error_message")});
+                logger.log(Level.SEVERE, "{0}: {1}", new Object[] { workitem.getItemValueString("$error_code"),
+                        workitem.getItemValueString("$error_message") });
                 return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem), MediaType.APPLICATION_XML)
                         .status(Response.Status.NOT_ACCEPTABLE).build();
             } else {
@@ -441,7 +438,7 @@ public class DocumentRestService {
      * 
      * 
      * @param query
-     * @param filepath - path in server filesystem
+     * @param filepath  - path in server filesystem
      * @param snapshots - opitonal backup snapshots only
      * @return
      */
@@ -449,14 +446,14 @@ public class DocumentRestService {
     @Path("/backup/{query}")
     public Response backup(@PathParam("query") String query, @QueryParam("filepath") String filepath,
             @QueryParam("snapshots") boolean snapshots) {
-        
+
         if (ctx.isCallerInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
         try {
             // decode query...
             String decodedQuery = URLDecoder.decode(query, "UTF-8");
-            documentService.backup(decodedQuery, filepath,snapshots);
+            documentService.backup(decodedQuery, filepath, snapshots);
         } catch (IOException e) {
             e.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
@@ -470,7 +467,8 @@ public class DocumentRestService {
     }
 
     /**
-     * This method restores a backup from the fileSystem
+     * This method restores a backup from the fileSystem. Supports both serialized
+     * Java object streams and XML format.
      * 
      * @param filepath - path in server fileSystem
      * @return
@@ -478,19 +476,22 @@ public class DocumentRestService {
     @GET
     @Path("/restore")
     public Response restore(@QueryParam("filepath") String filepath) {
-
         if (ctx.isCallerInRole("org.imixs.ACCESSLEVEL.MANAGERACCESS") == false) {
             return Response.status(Response.Status.UNAUTHORIZED).build();
         }
         try {
-            documentService.restore(filepath);
+            if (filepath != null && filepath.toLowerCase().endsWith(".xml")) {
+                documentService.restoreXML(filepath);
+            } else {
+                documentService.restore(filepath);
+            }
         } catch (IOException e) {
             e.printStackTrace();
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(e.getMessage())
+                    .build();
         }
-
         return Response.status(Response.Status.OK).build();
-
     }
 
     /**
@@ -511,8 +512,6 @@ public class DocumentRestService {
         return convertResult(config, null, format);
     }
 
-   
-
     /**
      * This method converts a single ItemCollection into a Jax-rs response object.
      * <p>
@@ -527,7 +526,7 @@ public class DocumentRestService {
      */
     public Response convertResult(ItemCollection workitem, String items, String format) {
         if (workitem == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();            
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
         if ("json".equals(format)) {
             return Response

@@ -43,6 +43,7 @@ import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.QueryException;
+import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 
 import jakarta.annotation.Resource;
 import jakarta.annotation.security.DeclareRoles;
@@ -57,6 +58,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.FlushModeType;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
+import jakarta.xml.bind.JAXBException;
 
 /**
  * The DocumentService is used to save and load instances of ItemCollections
@@ -1160,7 +1162,7 @@ public class DocumentService {
 
 		FileInputStream fis = new FileInputStream(filePath);
 		ObjectInputStream in = new ObjectInputStream(fis);
-		logger.log(Level.INFO, "...starting restor form file {0}...", filePath);
+		logger.log(Level.INFO, "├── starting restore form file {0}...", filePath);
 		long l = System.currentTimeMillis();
 		while (true) {
 			try {
@@ -1177,7 +1179,7 @@ public class DocumentService {
 				icount++;
 				if (icount >= JUNK_SIZE) {
 					icount = 0;
-					logger.log(Level.INFO, "...restored {0} document in {1}ms....",
+					logger.log(Level.INFO, "├── restored {0} document in {1}ms....",
 							new Object[] { totalcount, System.currentTimeMillis() - l });
 					l = System.currentTimeMillis();
 				}
@@ -1186,20 +1188,65 @@ public class DocumentService {
 				break;
 			} catch (ClassNotFoundException e) {
 				errorCount++;
-				logger.log(Level.WARNING, "...error importing workitem at position {0}{1} Error: {2}",
+				logger.log(Level.WARNING, "└── error importing workitem at position {0}{1} Error: {2}",
 						new Object[] { totalcount, errorCount, e.getMessage() });
 			} catch (AccessDeniedException e) {
 				errorCount++;
-				logger.log(Level.WARNING, "...error importing workitem at position {0}{1} Error: {2}",
+				logger.log(Level.WARNING, "└── error importing workitem at position {0}{1} Error: {2}",
 						new Object[] { totalcount, errorCount, e.getMessage() });
 			}
 		}
 		in.close();
 
-		String loginfo = "Import successfull! " + totalcount + " Entities imported. " + errorCount
+		String loginfo = "└── restore successfull! " + totalcount + " Entities imported. " + errorCount
 				+ " Errors.  Import FileName:" + filePath;
 
 		logger.info(loginfo);
+	}
+
+	/**
+	 * This method restores a backup from an XML file and imports the documents into
+	 * the database.
+	 * 
+	 * @param filePath path to the XML backup file
+	 * @throws IOException
+	 */
+	public void restoreXML(String filePath) throws IOException {
+		int JUNK_SIZE = 100;
+		long totalcount = 0;
+		long errorCount = 0;
+		long l = System.currentTimeMillis();
+
+		logger.log(Level.INFO, "├── starting XML restore from file {0}...", filePath);
+
+		try (FileInputStream fis = new FileInputStream(filePath)) {
+			List<ItemCollection> documents = XMLDataCollectionAdapter.readCollectionFromInputStream(fis);
+			if (documents == null || documents.isEmpty()) {
+				logger.warning("└── no documents found in XML file: " + filePath);
+				return;
+			}
+			for (ItemCollection itemCol : documents) {
+				try {
+					itemCol.removeItem(VERSION);
+					ctx.getBusinessObject(DocumentService.class).saveByNewTransaction(itemCol);
+					totalcount++;
+					if (totalcount % JUNK_SIZE == 0) {
+						logger.log(Level.INFO, "├── restored {0} documents in {1}ms....",
+								new Object[] { totalcount, System.currentTimeMillis() - l });
+						l = System.currentTimeMillis();
+					}
+				} catch (AccessDeniedException e) {
+					errorCount++;
+					logger.log(Level.WARNING, "└── error importing document at position {0} Error: {1}",
+							new Object[] { totalcount + errorCount, e.getMessage() });
+				}
+			}
+		} catch (JAXBException e) {
+			throw new IOException("Failed to parse XML file: " + e.getMessage(), e);
+		}
+
+		logger.log(Level.INFO, "└── XML restore successful! {0} documents imported. {1} errors. File: {2}",
+				new Object[] { totalcount, errorCount, filePath });
 	}
 
 	/**
