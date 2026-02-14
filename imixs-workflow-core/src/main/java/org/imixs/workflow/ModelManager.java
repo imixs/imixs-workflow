@@ -28,6 +28,7 @@ import org.imixs.workflow.bpmn.BPMNLinkedFlowIterator;
 import org.imixs.workflow.bpmn.BPMNUtil;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
+import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.BPMNNS;
 import org.openbpmn.bpmn.elements.Activity;
@@ -293,7 +294,16 @@ public class ModelManager {
                     node -> ((BPMNUtil.isImixsTaskElement(node))
                             || (BPMNUtil.isImixsEventElement(node))
                             || (BPMNUtil.isParallelGatewayElement(node))),
-                    condition -> evaluateCondition(condition, workitem));
+                    condition -> {
+                        try {
+                            return evaluateCondition(condition, workitem);
+                        } catch (ModelException e) {
+                            // catch Model Exception and translate it into a Runtime Exception because of
+                            // the Lambda expression used here
+                            throw new ProcessingErrorException(e.getErrorContext(), e.getErrorCode(), e.getMessage(),
+                                    e);
+                        }
+                    });
 
             while (elementNavigator.hasNext()) {
                 BPMNElementNode nextElement = elementNavigator.next();
@@ -689,18 +699,16 @@ public class ModelManager {
      * @param workitem   the workflow item providing context data for condition
      *                   evaluation
      * @return true if the condition evaluates to true, false otherwise
+     * @throws ModelException
      */
-    public boolean evaluateCondition(String expression, ItemCollection workitem) {
-
+    public boolean evaluateCondition(String expression, ItemCollection workitem) throws ModelException {
         // delegate expression to the runtime
         String finalExpression = this.workflowContext.evalConditionalExpression(expression, workitem);
         try {
             return getRuleEngine().evaluateBooleanExpression(finalExpression, workitem);
         } catch (PluginException e) {
-            e.printStackTrace();
-            logger.severe("Failed to evaluate Condition: " + e.getMessage());
+            throw new ModelException(e.getErrorCode(), e.getMessage(), e);
         }
-        return false;
     }
 
     /**

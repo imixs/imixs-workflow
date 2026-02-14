@@ -16,7 +16,7 @@
 package org.imixs.workflow.exceptions;
 
 /**
- * An ProcessingErrorException is a RuntimeExcption thrown by the
+ * An ProcessingErrorException is a RuntimeException thrown by the
  * workflowManager if an error occurs during the process method
  * 
  * @author rsoika
