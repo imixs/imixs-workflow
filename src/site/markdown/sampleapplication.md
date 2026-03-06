@@ -62,7 +62,6 @@ The Imixs-JSF-Sample application can be used as a starting point. You can add yo
 
 Get started now and read more about:
 
-- [The Quickstart Guide](quickstart.html)
 - [How to Model with Imixs-BPMN](./modelling/howto.html)
 - [How to Manage your Business Data](./quickstart/workitem.html)
 - [Why You Should Use Imixs-Workflow](./quickstart/why.html)

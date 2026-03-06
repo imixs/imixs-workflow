@@ -1,6 +1,8 @@
 # How to Model with Imixs-BPMN?
 
-**Imixs-Workflow** is based on the [BPMN 2.0 modeling standard](http://www.bpmn.org/). BPMN enables you to describe your business process from different perspectives. You can describe the organizational aspects just to give people an understanding of your process. And you can as well model the technical details to execute your process within the Imixs-Workflow engine.
+<p class="lead">
+<strong>Imixs-Workflow</strong> is based on the <a href="http://www.bpmn.org/">BPMN 2.0 modeling standard</a>. BPMN enables you to describe your business process from different perspectives. You can describe the organizational aspects just to give people an understanding of your process. And you can as well model the technical details to execute your process within the Imixs-Workflow engine.
+</p>
 
 You create an Imixs-Workflow model with the Eclipse based modeling tool [Imixs-BPMN](index.html). To install Imixs-BPMN see the [installation guide](./install.html).
 

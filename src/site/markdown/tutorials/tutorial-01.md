@@ -1,7 +1,9 @@
 # How to get Started with Imixs Workflow
 
+<p class="lead">
 In this tutorial you will learn how get started with your own Imixs-Workflow Project.
 Imixs-Workflow is an open-source BPMN 2.0 workflow engine based on Java. It allows developers to model, execute, and monitor business processes in Java EE environments. In this tutorial you will learn :
+</p>
 
 - Deploy in containerized environments (Docker)
 - Install the Imixs Open BPMN Modeller
