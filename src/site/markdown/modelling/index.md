@@ -1,12 +1,37 @@
 # The Imixs-BPMN Modeler - User Guide
 
 <p class="lead">
-Imixs-BPMN is a free modelling tool to create process models for the Imixs-Workflow framework. Imixs-BPMN takes the full advantage of all the capabilities from the BPMN standard and complements them with the requirements to a workflow management system. Imixs-BPMN is based on the Open Source project <a href="https://www.open-bpmn.org" target="_blank">Open-BPMN</a> and extends this framework with the aspects of a human-centric workflow model executable on the Imixs-Workflow Engine. 
+<strong>Imixs-Workflow</strong> is based on the <strong>Business Process Model and Notation (BPMN 2.0)</strong>. 
+You can create a BPMN Model with <strong>Imixs-BPMN</strong>, a free modelling tool. Imixs-BPMN takes the full advantage of all the capabilities from the BPMN standard and complements them with the requirements to a workflow management system. Imixs-BPMN is based on the Open Source project <a href="https://www.open-bpmn.org" target="_blank">Open-BPMN</a> and extends this framework with the aspects of a human-centric workflow model executable on the Imixs-Workflow Engine. 
 </p>
 
-To install Imixs-BPMN please see the [Installation Guide](./install.html). The section [Overview](./overview.html) provides general information about how you can use the Imixs-BPMN modelling tool.
-
 <img src="../images/modelling/open-bpmn_screen_01.png"/>
+
+To install Imixs-BPMN please see the [Installation Guide](./install.html).
+
+## Overview
+
+A BPMN Model can be created simply be creating a new file with the file extension `.bpmn`.
+As shown in the screenshot, Imixs-BPMN provides all of the BPMN features in a Tool Palette at the right side of the editor panel. The Drawing Canvas in the main area of the editor window is used to place the BPMN elements into the model.
+
+BPMN elements can be placed on the canvas by selecting them from the Tool Palette and clicking anywhere on the canvas. Elements can be moved on the canvas and
+connected (with, e.g. Sequence Flows, Associations, Data Flows, etc.) by selecting a connection tool from the palette and then first clicking the source element.
+
+### The Tool Palette
+
+The Tool Palette is, by default, located along the right edge of the Drawing Canvas. It consists of several standard BPMN2 elements that can be dragged onto the Drawing Canvas. The Imixs-BPMN plug-in provides a separate section called "Imixs-Workflow". This category contains the extension which allows you to annotate a BPMN Task or a Catch Event. The extension can be dragged like any other BPMN element onto a Task or Catch Event.
+
+### The Workflow-Task
+
+<img src="../images/modelling/bpmn_screen_04.png"/>
+
+The "Workflow-Task" is used to describe a Task inside a process model controlled by the Imixs-Workflow engine. The Task Element typically reflects a task to be processed by a participant during the process life-cycle of a process instance. A Imixs Workflow-Task contains a custom set of properties used to describe the status of a process instance. Read more about the Task Element in the [section Task Properties](process.html). The "Workflow-Task" Element is an extension to the BPMN 2.0 Element "Task".
+
+### The Workflow-Event
+
+<img src="../images/modelling/bpmn_screen_05.png"/>
+
+The "Workflow-Event" is used to describe a transition from one Task into another. The Event Element contains a custom set of properties to be evaluated during the execution by the Imixs-Workflow engine. Read more about the Event Element in the [section Event Properties](activities.html). The "Workflow-Event" is an extension to the BPMN 2.0 Intermediate CatchEvent.
 
 ## Examples
 
@@ -20,4 +45,4 @@ Imixs-BPMN and Open-BPMN are open source projects. You will find further informa
 
 - [GitHub](https://github.com/imixs/open-bpmn).
 
-- [Disussion](https://github.com/imixs/open-bpmn/discussions)
+- [Discussion](https://github.com/imixs/open-bpmn/discussions)

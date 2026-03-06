@@ -1,14 +1,13 @@
 # How to deploy a BPMN Model
 
-After you have created a model with the Imixs-BPMN modeler you can deploy the model. The Imixs-Workflow Rest API provides a convenient way to upload a BPMN model or to verify the deployment
-status of BPMN models. Make sure that your Imixs-Workflow instance is up and running and the Imxis-Workflow Rest Service is deployed on your server. (See the [deployment section](../deployment/index.html) how to deploy the Imixs-Workflow engine into a server.)
+After you have created a model with the Imixs-BPMN modeler you can deploy the model. You can deploy a Model using the [Imixs-Admin Client](../administration.html) or using the Imixs-Workflow Rest API to upload a BPMN model or to verify the deployment
+status of BPMN models. Make sure that your Imixs-Workflow instance is up and running and the Imixs-Workflow Rest Service is deployed on your server. (See the [deployment section](../deployment/index.html) how to deploy the Imixs-Workflow engine into a server.)
 
 The Imixs-Workflow Model Rest Service is available under the following resource URL:
 
     http://localhost:8080/api/model/
 
-where '/workflow/' is the context root of your workflow application and '/api/' is the
-context of the Imixs-Workflow Rest Services. See the [section model rest service](../restapi/modelservice.html) for general information about the Imixs-Workflow Rest API.
+See the [section model rest service](../restapi/modelservice.html) for general information about the Imixs-Workflow Rest API.
 
 ## Deploy a Model
 
@@ -25,8 +24,7 @@ You can also verify the current status of deployed models by calling the model R
 
     http://localhost:8080/api/model/
 
-<img src="../images/modelling/bpmn_screen_28.png"/> 
-
+<img src="../images/modelling/bpmn_screen_28.png"/>
 
 ## Delete a model
 

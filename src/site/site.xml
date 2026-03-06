@@ -21,16 +21,14 @@
 			</item>
 
 			<item name="BPMN 2.0" href="modelling/index.html" collapse="true">
-				<item name="Overview" href="modelling/overview.html" />
 				<item name="Installation" href="modelling/install.html" />
-				<item name="Eclipse Workbench" href="modelling/eclipse_workbench.html" />
-				<item name="Creating a Model" href="modelling/create_model.html" />
+				<item name="The Workbench" href="modelling/eclipse_workbench.html" />
+
 				<item name="Process Properties" href="modelling/main_editor.html" />
 				<item name="Task Element" href="modelling/process.html" />
 				<item name="Event Element" href="modelling/activities.html" />
 				<item name="Text Replacement" href="modelling/textreplacement.html" />
 				<item name="Data Objects" href="modelling/dataobject.html" />
-				<item name="Reports" href="modelling/report_plugin.html" />
 				<item name="Deployment" href="modelling/deployment.html" />
 
 			</item>
