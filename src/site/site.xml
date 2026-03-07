@@ -21,15 +21,13 @@
 			</item>
 
 			<item name="BPMN 2.0" href="modelling/index.html" collapse="true">
-				<item name="Installation" href="modelling/install.html" />
-				<item name="The Workbench" href="modelling/eclipse_workbench.html" />
-
-				<item name="Process Properties" href="modelling/main_editor.html" />
-				<item name="Task Element" href="modelling/process.html" />
-				<item name="Event Element" href="modelling/activities.html" />
+				<item name="Process &amp; Pools" href="modelling/bpmn_process.html" />
+				<item name="Task Element" href="modelling/bpmn_task_element.html" />
+				<item name="Event Element" href="modelling/bpmn_event_element.html" />
 				<item name="Text Replacement" href="modelling/textreplacement.html" />
 				<item name="Data Objects" href="modelling/dataobject.html" />
 				<item name="Deployment" href="modelling/deployment.html" />
+				<item name="Installation" href="modelling/install.html" />
 
 			</item>
 
