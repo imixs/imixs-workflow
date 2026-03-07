@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- origin at X=0.0 Y=0.0 --><bpmn2:definitions xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:imixs="http://www.imixs.org/bpmn2" xmlns:open-bpmn="http://open-bpmn.org/XMLSchema" xmlns:tl="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" exporter="org.eclipse.bpmn2.modeler.core" exporterVersion="1.5.1.Final-v20190425-2005-B1" id="Definitions_1" targetNamespace="http://www.imixs.org/bpmn2">
+  <bpmn2:extensionElements>
+    <imixs:item name="txtfieldmapping" type="xs:string"/>
+  </bpmn2:extensionElements>
+  <bpmn2:signal id="Signal_1" name="com.imixs.example.DemoAdapter"/>
+  <bpmn2:collaboration id="Collaboration_1" name="Collaboration 1">
+    <bpmn2:participant id="Participant_1" name="Publishing Service" processRef="Process_1">
+      <bpmn2:documentation id="documentation_7PkXlA"/>
+    </bpmn2:participant>
+    <bpmn2:participant id="Participant_2" name="Default Process Pool" processRef="process_1"/>
+  </bpmn2:collaboration>
+  <bpmn2:process id="process_1" isExecutable="false" name="Default Process" processType="Public">
+    <bpmn2:documentation id="documentation_zwjvbQ"/>
+    <bpmn2:extensionElements>
+      <open-bpmn:auto-align>true</open-bpmn:auto-align>
+    </bpmn2:extensionElements>
+  </bpmn2:process>
+  <bpmn2:process definitionalCollaborationRef="Collaboration_1" id="Process_1" isExecutable="false" name="Publishing Service" processType="Private">
+    <bpmn2:laneSet id="LaneSet_1" name="Lane Set 1">
+      <bpmn2:lane id="Lane_2" name="Marketing">
+        <bpmn2:documentation id="documentation_iiT0nQ"/>
+        <bpmn2:flowNodeRef>EndEvent_2</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>Task_6</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>Task_4</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>StartEvent_2</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>IntermediateCatchEvent_1</bpmn2:flowNodeRef>
+      </bpmn2:lane>
+    </bpmn2:laneSet>
+    <bpmn2:endEvent id="EndEvent_2" name="End">
+      <bpmn2:documentation id="documentation_0CPbfA"/>
+      <bpmn2:incoming>sequenceFlow_naO6gA</bpmn2:incoming>
+    </bpmn2:endEvent>
+    <bpmn2:startEvent id="StartEvent_2" name="Start">
+      <bpmn2:documentation id="documentation_5pfoJw"/>
+      <bpmn2:outgoing>sequenceFlow_uLrs9g</bpmn2:outgoing>
+    </bpmn2:startEvent>
+    <bpmn2:task id="Task_4" imixs:processid="1300" name="Task 1">
+      <bpmn2:extensionElements>
+        <imixs:item name="txtworkflowsummary" type="xs:string">
+          <imixs:value><![CDATA[<itemValue>subject</itemValue> ]]></imixs:value>
+        </imixs:item>
+        <imixs:item name="txtworkflowabstract" type="CDATA">
+          <imixs:value><![CDATA[Create a new Ticket workflow]]></imixs:value>
+        </imixs:item>
+      </bpmn2:extensionElements>
+      <bpmn2:documentation id="Documentation_30">Create a new ticket</bpmn2:documentation>
+      <bpmn2:incoming>sequenceFlow_uLrs9g</bpmn2:incoming>
+      <bpmn2:outgoing>sequenceFlow_MNMbRQ</bpmn2:outgoing>
+    </bpmn2:task>
+    <bpmn2:task id="Task_6" imixs:processid="1500" name="Task 2">
+      <bpmn2:documentation id="documentation_jvC3aA"/>
+      <bpmn2:extensionElements>
+        <imixs:item name="txtworkflowsummary" type="xs:string">
+          <imixs:value><![CDATA[<itemValue>subject</itemValue> ]]></imixs:value>
+        </imixs:item>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>sequenceFlow_U1V0vQ</bpmn2:incoming>
+      <bpmn2:outgoing>sequenceFlow_naO6gA</bpmn2:outgoing>
+    </bpmn2:task>
+    <bpmn2:intermediateCatchEvent id="IntermediateCatchEvent_1" imixs:activityid="10" name="Submit">
+      <bpmn2:documentation id="documentation_tOajYg"/>
+      <bpmn2:incoming>sequenceFlow_MNMbRQ</bpmn2:incoming>
+      <bpmn2:outgoing>sequenceFlow_U1V0vQ</bpmn2:outgoing>
+    </bpmn2:intermediateCatchEvent>
+    <bpmn2:sequenceFlow id="sequenceFlow_uLrs9g" sourceRef="StartEvent_2" targetRef="Task_4">
+      <bpmn2:documentation id="documentation_Xzudyw"/>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="sequenceFlow_MNMbRQ" sourceRef="Task_4" targetRef="IntermediateCatchEvent_1">
+      <bpmn2:documentation id="documentation_o1e90A"/>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="sequenceFlow_naO6gA" sourceRef="Task_6" targetRef="EndEvent_2">
+      <bpmn2:documentation id="documentation_Guty4Q"/>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="sequenceFlow_U1V0vQ" sourceRef="IntermediateCatchEvent_1" targetRef="Task_6">
+      <bpmn2:documentation id="documentation_70ydYQ"/>
+    </bpmn2:sequenceFlow>
+  </bpmn2:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1" name="Default Process Diagram">
+    <bpmndi:BPMNPlane bpmnElement="Collaboration_1" id="BPMNPlane_1">
+      <bpmndi:BPMNShape bpmnElement="Participant_1" id="BPMNShape_Participant_1" isHorizontal="true">
+        <dc:Bounds height="230.0" width="800.0" x="70.0" y="100.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="Lane_2" id="BPMNShape_Lane_2" isHorizontal="true">
+        <dc:Bounds height="230.0" width="770.0" x="100.0" y="100.0"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="EndEvent_2" id="BPMNShape_EndEvent_1">
+        <dc:Bounds height="36.0" width="36.0" x="777.0" y="177.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_16">
+          <dc:Bounds height="14.0" width="22.0" x="790.0" y="217.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="StartEvent_2" id="BPMNShape_StartEvent_1">
+        <dc:Bounds height="36.0" width="36.0" x="187.0" y="177.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_17">
+          <dc:Bounds height="14.0" width="25.0" x="195.0" y="220.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="Task_4" id="BPMNShape_Task_4">
+        <dc:Bounds height="50.0" width="110.0" x="300.0" y="170.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_18">
+          <dc:Bounds height="14.0" width="56.0" x="248.0" y="245.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="Task_6" id="BPMNShape_Task_6">
+        <dc:Bounds height="50.0" width="110.0" x="590.0" y="170.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_20">
+          <dc:Bounds height="14.0" width="55.0" x="636.0" y="245.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="IntermediateCatchEvent_1" id="BPMNShape_IntermediateCatchEvent_1">
+        <dc:Bounds height="36.0" width="36.0" x="487.0" y="177.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_23">
+          <dc:Bounds height="14.0" width="38.0" x="484.0" y="216.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="sequenceFlow_uLrs9g" id="BPMNEdge_pcTgZQ" sourceElement="BPMNShape_StartEvent_1" targetElement="BPMNShape_Task_4">
+        <di:waypoint x="223.0" y="195.0"/>
+        <di:waypoint x="300.0" y="195.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sequenceFlow_MNMbRQ" id="BPMNEdge_ytupuw" sourceElement="BPMNShape_Task_4" targetElement="BPMNShape_IntermediateCatchEvent_1">
+        <di:waypoint x="410.0" y="195.0"/>
+        <di:waypoint x="487.0" y="195.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sequenceFlow_naO6gA" id="BPMNEdge_krKy0w" sourceElement="BPMNShape_Task_6" targetElement="BPMNShape_EndEvent_1">
+        <di:waypoint x="700.0" y="195.0"/>
+        <di:waypoint x="777.0" y="195.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sequenceFlow_U1V0vQ" id="BPMNEdge_qJpjTw" sourceElement="BPMNShape_IntermediateCatchEvent_1" targetElement="BPMNShape_Task_6">
+        <di:waypoint x="523.0" y="195.0"/>
+        <di:waypoint x="590.0" y="195.0"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn2:definitions>

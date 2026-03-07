@@ -1,50 +1,55 @@
 # The Imixs-BPMN Task Element
 
 When a Imixs BPMN Task Element is selected in the Drawing Canvas, different settings can be
-configured from the tabbed property sheets displayed in the Property View.
+configured from the tabbed property sheets displayed in the Property panel.
 
-<img src="../images/modelling/bpmn_screen_04.png"/>
+<img src="../images/modelling/bpmn_task.png"/>
 
 The property settings are grouped into different sections.
 
 ## General Properties
 
+<img src="../images/modelling/bpmn_task_properties_01.png" />
+
 The property tab 'General' of a 'Task' element defines basic BPMN attributes.
 
-<img src="../images/modelling/bpmn_screen_16.png" />
+| Property      | BPMN Attribute      | Type   | Description              |
+| ------------- | ------------------- | ------ | ------------------------ |
+| name          | name                | String | name of the task element |
+| documentation | bpmn2:documentation | String | short description        |
 
-### Name
+The _name_ of the Task element is used as an human readable status identifier. It describes the status of a process instance within the process model (e.g. "New Open", "In Approval", "Completed",...).
 
-The _name_ of the Task element is used as an human readable status identifier.
-The _name_ describes the status of a process instance within the process model (e.g. "open" or "approval" "closed").
+The documentation can provide information how the task should be performed or which information need to be entered into a application.
 
-**Note:** Inernally each Task Element in a BPMN model has an unambiguously identifier called the _ID_. The _ID_ is assigned to a running process instance to identify the status of a WorkItem controlled by the Workflow Engine.
+## Workflow
 
-### Documentation
+<img src="../images/modelling/bpmn_task_properties_02.png"/>
 
-The documentation of the Task element is used by the Imixs Workflow System to provide the user
-with additional information about the task. Typically a documentation can provide information how the task should be performed or which information need to be entered into a application.
-
+The Tab 'Workflow' provides identifiers and additional properties used by the Imixs Workflow System to uniquly identify a task by its ID within the current workflow and to provide the user with additional information about the task.
 The documentation can also be created by assigning a TextAnnotation element to the task. In this case the documentation field of the Task should remain empty.
 
-<img src="../images/modelling/bpmn_screen_33.png" />
+| Property   | BPMN Attribute    | Type    | Description                                          |
+| ---------- | ----------------- | ------- | ---------------------------------------------------- |
+| Process ID | imixs:processid   | Integer | unique task identifier within the model              |
+| Type       | application.type  | String  | type definition to be assigned to a process instance |
+| Symbol     | application.icon  | String  | Status icon to be assigned to a process instance     |
+| Summary    | workflow.summary  | String  | The definition of a workflow summary                 |
+| Abstract   | workflow.abstract | String  | The definition of a workflow abstract                |
 
-| Property      | Type    | Description                             |
-| ------------- | ------- | --------------------------------------- |
-| id            | Integer | unique task identifier within the model |
-| name          | String  | name of the task element                |
-| documentation | String  | short description                       |
-
-## Workflow Properties
-
-The Tab 'Workflow' contains Processing Information of a Task element. These information will be
-updated after a WorkItem was processed by the Workflow Engine.
-
-<img src="../images/modelling/bpmn_screen_17.png"/>
-
-### ID
+### Process ID
 
 Every Imixs Task Element has an unambiguously identifier called the _TaskID_. The _TaskID_ is assigned to a running process instance to identify the status of a WorkItem controlled by the Imixs Workflow Engine.
+
+**Note:** The task ID of each Task Element must be unique within one model.
+
+### WorkItem Type
+
+The 'WorkItem Type' is a category assigned to the WorkItem by the Workflow Engine when the WorkItem was processed.
+
+### Symbol - Status Icon
+
+A 'Status Icon' can be a Image URL to visualize the current status of a WorkItem.
 
 ### Workflow Summary
 
@@ -64,40 +69,26 @@ The Abstract is similar to the Workflow Summary and can also be dynamically comp
 
 See the [Text Replacement feature](./textreplacement.html) how to insert WorkItem Values into a message text.
 
-| Property          | Type   | Description                           |
-| ----------------- | ------ | ------------------------------------- |
-| workflow.summary  | String | The definition of a workflow summary  |
-| workflow.abstract | String | The definition of a workflow abstract |
-
 ## Application Properties
+
+<img src="../images/modelling/bpmn_task_properties_03.png"/>
 
 The Property Tab 'Application' defines information used to control the behavior of a WorkItem in the workflow application.
 
-<img src="../images/modelling/bpmn_screen_18.png"/>
+| Property           | Type   | Description                                         |
+| ------------------ | ------ | --------------------------------------------------- |
+| application.editor | String | Form editor id to be assigned to a process instance |
+| application.form   | String | A form description (xml)                            |
 
 ### Input Form
 
 The 'Input Form' can be used to control how a WorkItem in a specific status is displayed or how it can be edited inside the workflow application. This allows the model to control the behavior of the application in a specific way.
 
-### Status Icon
-
-A 'Status Icon' can be a Image URL to visualize the current status of a WorkItem.
-
-### WorkItem Type
-
-The 'WorkItem Type' is a category assigned to the WorkItem by the Workflow Engine when the WorkItem was processed.
-
-| Property           | Type   | Description                                          |
-| ------------------ | ------ | ---------------------------------------------------- |
-| application.editor | String | Form editor id to be assigned to a process instance  |
-| application.icon   | String | Status icon to be assigned to a process instance     |
-| application.type   | String | type definition to be assigned to a process instance |
-
 ## ACL Properties
 
 The ACL defines the read-, write- and ownership, an actor will be granted for, after processing a WorkItem.
 
-<img src="../images/modelling/bpmn_screen_31.png"/>
+<img src="../images/modelling/bpmn_task_properties_04.png"/>
 
 Actors play an essential role within a human-centric workflow system.
 In Imixs-Workflow the actors can be defined statically by adding user- or group IDs, or the ACL can be dynamically computed based on the properties of a process instance.
