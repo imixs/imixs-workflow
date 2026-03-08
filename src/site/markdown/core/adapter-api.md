@@ -42,15 +42,15 @@ The Imixs-Workflow Adapter API also supports CDI. In this way an EJB or Resource
 
 ```java
 public class DemoAdapter implements SignalAdapter {
-	// inject services...
-	@Inject
-	ModelService modelService;
-	...
-	@Override
-	public ItemCollection execute(ItemCollection document, ItemCollection event) throws AdapterException {
-		List<String> versions = modelService.getVersions();
-		....
-	}
+  // inject services...
+  @Inject
+  ModelService modelService;
+  ...
+  @Override
+  public ItemCollection execute(ItemCollection document, ItemCollection event) throws AdapterException {
+    List<String> versions = modelService.getVersions();
+    ....
+  }
 }
 ```
 
@@ -64,16 +64,16 @@ See the following example handling a jax-rs client communication:
 
 ```java
 public ItemCollection execute(ItemCollection workitem, ItemCollection event) throws AdapterException {
-	...
-	// call external Rest API....
-	try {
-		Response response = client.target(uri).request(MediaType.APPLICATION_XML)
-			.post(Entity.entity(data, MediaType.APPLICATION_XML));
-	} catch (ResponseProcessingException e) {
-		throw new AdapterException(
-				MyAdapter.class.getSimpleName(),ERROR_API_COMMUNICATION,"Failed to call rest api!");
-	}
-	.....
+  ...
+  // call external Rest API....
+  try {
+    Response response = client.target(uri).request(MediaType.APPLICATION_XML)
+      .post(Entity.entity(data, MediaType.APPLICATION_XML));
+  } catch (ResponseProcessingException e) {
+    throw new AdapterException(
+        MyAdapter.class.getSimpleName(),ERROR_API_COMMUNICATION,"Failed to call rest api!");
+  }
+  .....
 }
 ```
 
