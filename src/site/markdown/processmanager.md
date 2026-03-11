@@ -76,22 +76,13 @@ You will find more information about the security concept in the [Imixs-Workflow
 
 You can define your own business process models using the [Imixs-BPMN modeller tool](https://www.imixs.org/doc/modelling/index.html) and you can upload and execute your models directly within Imixs Process Manager. General information about how to model can be found [here](https://www.imixs.org/doc/modelling/howto.html).
 
-The Imixs Process Manager allows you to define custom forms for your business process without programming. By defining an XML template, you can store forms directly in a BPMN 2.0 model.
+### Define Forms in BPMN
 
-<img src="https://raw.githubusercontent.com/imixs/imixs-process-manager/master/src/main/webapp/pages/model-example.png" />
+Each task in your BPMN model can have its own form definition. Find more about the [Imixs Form Specification](../forms/index.html).
 
-Example:
+## See Also
 
-```xml
-<?xml version="1.0"?>
-<imixs-form>
-    <imixs-form-section label="Order">
-    <item name="_orderid" type="text" label="Order ID:" />
-    <item name="_orderdate" type="date" label="Order Date:" />
-    </imixs-form-section>
-</imixs-form>
-```
-
-You can create and change your models at runtime without interrupting your workflow instance.
-
-Find out more about the Imixs-Process Manager on [Github](https://github.com/imixs/imixs-process-manager)
+- [BPMN Modelling Guide](./modelling/index.html)
+- [The Imixs Form Specification](./forms/index.html)
+- [The Imixs REST API](./restapi/index.html)
+- [Imixs-Process-Manager on GitHub](https://github.com/imixs/imixs-process-manager)

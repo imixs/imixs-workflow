@@ -60,26 +60,11 @@ Optional you can also upload your model using the `curl` command
 
 ### Define Forms in BPMN
 
-Each task in your BPMN model can have its own form definition. Here's how it works:
+Each task in your BPMN model can have its own form definition. Find more about the [Imixs Form Specification](../forms/index.html).
 
-1. Create a Data-Object in your BPMN Model
-2. Connect a task element with an association with your Data Object
-3. Open the properties panel of the Data Object by double-click
-4. Add a form definition:
+## See Also
 
-```xml
-<imixs-form>
-  <imixs-form-section label="Customer Data:">
-    <item name="name" type="text" label="Name:" />
-    <item name="email" type="text" label="Email:" />
-  </imixs-form-section>
-</imixs-form>
-```
-
-## Next Steps
-
-- read the [Tutorial](../tutorials/tutorial-01.html)
-- learn more about [Imixs-Forms Layout](../webforms/forms.html)
-- learn more about [Imixs-Forms XML](../webforms/xml.html)
-- read how the [Imixs Rest API works](../../sub_microservice.html)
-- find out more about Imixs-Forms on [Github](https://github.com/imixs/Imixs-forms)
+- [BPMN Modelling Guide](../modelling/index.html)
+- [The Imixs Form Specification](../forms/index.html)
+- [The Imixs REST API](../restapi/index.html)
+- [Imixs-Forms on GitHub](https://github.com/imixs/imixs-forms)

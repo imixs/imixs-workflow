@@ -13,14 +13,17 @@
 		<menu name="Documentation">
 			<item name="Overview" href="index.html" collapse="true">
 				<item name="Tutorial" href="tutorials/tutorial-01.html" />
-				<item name="How to Model..." href="modelling/howto.html" />
 				<item name="Why should I use it?" href="quickstart/why.html" />
 				<item name="Human Centric" href="quickstart/human.html" />
 				<item name="Business Data" href="quickstart/workitem.html" />
 				<item name="Modelling Roles" href="quickstart/roles_responsibilities.html" />
 			</item>
+		</menu>
 
+
+		<menu name="Core Concepts">
 			<item name="BPMN 2.0" href="modelling/index.html" collapse="true">
+				<item name="How to Model..." href="modelling/howto.html" />
 				<item name="Process &amp; Pools" href="modelling/bpmn_process.html" />
 				<item name="Task Element" href="modelling/bpmn_task_element.html" />
 				<item name="Event Element" href="modelling/bpmn_event_element.html" />
@@ -28,9 +31,7 @@
 				<item name="Data Objects" href="modelling/dataobject.html" />
 				<item name="Deployment" href="modelling/deployment.html" />
 				<item name="Installation" href="modelling/install.html" />
-
 			</item>
-
 			<item name="Workflow Engine" href="./engine/index.html"
 				collapse="true">
 				<item name="WorkflowService" href="./engine/workflowservice.html" />
@@ -44,7 +45,6 @@
 				<item name="Security Model" href="./engine/acl.html" />
 				<item name="AccessAdapter" href="./engine/adapters/accessadapter.html" />
 				<item name="Adapt Text" href="./engine/adapttext.html" />
-
 				<item name="Event Processing" href="./engine/eventprocessing.html"
 					collapse="true">
 					<item name="EventLog Service" href="./engine/eventlogservice.html" />
@@ -61,9 +61,7 @@
 				<item name="Configuration" href="./engine/configsource.html" />
 				<item name="Health Check" href="./engine/healthcheck.html" />
 				<item name="Metrics" href="./engine/metrics.html" />
-
 			</item>
-
 
 			<item name="Core API" href="core/index.html" collapse="true">
 				<item name="ItemCollection" href="core/itemcollection.html" />
@@ -116,10 +114,14 @@
 				<item name="Scheduler Service" href="./restapi/scheduler.html" />
 			</item>
 
-			<item name="Web Forms" href="./webforms/index.html" collapse="true">
-				<item name="Layout" href="./webforms/forms.html" />
-				<item name="XML" href="./webforms/xml.html" />
+			<item name="Forms" href="./forms/index.html">
+				<item name="Input Types" href="./forms/input-types.html" />
+				<item name="Custom Types" href="./forms/custom-types.html" />
 			</item>
+		</menu>
+
+
+		<menu name="Building Applications">
 
 			<item name="Jakarta Faces" href="./webtools/index.html" collapse="true">
 				<item name="jQuery" href="./webtools/header.html" />
@@ -130,6 +132,16 @@
 				<item name="Tooltip" href="./webtools/tooltip.html" />
 				<item name="Examples" href="./webtools/examples.html" />
 			</item>
+			<item name="JavaScript" href="./webforms/index.html" collapse="true">
+				<item name="XML" href="./webforms/xml.html" />
+			</item>
+			<item name="Process Manager" href="./processmanager.html" />
+
+		</menu>
+
+
+		<menu name="Operations">
+
 
 			<item name="Deployment" href="./deployment/index.html" collapse="true">
 				<item name="Deployment Guide" href="./deployment/deployment_guide.html" />
@@ -141,24 +153,26 @@
 				<item name="Concurrency" href="./deployment/concurrency.html" />
 			</item>
 
-			<item name="Process Manager" href="./processmanager.html" />
+
 			<item name="Administration" href="./administration.html" />
 			<item name="Logging" href="./logging.html" />
 			<item name="Testing" href="./testing.html" />
-			<item name="JSF Example" href="./sampleapplication.html" />
 			<item name="Docker" href="./docker.html" />
 			<item name="Maven" href="./maven.html" />
-			<item name="Contribute" href="./contributing.html" />
+
+		</menu>
+
+
+		<menu name="Project">
+			<item name="Project License" href="licenses.html" />
+			<item name="Dependencies" href="dependencies.html" />
 			<item name="JavaDocs" target="_blank" href="./apidocs/index.html" />
 		</menu>
 
-		<menu name="About the Project">
+		<menu name="Community">
 			<item name="Goals" href="goals.html" />
-			<!-- <item name="Project Summary" href="project-summary.html"/> -->
-			<item name="Project License" href="licenses.html" />
+			<item name="Contribute" href="./contributing.html" />
 			<item name="Issue Tracking" href="issue-management.html" />
-			<item name="Dependencies" href="dependencies.html" />
-			<item name="Plugin Management" href="plugin-management.html" />
 		</menu>
 
 	</body>

@@ -25,6 +25,7 @@
         <bpmn2:flowNodeRef>Task_4</bpmn2:flowNodeRef>
         <bpmn2:flowNodeRef>StartEvent_2</bpmn2:flowNodeRef>
         <bpmn2:flowNodeRef>IntermediateCatchEvent_1</bpmn2:flowNodeRef>
+        <bpmn2:flowNodeRef>dataObject_UvT4wg</bpmn2:flowNodeRef>
       </bpmn2:lane>
     </bpmn2:laneSet>
     <bpmn2:endEvent id="EndEvent_2" name="End">
@@ -75,60 +76,106 @@
     <bpmn2:sequenceFlow id="sequenceFlow_U1V0vQ" sourceRef="IntermediateCatchEvent_1" targetRef="Task_6">
       <bpmn2:documentation id="documentation_70ydYQ"/>
     </bpmn2:sequenceFlow>
+    <bpmn2:dataObject id="dataObject_UvT4wg" imixs:datatype="form-data" name="Form">
+      <bpmn2:documentation id="documentation_5j0r0g"><![CDATA[<?xml version="1.0"?>
+<imixs-form>
+  <imixs-form-section columns="3"  readonly="true" >
+    <item name="document.company" type="text" label="Company: "  />
+    <item name="document.type" type="text" label="Doument Type: " />
+    <item name="document.language" type="text" label="Language: " />
+  </imixs-form-section>
+
+  <imixs-form-section columns="1" label="Customer Summary" readonly="true" >
+    <item name="customer.summary" type="custom" path="markdown" />
+  </imixs-form-section>
+
+  
+
+  <imixs-form-section columns="1" label="Product Catalog" readonly="false">
+   <item name="customer.ref" 
+      type="custom"  required="false"
+      path="workitemlink"
+      options="($workflowgroup:Customer)((type:workitem) OR (type:workitemarchive))"
+      label="Customer:" />
+   <item name="product.ref" 
+      type="custom"  required="false"
+      path="workitemlink"
+      options="($workflowgroup:Product)((type:workitem) OR (type:workitemarchive))"
+      label="Products:" />
+
+  </imixs-form-section>
+
+
+</imixs-form>]]></bpmn2:documentation>
+    </bpmn2:dataObject>
+    <bpmn2:association id="association_7NHtOw" sourceRef="dataObject_UvT4wg" targetRef="Task_4">
+      <bpmn2:documentation id="documentation_bk1Zcw"/>
+    </bpmn2:association>
   </bpmn2:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1" name="Default Process Diagram">
     <bpmndi:BPMNPlane bpmnElement="Collaboration_1" id="BPMNPlane_1">
       <bpmndi:BPMNShape bpmnElement="Participant_1" id="BPMNShape_Participant_1" isHorizontal="true">
-        <dc:Bounds height="230.0" width="800.0" x="70.0" y="100.0"/>
+        <dc:Bounds height="320.0" width="880.0" x="70.0" y="100.0"/>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="Lane_2" id="BPMNShape_Lane_2" isHorizontal="true">
-        <dc:Bounds height="230.0" width="770.0" x="100.0" y="100.0"/>
+        <dc:Bounds height="320.0" width="850.0" x="100.0" y="100.0"/>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="EndEvent_2" id="BPMNShape_EndEvent_1">
-        <dc:Bounds height="36.0" width="36.0" x="777.0" y="177.0"/>
+        <dc:Bounds height="36.0" width="36.0" x="757.0" y="247.0"/>
         <bpmndi:BPMNLabel id="BPMNLabel_16">
-          <dc:Bounds height="14.0" width="22.0" x="790.0" y="217.0"/>
+          <dc:Bounds height="14.0" width="22.0" x="770.0" y="287.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="StartEvent_2" id="BPMNShape_StartEvent_1">
-        <dc:Bounds height="36.0" width="36.0" x="187.0" y="177.0"/>
+        <dc:Bounds height="36.0" width="36.0" x="177.0" y="247.0"/>
         <bpmndi:BPMNLabel id="BPMNLabel_17">
-          <dc:Bounds height="14.0" width="25.0" x="195.0" y="220.0"/>
+          <dc:Bounds height="14.0" width="25.0" x="185.0" y="290.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="Task_4" id="BPMNShape_Task_4">
-        <dc:Bounds height="50.0" width="110.0" x="300.0" y="170.0"/>
+        <dc:Bounds height="50.0" width="110.0" x="290.0" y="240.0"/>
         <bpmndi:BPMNLabel id="BPMNLabel_18">
           <dc:Bounds height="14.0" width="56.0" x="248.0" y="245.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="Task_6" id="BPMNShape_Task_6">
-        <dc:Bounds height="50.0" width="110.0" x="590.0" y="170.0"/>
+        <dc:Bounds height="50.0" width="110.0" x="580.0" y="240.0"/>
         <bpmndi:BPMNLabel id="BPMNLabel_20">
           <dc:Bounds height="14.0" width="55.0" x="636.0" y="245.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="IntermediateCatchEvent_1" id="BPMNShape_IntermediateCatchEvent_1">
-        <dc:Bounds height="36.0" width="36.0" x="487.0" y="177.0"/>
+        <dc:Bounds height="36.0" width="36.0" x="477.0" y="247.0"/>
         <bpmndi:BPMNLabel id="BPMNLabel_23">
-          <dc:Bounds height="14.0" width="38.0" x="484.0" y="216.0"/>
+          <dc:Bounds height="14.0" width="38.0" x="474.0" y="286.0"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="dataObject_UvT4wg" id="BPMNShape_i8yffg">
+        <dc:Bounds height="50.0" width="35.0" x="230.0" y="160.0"/>
+        <bpmndi:BPMNLabel id="BPMNLabel_IKtSDw">
+          <dc:Bounds height="20.0" width="100.0" x="197.5" y="215.0"/>
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge bpmnElement="sequenceFlow_uLrs9g" id="BPMNEdge_pcTgZQ" sourceElement="BPMNShape_StartEvent_1" targetElement="BPMNShape_Task_4">
-        <di:waypoint x="223.0" y="195.0"/>
-        <di:waypoint x="300.0" y="195.0"/>
+        <di:waypoint x="213.0" y="265.0"/>
+        <di:waypoint x="290.0" y="265.0"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sequenceFlow_MNMbRQ" id="BPMNEdge_ytupuw" sourceElement="BPMNShape_Task_4" targetElement="BPMNShape_IntermediateCatchEvent_1">
-        <di:waypoint x="410.0" y="195.0"/>
-        <di:waypoint x="487.0" y="195.0"/>
+        <di:waypoint x="400.0" y="265.0"/>
+        <di:waypoint x="477.0" y="265.0"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sequenceFlow_naO6gA" id="BPMNEdge_krKy0w" sourceElement="BPMNShape_Task_6" targetElement="BPMNShape_EndEvent_1">
-        <di:waypoint x="700.0" y="195.0"/>
-        <di:waypoint x="777.0" y="195.0"/>
+        <di:waypoint x="690.0" y="265.0"/>
+        <di:waypoint x="757.0" y="265.0"/>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="sequenceFlow_U1V0vQ" id="BPMNEdge_qJpjTw" sourceElement="BPMNShape_IntermediateCatchEvent_1" targetElement="BPMNShape_Task_6">
-        <di:waypoint x="523.0" y="195.0"/>
-        <di:waypoint x="590.0" y="195.0"/>
+        <di:waypoint x="513.0" y="265.0"/>
+        <di:waypoint x="580.0" y="265.0"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="association_7NHtOw" id="BPMNEdge_5KRSHQ" sourceElement="BPMNShape_i8yffg" targetElement="BPMNShape_Task_4">
+        <di:waypoint x="265.0" y="183.0"/>
+        <di:waypoint x="345.0" y="183.0"/>
+        <di:waypoint x="345.0" y="240.0"/>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
