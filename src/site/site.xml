@@ -114,7 +114,7 @@
 				<item name="Scheduler Service" href="./restapi/scheduler.html" />
 			</item>
 
-			<item name="Forms" href="./forms/index.html">
+			<item name="Forms" href="./forms/index.html" collapse="true">
 				<item name="Input Types" href="./forms/input-types.html" />
 				<item name="Custom Types" href="./forms/custom-types.html" />
 			</item>
