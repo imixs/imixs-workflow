@@ -84,3 +84,12 @@
 .imixsfileupload .remove-link:hover {
 	text-decoration: none;
 }
+
+.imixsfileupload-error {
+    color: #c0392b;
+    font-weight: bold;
+    padding: 8px;
+    border: 1px solid #e74c3c;
+    border-radius: 4px;
+    background-color: #fdecea;
+}

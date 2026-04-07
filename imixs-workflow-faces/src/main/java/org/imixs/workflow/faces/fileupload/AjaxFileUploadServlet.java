@@ -66,19 +66,41 @@ public class AjaxFileUploadServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest httpRequest, HttpServletResponse response)
             throws ServletException, IOException {
+
         if (isPostFileUploadRequest(httpRequest)) {
-            logger.fine("......add files...");
+            logger.info("......file upload request received...");
             List<FileData> fileDataList = getFilesFromRequest(httpRequest);
-            // now update the workitem....
+
+            // null signals a FileTooLargeException from Undertow
+            if (fileDataList == null) {
+                // Read maxFileSize from context-param or fall back to @MultipartConfig
+                String configValue = getServletContext().getInitParameter("imixs.fileupload.maxFileSize");
+                MultipartConfig annotation = this.getClass().getAnnotation(MultipartConfig.class);
+                long maxFileSize = (configValue != null)
+                        ? Long.parseLong(configValue)
+                        : annotation.maxFileSize();
+
+                logger.warning("......upload aborted - file too large, maxFileSize=" + maxFileSize);
+                response.setStatus(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE);
+                response.setContentType("application/json;charset=UTF-8");
+                PrintWriter out = response.getWriter();
+                out.write("{ \"error\": \"FILE_TOO_LARGE\", \"maxFileSize\": " + maxFileSize + " }");
+                out.close();
+                return;
+            }
+
+            logger.info("......processing " + fileDataList.size() + " file(s)...");
             if (fileUploadController != null) {
-                // check workitem... issue
                 if (fileUploadController.getWorkitem() != null) {
-                    logger.fine("......prüfe file data Liste...");
                     for (FileData filedata : fileDataList) {
-                        logger.fine("......add new fileData object..." + filedata.getName());
+                        logger.info("......adding fileData: " + filedata.getName());
                         fileUploadController.addFileUpload(filedata);
                     }
+                } else {
+                    logger.warning("......workitem is null - files cannot be stored");
                 }
+            } else {
+                logger.warning("......fileUploadController is null");
             }
             writeJsonMetadata(response, httpRequest.getRequestURI());
         }
@@ -186,50 +208,35 @@ public class AjaxFileUploadServlet extends HttpServlet {
      */
     private List<FileData> getFilesFromRequest(HttpServletRequest httpRequest) {
         logger.finest("......Looping parts");
-
         List<FileData> fileDataList = new ArrayList<FileData>();
         try {
             for (Part p : httpRequest.getParts()) {
                 byte[] b = new byte[(int) p.getSize()];
                 p.getInputStream().read(b);
                 p.getInputStream().close();
-                // params.put(p.getName(), new String[] { new String(b) });
-
-                // test if part contains a file
                 String fileName = getFilename(p);
                 if (fileName != null) {
-
-                    /*
-                     * issue #106
-                     * 
-                     * https://developer.jboss.org/message/941661#941661
-                     * 
-                     * Here we test of the encoding and try to convert to utf-8.
-                     */
                     byte fileNameISOBytes[] = fileName.getBytes("iso-8859-1");
                     String fileNameUTF8 = new String(fileNameISOBytes, "UTF-8");
                     if (fileName.length() != fileNameUTF8.length()) {
-                        // convert to utf-8
                         logger.finest("......filename seems to be ISO-8859-1 encoded");
                         fileName = new String(fileName.getBytes("iso-8859-1"), "utf-8");
                     }
-
-                    // extract the file content...
-                    FileData fileData = null;
-                    logger.log(Level.FINEST, "......filename : {0}, contentType {1}",
-                            new Object[] { fileName, p.getContentType() });
-                    fileData = new FileData(fileName, b, p.getContentType(), null);
+                    FileData fileData = new FileData(fileName, b, p.getContentType(), null);
                     fileDataList.add(fileData);
-
+                    logger.info("......file added: " + fileName + " size: " + b.length + " bytes");
                 }
             }
-
+        } catch (IllegalStateException ex) {
+            // Undertow wraps FileTooLargeException in an IllegalStateException
+            logger.warning("......file upload rejected - file too large: " + ex.getMessage());
+            // Signal the error to the caller by returning null
+            return null;
         } catch (IOException ex) {
             logger.log(Level.SEVERE, null, ex);
         } catch (ServletException ex) {
             logger.log(Level.SEVERE, null, ex);
         }
-
         return fileDataList;
     }
 

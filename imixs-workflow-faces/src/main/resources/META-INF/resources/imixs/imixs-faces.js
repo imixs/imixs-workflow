@@ -371,11 +371,26 @@ imixsFileUploadRefresh = function () {
 					// no headers needed
 				})
 				.then(response => {
-					if (!response.ok) {
-						throw new Error('Upload failed');
+					if (response.status === 413) {
+						// Clear the file input to prevent re-sending on next form submit
+						const dataTransfer = new DataTransfer();
+						fileInput.files = dataTransfer.files;
+						currentFileUploadsMap.set(container, []);
+						return response.json().then(data => {
+							const limitText = data.maxFileSize 
+								? fileSizeToString(data.maxFileSize) 
+								: 'the maximum allowed size';
+							fileTableContainer.innerHTML =
+								'<p class="imixsfileupload-error">Upload failed: File exceeds ' + limitText + '.</p>';
+							throw new Error('FileTooLarge');
+						});
 					}
-					
-					return response.json(); 
+					if (!response.ok) {
+						fileTableContainer.innerHTML =
+							'<p class="imixsfileupload-error">Upload failed: Server error (' + response.status + ').</p>';
+						throw new Error('Upload failed with status: ' + response.status);
+					}
+					return response.json();
 				})
 				.then(data => {
 					if (refreshFileUploadAjaxTable) {
@@ -383,6 +398,7 @@ imixsFileUploadRefresh = function () {
 					}
 				})
 				.catch(error => {
+					// Log to console - UI message is already set above
 					console.error('Upload error: ', error);
 				});
 			} else {
