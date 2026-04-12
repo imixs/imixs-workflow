@@ -34,6 +34,7 @@ import java.util.logging.Logger;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
+import org.imixs.workflow.engine.cluster.ClusterService;
 import org.imixs.workflow.engine.index.DefaultOperator;
 import org.imixs.workflow.engine.index.SearchService;
 import org.imixs.workflow.engine.index.SortOrder;
@@ -100,6 +101,12 @@ import jakarta.xml.bind.JAXBException;
  * writeAccess the access to an Instance of a saved ItemCollection will be
  * protected for a callerPrincipal with missing read- or writeAccess.
  * <p>
+ * Cluster Mode
+ * <p>
+ * Optional data can be stored in a cassandra cluster. To activate this mode the
+ * environment variable 'WORKFLOW_CLUSTER_KEYSPACE' need to be set to a valid
+ * cassandra keyspace. The document service is than running in the 'clusterMode'
+ * 
  * 
  * @see org.imixs.workflow.engine.jpa.Document
  * @author rsoika
@@ -117,13 +124,9 @@ import jakarta.xml.bind.JAXBException;
 public class DocumentService {
 
 	public static final String ACCESSLEVEL_NOACCESS = "org.imixs.ACCESSLEVEL.NOACCESS";
-
 	public static final String ACCESSLEVEL_READERACCESS = "org.imixs.ACCESSLEVEL.READERACCESS";
-
 	public static final String ACCESSLEVEL_AUTHORACCESS = "org.imixs.ACCESSLEVEL.AUTHORACCESS";
-
 	public static final String ACCESSLEVEL_EDITORACCESS = "org.imixs.ACCESSLEVEL.EDITORACCESS";
-
 	public static final String ACCESSLEVEL_MANAGERACCESS = "org.imixs.ACCESSLEVEL.MANAGERACCESS";
 
 	public static final String EVENTLOG_TOPIC_INDEX_ADD = "index.add";
@@ -167,6 +170,9 @@ public class DocumentService {
 
 	@Inject
 	private EventLogService eventLogService;
+
+	@Inject
+	private ClusterService clusterService;
 
 	@Inject
 	protected Event<DocumentEvent> documentEvents;
@@ -460,6 +466,14 @@ public class DocumentService {
 			// handled the right way!
 			int version = document.getItemValueInteger(VERSION);
 			persistedDocument.setVersion(version);
+		}
+
+		if (clusterService.isEnabled()) {
+			logger.info("├── 🐞 Cluster Mode ENABLED...");
+			// send event log
+			eventLogService.createEvent(ClusterService.EVENTLOG_TOPIC_PERSIST, document.getUniqueID(), document);
+			logger.info("│   ├── cluster event log topic PERSIST fired");
+
 		}
 
 		// finally update the data field by cloning the map object (deep copy)

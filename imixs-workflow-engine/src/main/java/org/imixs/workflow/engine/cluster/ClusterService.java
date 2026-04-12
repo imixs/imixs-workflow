@@ -16,10 +16,12 @@ package org.imixs.workflow.engine.cluster;
 
 import java.net.InetSocketAddress;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.imixs.workflow.engine.EventLogService;
 import org.imixs.workflow.engine.cluster.exceptions.ClusterException;
 
 import com.datastax.oss.driver.api.core.CqlSession;
@@ -31,12 +33,15 @@ import com.datastax.oss.driver.api.core.servererrors.InvalidQueryException;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.annotation.Resource;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RunAs;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
 import jakarta.ejb.Timeout;
 import jakarta.ejb.Timer;
 import jakarta.ejb.TimerConfig;
 import jakarta.ejb.TimerService;
+import jakarta.enterprise.concurrent.ManagedScheduledExecutorService;
 import jakarta.inject.Inject;
 
 /**
@@ -54,6 +59,8 @@ import jakarta.inject.Inject;
  * @author rsoika
  * 
  */
+@DeclareRoles({ "org.imixs.ACCESSLEVEL.MANAGERACCESS" })
+@RunAs("org.imixs.ACCESSLEVEL.MANAGERACCESS")
 @Singleton
 @Startup
 public class ClusterService {
@@ -62,6 +69,10 @@ public class ClusterService {
     public static final int SEARCH_LIMIT_MAX = 100;
 
     // mandatory environment settings
+    public static final String STORAGE_MODE_CLUSTER = "CLUSTER";
+    public static final String STORAGE_MODE_LEGACY = "LEGACY";
+
+    public static final String ENV_WORKFLOW_CLUSTER_MODE = "WORKFLOW_CLUSTER_MODE";
     public static final String ENV_WORKFLOW_CLUSTER_CONTACTPOINTS = "WORKFLOW_CLUSTER_CONTACTPOINTS";
     public static final String ENV_WORKFLOW_CLUSTER_KEYSPACE = "WORKFLOW_CLUSTER_KEYSPACE";
 
@@ -78,12 +89,6 @@ public class ClusterService {
 
     public static final String ENV_WORKFLOW_CLUSTER_REPLICATION_FACTOR = "WORKFLOW_CLUSTER_REPLICATION_FACTOR";
     public static final String ENV_WORKFLOW_CLUSTER_REPLICATION_CLASS = "WORKFLOW_CLUSTER_REPLICATION_CLASS";
-
-    // workflow rest service endpoint
-    public static final String ENV_WORKFLOW_SERVICE_ENDPOINT = "WORKFLOW_SERVICE_ENDPOINT";
-    public static final String ENV_WORKFLOW_SERVICE_USER = "WORKFLOW_SERVICE_USER";
-    public static final String ENV_WORKFLOW_SERVICE_PASSWORD = "WORKFLOW_SERVICE_PASSWORD";
-    public static final String ENV_WORKFLOW_SERVICE_AUTHMETHOD = "WORKFLOW_SERVICE_AUTHMETHOD";
 
     // table schemas
     public static final String TABLE_SCHEMA_SNAPSHOTS = "CREATE TABLE IF NOT EXISTS snapshots (snapshot text, data blob, PRIMARY KEY (snapshot))";
@@ -143,7 +148,14 @@ public class ClusterService {
     private PreparedStatement psDeleteDocuments;
     private PreparedStatement psUpsertSnapshotsByDocument;
 
+    public static final String EVENTLOG_TOPIC_PERSIST = "cluster.persist";
+    public static final String EVENTLOG_TOPIC_REMOVE = "cluster.remove";
+
     private static Logger logger = Logger.getLogger(ClusterService.class.getName());
+
+    @Inject
+    @ConfigProperty(name = ENV_WORKFLOW_CLUSTER_MODE, defaultValue = "false")
+    boolean clusterMode;
 
     @Inject
     @ConfigProperty(name = ENV_WORKFLOW_CLUSTER_REPLICATION_FACTOR, defaultValue = "1")
@@ -192,27 +204,79 @@ public class ClusterService {
     private CqlSession session;
 
     @Resource
-    private TimerService timerService;
+    private TimerService initTimerService;
+
+    @Resource
+    ManagedScheduledExecutorService syncScheduler;
+    // deadlock timeout interval in ms
+    long deadLockInterval = 60000;
+
+    @Inject
+    EventLogService eventLogService;
+
+    @Inject
+    ClusterOperator clusterOperator;
 
     @PostConstruct
     public void init() {
-        scheduleClusterCheck();
+        if (isEnabled()) {
+            scheduleClusterCheck();
+        }
     }
 
     /**
-     * Versucht, die Session herzustellen. Bei Fehler wird ein neuer Timer geplant.
+     * This method indicates wether Imixs-Workflow runs in
+     * the storage mode "CLUSTER"
+     * This mode is indicated by the environment variables
+     * 
+     * WORKFLOW_CLUSTER_MODE=cluster
+     * 
+     * and the "WORKFLOW_CLUSTER_KEYSPACE" is set to valid keyspace.
+     * 
+     * In this mode all data is stored in a apache cassandra cluster.Otherwise the
+     * engine runs in the so called 'LEGACY'.
+     * 
+     * @return
+     */
+    public boolean isEnabled() {
+        return clusterMode;
+    }
+
+    /**
+     * Helper method to establish a new cluster session. If not possible the method
+     * schedules a retry every 10 seconds.
      */
     private void scheduleClusterCheck() {
         try {
             logger.log(Level.INFO, "├── connecting Cassandra cluster...");
             getSession();
             logger.log(Level.INFO, "├── ✅ successfully connected to cassandra!");
+
+            // Registering a non-persistent Timer Service. 500ms initialDelay, 10ms period.
+            this.syncScheduler.scheduleAtFixedRate(this::sync, 500, 10,
+                    TimeUnit.MILLISECONDS);
+
+            logger.log(Level.INFO, "├── ✅ Started sync service");
+
         } catch (ClusterException e) {
             logger.log(Level.WARNING, "├── " + e.getMessage());
             logger.log(Level.WARNING, "├── ⚠️ cluster not ready yet. retrying in 10 seconds...");
             // retry in 10 sec
-            timerService.createSingleActionTimer(10000, new TimerConfig());
+            initTimerService.createSingleActionTimer(10000, new TimerConfig());
         }
+    }
+
+    /**
+     * The sync method is called to update the cluster status after a document was
+     * persisted by the DocumentService
+     */
+    public void sync() {
+        // logger.info("├── sync cluster status..");
+        eventLogService.releaseDeadLocks(deadLockInterval,
+                EVENTLOG_TOPIC_PERSIST,
+                EVENTLOG_TOPIC_REMOVE);
+        clusterOperator.processEventLog();
+
     }
 
     /**
@@ -249,7 +313,7 @@ public class ClusterService {
             try {
                 logger.info("├── initializing cluster and keyspace...");
                 session = initSessionWithKeyspace();
-                logger.info("│   ├── ✅ schema status = OK");
+                logger.info("│   ├── ✅ cluster status = OK");
                 createSchema();
                 prepareStatements();
             } catch (Exception e) {
@@ -482,27 +546,27 @@ public class ClusterService {
      */
     private void createSchema() throws ClusterException {
 
-        logger.info("│   ├── verify schema...");
+        logger.info("│   ├── 🔃 verify schema...");
 
-        logger.info(TABLE_SCHEMA_SNAPSHOTS);
+        logger.fine(TABLE_SCHEMA_SNAPSHOTS);
         getSession().execute(TABLE_SCHEMA_SNAPSHOTS);
 
-        logger.info(TABLE_SCHEMA_SNAPSHOTS_BY_UNIQUEID);
+        logger.fine(TABLE_SCHEMA_SNAPSHOTS_BY_UNIQUEID);
         getSession().execute(TABLE_SCHEMA_SNAPSHOTS_BY_UNIQUEID);
 
-        logger.info(TABLE_SCHEMA_SNAPSHOTS_BY_MODIFIED);
+        logger.fine(TABLE_SCHEMA_SNAPSHOTS_BY_MODIFIED);
         getSession().execute(TABLE_SCHEMA_SNAPSHOTS_BY_MODIFIED);
 
-        logger.info(TABLE_SCHEMA_DOCUMENTS);
+        logger.fine(TABLE_SCHEMA_DOCUMENTS);
         session.execute(TABLE_SCHEMA_DOCUMENTS);
 
-        logger.info(TABLE_SCHEMA_SNAPSHOTS_BY_DOCUMENT);
+        logger.fine(TABLE_SCHEMA_SNAPSHOTS_BY_DOCUMENT);
         getSession().execute(TABLE_SCHEMA_SNAPSHOTS_BY_DOCUMENT);
 
-        logger.info(TABLE_SCHEMA_DOCUMENTS_DATA);
+        logger.fine(TABLE_SCHEMA_DOCUMENTS_DATA);
         getSession().execute(TABLE_SCHEMA_DOCUMENTS_DATA);
 
-        logger.info("│   ├── ✅ database schema OK.");
+        logger.info("│   ├── ✅ database status = OK");
     }
 
     /**
@@ -512,7 +576,7 @@ public class ClusterService {
      * @throws ClusterException if preparation fails
      */
     private void prepareStatements() throws ClusterException {
-        logger.info("│   ├── preparing CQL statements...");
+        logger.info("│   ├── 🔃 preparing CQL statements...");
 
         // SELECT
         psSelectSnapshot = session.prepare(PS_SELECT_SNAPSHOT);
@@ -533,6 +597,6 @@ public class ClusterService {
         psDeleteDocumentsData = session.prepare(PS_DELETE_DOCUMENTS_DATA);
         psDeleteDocuments = session.prepare(PS_DELETE_DOCUMENTS);
 
-        logger.info("│   ├── ✅ CQL statements prepared.");
+        logger.info("│   ├── ✅ CQL status = OK");
     }
 }
