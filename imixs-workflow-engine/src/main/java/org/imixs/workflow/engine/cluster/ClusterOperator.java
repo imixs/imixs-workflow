@@ -19,7 +19,10 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.EventLogService;
+import org.imixs.workflow.engine.cluster.exceptions.ClusterException;
+import org.imixs.workflow.engine.cluster.exceptions.DataException;
 import org.imixs.workflow.engine.jpa.EventLog;
 
 import jakarta.annotation.security.DeclareRoles;
@@ -73,23 +76,15 @@ public class ClusterOperator {
     EventLogService eventLogService;
 
     @Inject
-    private ClusterService clusterService;
+    private DataService dataService;
 
     /**
-     * The method lookups for RAG event log entries and updates the RAG index
-     * information. The method reacts on the following event type:
+     * The method lookups for cluster event log entries and updates the cluster
+     * index. The method reacts on the following event type:
      * <ul>
-     * <li>'rag.event.index'</li>
-     * <li>'rag.event.update'</li>
-     * <li>'rag.event.prompt'</li>
-     * <li>'rag.event.delete'</li>
+     * <li>'cluster.persist'</li>
+     * <li>'cluster.remove'</li>
      * </ul>
-     * <p>
-     * Each eventLogEntry provides optional a prompt template.
-     * <p>
-     * The event 'rag.event.prompt' first calls the llm service and than creats an
-     * index event
-     * 
      */
     @TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
     public void processEventLog() {
@@ -113,9 +108,7 @@ public class ClusterOperator {
 
                         // Delete Event?
                         if (eventLogEntry.getTopic().equals(ClusterService.EVENTLOG_TOPIC_REMOVE + ".lock")) {
-                            // remove embeddings
-
-                            logger.info(" do remove missing");
+                            logger.info(" do remove not yet implemented");
                             // remove the event log entry...
                             eventLogService.removeEvent(eventLogEntry.getId());
                             continue;
@@ -127,25 +120,30 @@ public class ClusterOperator {
                             if (workitemData == null) {
                                 logger.log(Level.WARNING,
                                         "│   ├── ⚠️ unable to persist workitem: " + eventLogEntry.getRef());
-                                eventLogService.removeEvent(eventLogEntry.getId());
-                                continue;
+                            } else {
+                                try {
+                                    dataService.saveSnapshot(new ItemCollection(workitemData));
+                                    logger.log(Level.INFO, "│   ├── Save Snapshot successful ");
+                                    logger.log(Level.INFO,
+                                            "│   ├── Snapshot Item count=" + workitemData.keySet().size());
+                                } catch (DataException | ClusterException e) {
+                                    logger.log(Level.WARNING,
+                                            "│   ├── ⚠️ failed to save snapshot : " + eventLogEntry.getRef()
+                                                    + " Error: " + e.getMessage());
+                                }
                             }
-                            logger.info(" do persist missing");
+                            eventLogService.removeEvent(eventLogEntry.getId());
                         }
-
                     }
 
                 } catch (OptimisticLockException e) {
                     // lock was not possible - continue....
                     logger.log(Level.INFO, "│   ├── ⚠️ unable to lock ClusterEvent: {0}", e.getMessage());
-
                 }
-
             }
 
             logger.log(Level.INFO, "├── ✅ {0} ClusterEvents processed in {1}ms",
                     new Object[] { events.size(), System.currentTimeMillis() - l });
-
         }
     }
 

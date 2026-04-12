@@ -64,7 +64,8 @@ public class DataService {
     public final static String ITEM_MD5_CHECKSUM = "md5checksum";
     public final static String ITEM_SNAPSHOT_HISTORY = ".history"; // optional historical snapshots
     private static final String REGEX_SNAPSHOTID = "([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}-[0-9]{13,15})";
-    private static final String REGEX_OLD_SNAPSHOTID = "([0-9a-f]{8}-.*|[0-9a-f]{11}-.*)";
+    // private static final String REGEX_OLD_SNAPSHOTID =
+    // "([0-9a-f]{8}-.*|[0-9a-f]{11}-.*)";
 
     private static Logger logger = Logger.getLogger(DataService.class.getName());
 
@@ -94,9 +95,10 @@ public class DataService {
         if (debug) {
             logger.finest("......save document" + snapshotID);
         }
-        if (!snapshot.hasItem("")) {
+
+        if (!snapshot.hasItem("$modified")) {
             throw new DataException(DataException.INVALID_DOCUMENT_OBJECT,
-                    "missing item '' for snapshot " + snapshotID);
+                    "missing item '$modified' for snapshot " + snapshotID);
         }
 
         // verify if this snapshot is already stored - if so, we do not overwrite
@@ -458,7 +460,6 @@ public class DataService {
      *
      */
     public ItemCollection getItemCollection(byte[] source) throws DataException {
-
         ByteArrayInputStream bis = new ByteArrayInputStream(source);
         try {
             JAXBContext context;
@@ -473,7 +474,6 @@ public class DataService {
         } catch (JAXBException e) {
             throw new DataException(DataException.INVALID_DOCUMENT_OBJECT, e.getMessage(), e);
         }
-
     }
 
     /**
@@ -488,15 +488,6 @@ public class DataService {
      */
     public boolean isSnapshotID(String uid) {
         boolean valid = uid.matches(REGEX_SNAPSHOTID);
-        boolean debug = logger.isLoggable(Level.FINE);
-        if (!valid) {
-            if (debug) {
-                logger.fine("...validate old snapshot id format...");
-            }
-            // check old snapshto format
-            valid = uid.matches(REGEX_OLD_SNAPSHOTID);
-        }
-
         return valid;
     }
 

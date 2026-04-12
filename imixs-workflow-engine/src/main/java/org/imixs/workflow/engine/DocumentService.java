@@ -35,6 +35,9 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.cluster.ClusterService;
+import org.imixs.workflow.engine.cluster.DataService;
+import org.imixs.workflow.engine.cluster.exceptions.ClusterException;
+import org.imixs.workflow.engine.cluster.exceptions.DataException;
 import org.imixs.workflow.engine.index.DefaultOperator;
 import org.imixs.workflow.engine.index.SearchService;
 import org.imixs.workflow.engine.index.SortOrder;
@@ -173,6 +176,9 @@ public class DocumentService {
 
 	@Inject
 	private ClusterService clusterService;
+
+	@Inject
+	private DataService dataService;
 
 	@Inject
 	protected Event<DocumentEvent> documentEvents;
@@ -469,11 +475,25 @@ public class DocumentService {
 		}
 
 		if (clusterService.isEnabled()) {
-			logger.info("├── 🐞 Cluster Mode ENABLED...");
-			// send event log
-			eventLogService.createEvent(ClusterService.EVENTLOG_TOPIC_PERSIST, document.getUniqueID(), document);
-			logger.info("│   ├── cluster event log topic PERSIST fired");
+			logger.info("├── 🐞 SAVE - Cluster Mode ENABLED...");
+			ItemCollection snapshot = (ItemCollection) document.clone();
 
+			// 2.) compute a snapshot $uniqueId containing a timestamp
+			String snapshotUniqueID = document.getUniqueID() + "-" + System.currentTimeMillis();
+			logger.info("│   ├── snapshot-uniqueid=" + snapshotUniqueID);
+			snapshot.replaceItemValue(WorkflowKernel.UNIQUEID, snapshotUniqueID);
+			snapshot.replaceItemValue(ClusterService.SNAPSHOTID, snapshotUniqueID);
+
+			document.replaceItemValue(ClusterService.SNAPSHOTID, snapshotUniqueID);
+
+			// 3. change the type with the prefix 'snapshot-'
+			String snapshotType = ClusterService.TYPE_PRAFIX + document.getType();
+			logger.info("│   ├── snapshot-type=" + snapshotType);
+			snapshot.replaceItemValue(WorkflowKernel.TYPE, snapshotType);
+
+			// send event log entry...
+			eventLogService.createEvent(ClusterService.EVENTLOG_TOPIC_PERSIST, document.getUniqueID(), snapshot);
+			logger.info("│   ├── cluster event log topic PERSIST created.");
 		}
 
 		// finally update the data field by cloning the map object (deep copy)
@@ -638,6 +658,28 @@ public class DocumentService {
 				result = new ItemCollection();
 				result.setAllItems(persistedDocument.getData());
 				manager.detach(persistedDocument);
+			}
+
+			// Load from cluster?
+			if (clusterService.isEnabled()) {
+				logger.info("├── 🐞 LOAD - Cluster Mode ENABLED...");
+				String snapshotId = result.getItemValueString(ClusterService.SNAPSHOTID);
+				if (!snapshotId.isBlank()) {
+					try {
+						logger.log(Level.INFO,
+								"│   ├── SnapshotID=" + snapshotId);
+						ItemCollection snapshot = dataService.loadSnapshot(snapshotId);
+						result = snapshot;
+						logger.log(Level.INFO,
+								"│   ├── Snapshot Item count=" + result.getItemList().keySet().size());
+
+					} catch (DataException | ClusterException e) {
+						logger.warning("Failed to load Snapshot Data from cluster: " + e.getMessage());
+					}
+				} else {
+					logger.log(Level.WARNING, "│   ├── SnapshotID is blank!");
+				}
+
 			}
 
 			updateMetaData(result, persistedDocument);
