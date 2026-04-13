@@ -86,14 +86,13 @@ public class DataService {
      */
     public void saveSnapshot(ItemCollection snapshot) throws DataException, ClusterException {
         boolean debug = logger.isLoggable(Level.FINE);
-        String snapshotID = snapshot.getUniqueID();
+        long l = System.currentTimeMillis();
 
+        String snapshotID = snapshot.getUniqueID();
+        logger.info("├── 🔃 Save Snapshot :'" + snapshot.getUniqueID() + "'");
         if (!isSnapshotID(snapshotID)) {
             throw new DataException(DataException.INVALID_DOCUMENT_OBJECT,
                     "unexpected '' format: '" + snapshotID + "'");
-        }
-        if (debug) {
-            logger.finest("......save document" + snapshotID);
         }
 
         if (!snapshot.hasItem("$modified")) {
@@ -101,17 +100,24 @@ public class DataService {
                     "missing item '$modified' for snapshot " + snapshotID);
         }
 
+        logger.log(Level.INFO,
+                "│   ├── ⬆️  Snapshot Item count=" + snapshot.getItemList().keySet().size());
         // verify if this snapshot is already stored - if so, we do not overwrite
         // the origin data. See issue #40
         // For example this situation also occurs when restoring a remote snapshot.
         if (existSnapshot(snapshotID)) {
             // skip!
-            logger.fine("...snapshot '" + snapshot.getUniqueID() + "' already exits....");
+            logger.info("│   ├── ⬆️  Snapshot '" + snapshot.getUniqueID() + "' already exits....");
             return;
         }
 
         // extract 2de78aec-6f14-4345-8acf-dd37ae84875d-1530315900599
         String originUnqiueID = getUniqueID(snapshotID);
+
+        // change the type with the prefix 'snapshot-'
+        // String snapshotType = ClusterService.TYPE_PRAFIX + snapshot.getType();
+        // logger.info("│ ├── snapshot-type=" + snapshotType);
+        // snapshot.replaceItemValue(WorkflowKernel.TYPE, snapshotType);
 
         // extract content into the table 'documents'....
         extractDocuments(snapshot);
@@ -141,6 +147,8 @@ public class DataService {
         } else {
             logger.warning("Missing CDI support for Event<ArchiveEvent> !");
         }
+
+        logger.log(Level.INFO, "└── ☑️  Save Snapshot successful in " + (System.currentTimeMillis() - l) + "ms");
 
     }
 
@@ -182,12 +190,12 @@ public class DataService {
      */
     public ItemCollection loadSnapshot(String snapshotID, boolean mergeDocuments)
             throws DataException, ClusterException {
-        boolean debug = logger.isLoggable(Level.FINE);
+
+        long l = System.currentTimeMillis();
 
         ItemCollection snapshot = new ItemCollection();
-        if (debug) {
-            logger.finest("......search snapshot id: " + snapshotID);
-        }
+
+        logger.log(Level.INFO, "├── 🔃  Load Snapshot :'" + snapshotID + "'");
 
         // Execute prepared statement
         ResultSet rs = clusterService.getSession()
@@ -205,12 +213,17 @@ public class DataService {
                 if (mergeDocuments) {
                     mergeDocumentData(snapshot);
                 }
+
+                // finally remove the snapshot prefix
+
+                logger.log(Level.INFO, "│   ├── ⬇️  Snapshot Item count=" + snapshot.getItemList().keySet().size());
+
             } else {
                 logger.warning("no data found for snapshotId '" + snapshotID + "'");
             }
         }
         // Row == null: return empty ItemCollection (already initialized above)
-
+        logger.log(Level.INFO, "└── ☑️  Load Snapshot successful in " + (System.currentTimeMillis() - l) + "ms");
         return snapshot;
     }
 

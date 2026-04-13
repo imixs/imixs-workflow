@@ -486,11 +486,6 @@ public class DocumentService {
 
 			document.replaceItemValue(ClusterService.SNAPSHOTID, snapshotUniqueID);
 
-			// 3. change the type with the prefix 'snapshot-'
-			String snapshotType = ClusterService.TYPE_PRAFIX + document.getType();
-			logger.info("│   ├── snapshot-type=" + snapshotType);
-			snapshot.replaceItemValue(WorkflowKernel.TYPE, snapshotType);
-
 			// send event log entry...
 			eventLogService.createEvent(ClusterService.EVENTLOG_TOPIC_PERSIST, document.getUniqueID(), snapshot);
 			logger.info("│   ├── cluster event log topic PERSIST created.");

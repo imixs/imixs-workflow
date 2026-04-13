@@ -123,9 +123,7 @@ public class ClusterOperator {
                             } else {
                                 try {
                                     dataService.saveSnapshot(new ItemCollection(workitemData));
-                                    logger.log(Level.INFO, "│   ├── Save Snapshot successful ");
-                                    logger.log(Level.INFO,
-                                            "│   ├── Snapshot Item count=" + workitemData.keySet().size());
+
                                 } catch (DataException | ClusterException e) {
                                     logger.log(Level.WARNING,
                                             "│   ├── ⚠️ failed to save snapshot : " + eventLogEntry.getRef()

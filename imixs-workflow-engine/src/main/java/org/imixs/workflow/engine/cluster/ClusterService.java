@@ -73,7 +73,7 @@ public class ClusterService {
     public static final String STORAGE_MODE_LEGACY = "LEGACY";
 
     public static final String SNAPSHOTID = "$snapshotid";
-    public static final String TYPE_PRAFIX = "snapshot-";
+    // public static final String TYPE_PRAFIX = "snapshot-";
 
     public static final String ENV_WORKFLOW_CLUSTER_MODE = "WORKFLOW_CLUSTER_MODE";
     public static final String ENV_WORKFLOW_CLUSTER_CONTACTPOINTS = "WORKFLOW_CLUSTER_CONTACTPOINTS";
