@@ -258,7 +258,7 @@ public class EventLogService {
         }
         // cut last OR
         query = query.substring(0, query.length() - 3);
-        query += ") ORDER BY eventlog.created ASC";
+        query += ")) ORDER BY eventlog.created ASC";
 
         // find all eventLogEntries....
         Query q = manager.createQuery(query);
