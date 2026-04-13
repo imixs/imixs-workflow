@@ -27,15 +27,18 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
+import org.imixs.workflow.engine.EventLogService;
 import org.imixs.workflow.engine.cluster.events.ArchiveEvent;
 import org.imixs.workflow.engine.cluster.exceptions.ClusterException;
 import org.imixs.workflow.engine.cluster.exceptions.DataException;
+import org.imixs.workflow.engine.jpa.EventLog;
 import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
 
@@ -70,6 +73,9 @@ public class DataService {
     private static Logger logger = Logger.getLogger(DataService.class.getName());
 
     @Inject
+    EventLogService eventLogService;
+
+    @Inject
     ClusterService clusterService;
 
     @Inject
@@ -85,11 +91,12 @@ public class DataService {
      * @throws ClusterException
      */
     public void saveSnapshot(ItemCollection snapshot) throws DataException, ClusterException {
-        boolean debug = logger.isLoggable(Level.FINE);
+
         long l = System.currentTimeMillis();
 
-        String snapshotID = snapshot.getUniqueID();
-        logger.info("├── 🔃 Save Snapshot :'" + snapshot.getUniqueID() + "'");
+        // String snapshotID = snapshot.getUniqueID();
+        String snapshotID = snapshot.getItemValueString(ClusterService.SNAPSHOTID);
+        logger.info("├── 🔃 Save Snapshot :'" + snapshotID + "'");
         if (!isSnapshotID(snapshotID)) {
             throw new DataException(DataException.INVALID_DOCUMENT_OBJECT,
                     "unexpected '' format: '" + snapshotID + "'");
@@ -107,37 +114,31 @@ public class DataService {
         // For example this situation also occurs when restoring a remote snapshot.
         if (existSnapshot(snapshotID)) {
             // skip!
-            logger.info("│   ├── ⬆️  Snapshot '" + snapshot.getUniqueID() + "' already exits....");
+            logger.info("│   ├── ⬆️  Snapshot '" + snapshotID + "' already exits....");
             return;
         }
 
         // extract 2de78aec-6f14-4345-8acf-dd37ae84875d-1530315900599
-        String originUnqiueID = getUniqueID(snapshotID);
-
-        // change the type with the prefix 'snapshot-'
-        // String snapshotType = ClusterService.TYPE_PRAFIX + snapshot.getType();
-        // logger.info("│ ├── snapshot-type=" + snapshotType);
-        // snapshot.replaceItemValue(WorkflowKernel.TYPE, snapshotType);
+        // String originUnqiueID = getUniqueIDBySnapshotID(snapshotID);
 
         // extract content into the table 'documents'....
         extractDocuments(snapshot);
 
         clusterService.getSession()
-                .execute(SimpleStatement.newInstance(ClusterService.STATEMENT_UPSET_SNAPSHOTS, snapshot.getUniqueID(),
+                .execute(SimpleStatement.newInstance(ClusterService.STATEMENT_UPSET_SNAPSHOTS, snapshotID,
                         ByteBuffer.wrap(getRawData(snapshot))));
 
-        clusterService.getSession().execute(
-                SimpleStatement.newInstance(ClusterService.STATEMENT_UPSET_SNAPSHOTS_BY_UNIQUEID, originUnqiueID,
-                        snapshot.getUniqueID()));
+        clusterService.getSession()
+                .execute(SimpleStatement.newInstance(ClusterService.STATEMENT_UPSET_SNAPSHOTS_BY_UNIQUEID,
+                        snapshot.getUniqueID(), snapshotID));
 
         java.time.LocalDate ld = Instant.ofEpochMilli(snapshot.getItemValueDate("$modified").getTime())
                 .atZone(ZoneId.systemDefault())
                 .toLocalDate();
 
         clusterService.getSession()
-                .execute(
-                        SimpleStatement.newInstance(ClusterService.STATEMENT_UPSET_SNAPSHOTS_BY_MODIFIED, ld,
-                                snapshot.getUniqueID()));
+                .execute(SimpleStatement.newInstance(ClusterService.STATEMENT_UPSET_SNAPSHOTS_BY_MODIFIED, ld,
+                        snapshot.getUniqueID()));
 
         cleanupSnapshotHistory(snapshot);
 
@@ -193,11 +194,27 @@ public class DataService {
 
         long l = System.currentTimeMillis();
 
+        logger.log(Level.INFO, "├── 🔃 Load Snapshot :'" + snapshotID + "'");
+
+        // Check if the snapshot is still pending in the EventLog — load directly from
+        // there
+        List<EventLog> pending = eventLogService.findEventsByRef(1, snapshotID,
+                ClusterService.EVENTLOG_TOPIC_PERSIST,
+                ClusterService.EVENTLOG_TOPIC_PERSIST + ".lock");
+
+        if (pending != null && !pending.isEmpty()) {
+            logger.log(Level.INFO, "│   ├── ⚡ Snapshot still pending in EventLog — loading directly from EventLog");
+            Map<String, List<Object>> workitemData = pending.get(0).getData();
+            if (workitemData != null) {
+                logger.log(Level.INFO,
+                        "└── ☑️ Load Snapshot from EventLog in " + (System.currentTimeMillis() - l) + "ms");
+                return new ItemCollection(workitemData);
+            }
+        }
+
+        // Default: load form Cassandra
         ItemCollection snapshot = new ItemCollection();
 
-        logger.log(Level.INFO, "├── 🔃  Load Snapshot :'" + snapshotID + "'");
-
-        // Execute prepared statement
         ResultSet rs = clusterService.getSession()
                 .execute(clusterService.getPsSelectSnapshot().bind(snapshotID));
         Row row = rs.one();
@@ -216,14 +233,14 @@ public class DataService {
 
                 // finally remove the snapshot prefix
 
-                logger.log(Level.INFO, "│   ├── ⬇️  Snapshot Item count=" + snapshot.getItemList().keySet().size());
+                logger.log(Level.INFO, "│   ├── ⬇️ Snapshot Item count=" + snapshot.getItemList().keySet().size());
 
             } else {
                 logger.warning("no data found for snapshotId '" + snapshotID + "'");
             }
         }
         // Row == null: return empty ItemCollection (already initialized above)
-        logger.log(Level.INFO, "└── ☑️  Load Snapshot successful in " + (System.currentTimeMillis() - l) + "ms");
+        logger.log(Level.INFO, "└── ☑️ Load Snapshot successful in " + (System.currentTimeMillis() - l) + "ms");
         return snapshot;
     }
 
@@ -409,7 +426,7 @@ public class DataService {
      */
     public void deleteSnapshot(String snapshotID) throws DataException, ClusterException {
         logger.finest("......delete snapshot and documents for: " + snapshotID);
-        String uniqueID = this.getUniqueID(snapshotID);
+        String uniqueID = this.getUniqueIDBySnapshotID(snapshotID);
         ItemCollection snapshot = loadSnapshot(snapshotID, false);
 
         clusterService.getSession()
@@ -510,12 +527,11 @@ public class DataService {
      * @param snapshotID
      * @return
      */
-    public String getUniqueID(String snapshotID) {
+    public String getUniqueIDBySnapshotID(String snapshotID) {
         if (snapshotID != null && snapshotID.contains("-")) {
             return snapshotID.substring(0, snapshotID.lastIndexOf("-"));
         }
         return null;
-
     }
 
     /**
@@ -530,7 +546,6 @@ public class DataService {
             return Long.parseLong(sTime);
         }
         return 0;
-
     }
 
     /**
@@ -595,7 +610,7 @@ public class DataService {
         if (debug) {
             logger.finest(".......history=" + snapshotHistory);
         }
-        String uniqueid = this.getUniqueID(snapshot.getUniqueID());
+        String uniqueid = this.getUniqueIDBySnapshotID(snapshot.getUniqueID());
 
         // Step 1: Find the oldest snapshot that is still within the allowed history
         // window

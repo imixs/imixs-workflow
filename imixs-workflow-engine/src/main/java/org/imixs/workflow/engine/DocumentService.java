@@ -476,19 +476,19 @@ public class DocumentService {
 
 		if (clusterService.isEnabled()) {
 			logger.info("├── 🐞 SAVE - Cluster Mode ENABLED...");
-			ItemCollection snapshot = (ItemCollection) document.clone();
+			logger.info("│   ├── uniqueID  =" + document.getUniqueID());
 
 			// 2.) compute a snapshot $uniqueId containing a timestamp
 			String snapshotUniqueID = document.getUniqueID() + "-" + System.currentTimeMillis();
-			logger.info("│   ├── snapshot-uniqueid=" + snapshotUniqueID);
-			snapshot.replaceItemValue(WorkflowKernel.UNIQUEID, snapshotUniqueID);
-			snapshot.replaceItemValue(ClusterService.SNAPSHOTID, snapshotUniqueID);
-
+			logger.info("│   ├── snapshotID=" + snapshotUniqueID);
 			document.replaceItemValue(ClusterService.SNAPSHOTID, snapshotUniqueID);
+			ItemCollection snapshot = (ItemCollection) document.clone();
 
 			// send event log entry...
-			eventLogService.createEvent(ClusterService.EVENTLOG_TOPIC_PERSIST, document.getUniqueID(), snapshot);
-			logger.info("│   ├── cluster event log topic PERSIST created.");
+			// eventLogService.createEvent(ClusterService.EVENTLOG_TOPIC_PERSIST,
+			// document.getUniqueID(), snapshot);
+			eventLogService.createEvent(ClusterService.EVENTLOG_TOPIC_PERSIST, snapshotUniqueID, snapshot);
+			logger.info("│   ├── cluster event log topic PERSIST created for: " + snapshot.getUniqueID());
 		}
 
 		// finally update the data field by cloning the map object (deep copy)
