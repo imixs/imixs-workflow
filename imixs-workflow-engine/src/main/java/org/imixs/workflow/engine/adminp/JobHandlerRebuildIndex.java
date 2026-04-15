@@ -20,28 +20,28 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import jakarta.annotation.security.DeclareRoles;
-import jakarta.annotation.security.RunAs;
-import jakarta.inject.Inject;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.index.UpdateService;
 import org.imixs.workflow.engine.jpa.Document;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.InvalidAccessException;
 import org.imixs.workflow.exceptions.PluginException;
 
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RunAs;
 import jakarta.ejb.LocalBean;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
+import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
-import java.util.logging.Level;
 
 /**
  * JobHandler to rebuild the lucene fulltext index.
@@ -60,7 +60,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
     private static final int BLOCK_SIZE = 1000;
 
     @Inject
-    @ConfigProperty(name = "lucene.rebuild.time_out", defaultValue = "" + AdminPService.DEFAULT_INTERVAL) 
+    @ConfigProperty(name = "lucene.rebuild.time_out", defaultValue = "" + AdminPService.DEFAULT_INTERVAL)
     int time_out;
 
     private static final int READ_AHEAD = 32;
@@ -73,6 +73,9 @@ public class JobHandlerRebuildIndex implements JobHandler {
 
     @Inject
     UpdateService updateService;
+
+    @Inject
+    DocumentService documentService;
 
     private static final Logger logger = Logger.getLogger(JobHandlerRebuildIndex.class.getName());
 
@@ -107,7 +110,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
             // fix deprecated invtervall unit
             if (jobTimeOut <= 5) { // <5 seconds
                 logger.log(Level.WARNING, "fix deprecated interval of {0} - set new job interval to {1}sec",
-                        new Object[]{jobTimeOut, time_out});
+                        new Object[] { jobTimeOut, time_out });
                 jobTimeOut = time_out;
             }
             // overwrite default time_out
@@ -116,20 +119,25 @@ public class JobHandlerRebuildIndex implements JobHandler {
         // update interval
         adminp.setItemValue("numinterval", time_out);
         logger.log(Level.INFO, "...Job " + AdminPService.JOB_REBUILD_INDEX + " ({0}) - lucene.rebuild.time_out={1}",
-                new Object[]{adminp.getUniqueID(), time_out});
+                new Object[] { adminp.getUniqueID(), time_out });
         try {
             while (true) {
                 List<ItemCollection> resultList = new ArrayList<ItemCollection>();
                 List<Document> documents = findNextDocumentsBySyncPoint(syncPoint);
+
                 if (documents != null && documents.size() > 0) {
                     for (Document doc : documents) {
                         // update syncpoint
                         syncPoint = doc.getCreated().getTimeInMillis();
                         try {
-                            resultList.add(new ItemCollection(doc.getData()));
+                            // Now load the document to support also the cluster mode!
+                            ItemCollection fullDocument = documentService.load(doc.getId());
+                            if (fullDocument != null) {
+                                resultList.add(fullDocument);
+                            }
                         } catch (InvalidAccessException e) {
                             logger.log(Level.WARNING, "...unable to index document ''{0}'' {1}",
-                                    new Object[]{doc.getId(), e.getMessage()});
+                                    new Object[] { doc.getId(), e.getMessage() });
                         }
                         // detach object!
                         manager.detach(doc);
@@ -148,9 +156,9 @@ public class JobHandlerRebuildIndex implements JobHandler {
                         if (time == 0) {
                             time = 1;
                         }
-                        logger.log(Level.INFO,"...Job " + AdminPService.JOB_REBUILD_INDEX
+                        logger.log(Level.INFO, "...Job " + AdminPService.JOB_REBUILD_INDEX
                                 + " ({0}) - ...{1} documents indexed in {2} sec. ... ",
-                                new Object[]{adminp.getUniqueID(), totalCount, time});
+                                new Object[] { adminp.getUniqueID(), totalCount, time });
                         blockCount = 0;
                     }
                 } else {
@@ -165,9 +173,9 @@ public class JobHandlerRebuildIndex implements JobHandler {
                     time = 1;
                 }
                 if (time > time_out) { // suspend after 2 mintues (default 120)....
-                    logger.log(Level.INFO,"...Job " + AdminPService.JOB_REBUILD_INDEX
+                    logger.log(Level.INFO, "...Job " + AdminPService.JOB_REBUILD_INDEX
                             + " ({0}) - suspended: {1} documents indexed in {2} sec. ",
-                            new Object[]{adminp.getUniqueID(), totalCount, time});
+                            new Object[] { adminp.getUniqueID(), totalCount, time });
 
                     adminp.replaceItemValue("_syncpoint", syncPoint);
                     adminp.replaceItemValue(JobHandler.ISCOMPLETED, false);
@@ -179,9 +187,9 @@ public class JobHandlerRebuildIndex implements JobHandler {
             }
         } catch (Exception e) {
             // print exception and stop job
-            logger.log(Level.SEVERE,"...Job " + AdminPService.JOB_REBUILD_INDEX
+            logger.log(Level.SEVERE, "...Job " + AdminPService.JOB_REBUILD_INDEX
                     + " ({0}) - failed - {1} last syncpoint  {2} - {3}  documents reindexed....",
-                    new Object[]{adminp.getUniqueID(), e.getMessage(), syncPoint, totalCount});
+                    new Object[] { adminp.getUniqueID(), e.getMessage(), syncPoint, totalCount });
             e.printStackTrace();
             adminp.replaceItemValue(JobHandler.ISCOMPLETED, false);
             // update syncpoint
@@ -200,9 +208,9 @@ public class JobHandlerRebuildIndex implements JobHandler {
         if (time == 0) {
             time = 1;
         }
-        logger.log(Level.INFO,"...Job " + AdminPService.JOB_REBUILD_INDEX
+        logger.log(Level.INFO, "...Job " + AdminPService.JOB_REBUILD_INDEX
                 + " ({0}) - Finished: {1} documents indexed in {2} sec. ",
-                new Object[]{adminp.getUniqueID(), totalCount, time});
+                new Object[] { adminp.getUniqueID(), totalCount, time });
 
         adminp.replaceItemValue(JobHandler.ISCOMPLETED, true);
         adminp.replaceItemValue("numUpdates", totalCount);

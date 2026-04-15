@@ -27,13 +27,6 @@ import java.util.function.IntPredicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.security.DeclareRoles;
-import jakarta.annotation.security.RolesAllowed;
-import jakarta.enterprise.event.Event;
-import jakarta.enterprise.event.Observes;
-import jakarta.inject.Inject;
-
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
@@ -52,9 +45,15 @@ import org.imixs.workflow.services.rest.BasicAuthenticator;
 import org.imixs.workflow.services.rest.RestAPIException;
 import org.imixs.workflow.services.rest.RestClient;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
+import jakarta.enterprise.event.Event;
+import jakarta.enterprise.event.Observes;
+import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
@@ -129,7 +128,7 @@ public class SolrIndexService {
 
     @Inject
     private AdminPService adminPService;
-    
+
     @Inject
     protected Event<IndexEvent> indexEvents;
 
@@ -176,7 +175,7 @@ public class SolrIndexService {
         } catch (RestAPIException e) {
             // no schema found
             logger.log(Level.SEVERE, "...no solr core ''{0}'' found - {1}: verify the solr instance!",
-                    new Object[]{core, e.getMessage()});
+                    new Object[] { core, e.getMessage() });
             throw e;
         }
 
@@ -248,7 +247,7 @@ public class SolrIndexService {
 
         if (debug) {
             logger.log(Level.FINE, "... update index block in {0} ms ({1} workitems total)",
-                    new Object[]{System.currentTimeMillis() - ltime, documents.size()});
+                    new Object[] { System.currentTimeMillis() - ltime, documents.size() });
         }
     }
 
@@ -298,7 +297,7 @@ public class SolrIndexService {
 
         if (debug) {
             logger.log(Level.FINE, "... update index block in {0} ms ({1} workitems total)",
-                    new Object[]{System.currentTimeMillis() - ltime, documentIDs.size()});
+                    new Object[] { System.currentTimeMillis() - ltime, documentIDs.size() });
         }
     }
 
@@ -599,20 +598,19 @@ public class SolrIndexService {
                     textContent += sValue + ",";
                 }
             }
-            
+
             // fire IndexEvent to update the text content if needed
             if (indexEvents != null) {
-                IndexEvent indexEvent=new IndexEvent(IndexEvent.ON_INDEX_UPDATE,document);
+                IndexEvent indexEvent = new IndexEvent(IndexEvent.ON_INDEX_UPDATE, document);
                 indexEvent.setTextContent(textContent);
                 indexEvents.fire(indexEvent);
-                textContent=indexEvent.getTextContent();
+                textContent = indexEvent.getTextContent();
             } else {
                 logger.warning("Missing CDI support for Event<IndexEvent> !");
             }
-              
-            
+
             if (debug) {
-                logger.log(Level.FINEST,"......add index field " + DEFAULT_SEARCH_FIELD + "={0}", textContent);
+                logger.log(Level.FINEST, "......add index field " + DEFAULT_SEARCH_FIELD + "={0}", textContent);
             }
             // remove existing CDATA...
             textContent = stripCDATA(textContent);
@@ -724,21 +722,28 @@ public class SolrIndexService {
                 for (EventLog eventLogEntry : events) {
 
                     // lookup the Document Entity...
-                    org.imixs.workflow.engine.jpa.Document doc = manager
-                            .find(org.imixs.workflow.engine.jpa.Document.class, eventLogEntry.getRef());
+                    // org.imixs.workflow.engine.jpa.Document doc = manager
+                    // .find(org.imixs.workflow.engine.jpa.Document.class, eventLogEntry.getRef());
+                    // org.imixs.workflow.engine.jpa.Document doc = manager
+                    // .find(org.imixs.workflow.engine.jpa.Document.class, eventLogEntry.getRef());
+                    // NOTE: because of new cluster mode we fetch the workitem data directly from
+                    // the event
+
+                    // add/update the index.
 
                     // if the document was found we add/update the index. Otherwise we remove the
                     // document form the index.
-                    if (doc != null && DocumentService.EVENTLOG_TOPIC_INDEX_ADD.equals(eventLogEntry.getTopic())) {
+                    if (DocumentService.EVENTLOG_TOPIC_INDEX_ADD.equals(eventLogEntry.getTopic())) {
                         // add workitem to search index....
                         long l2 = System.currentTimeMillis();
-                        ItemCollection workitem = new ItemCollection();
-                        workitem.setAllItems(doc.getData());
+                        // ItemCollection workitem = new ItemCollection();
+                        // workitem.setAllItems(doc.getData());
+                        ItemCollection workitem = new ItemCollection(eventLogEntry.getData());
                         if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
                             indexDocument(workitem);
                             if (debug) {
                                 logger.log(Level.FINEST, "......solr added workitem ''{0}'' to index in {1}ms",
-                                        new Object[]{eventLogEntry.getRef(), System.currentTimeMillis() - l2});
+                                        new Object[] { eventLogEntry.getRef(), System.currentTimeMillis() - l2 });
                             }
                         }
                     } else {
@@ -746,7 +751,7 @@ public class SolrIndexService {
                         removeDocument(eventLogEntry.getRef());
                         if (debug) {
                             logger.log(Level.FINEST, "......solr removed workitem ''{0}'' from index in {1}ms",
-                                    new Object[]{eventLogEntry.getRef(), System.currentTimeMillis() - l2});
+                                    new Object[] { eventLogEntry.getRef(), System.currentTimeMillis() - l2 });
                         }
                     }
 
@@ -778,7 +783,7 @@ public class SolrIndexService {
 
         if (debug) {
             logger.log(Level.FINE, "...flushEventLog - {0} events in {1} ms - last log entry: {2}",
-                    new Object[]{events.size(), System.currentTimeMillis() - l, lastEventDate});
+                    new Object[] { events.size(), System.currentTimeMillis() - l, lastEventDate });
         }
         return cacheIsEmpty;
 
@@ -817,7 +822,7 @@ public class SolrIndexService {
                     count = count + EVENTLOG_ENTRY_FLUSH_COUNT;
                     if (count >= 100 && debug) {
                         logger.log(Level.FINEST, "...flush event log: {0} entries in {1}ms...",
-                                new Object[]{total, System.currentTimeMillis() - l});
+                                new Object[] { total, System.currentTimeMillis() - l });
                         count = 0;
                     }
 

@@ -310,25 +310,26 @@ public class LuceneIndexService {
                 for (EventLog eventLogEntry : events) {
                     Term term = new Term("$uniqueid", eventLogEntry.getRef());
                     // lookup the Document Entity...
-                    org.imixs.workflow.engine.jpa.Document doc = manager
-                            .find(org.imixs.workflow.engine.jpa.Document.class, eventLogEntry.getRef());
+                    // org.imixs.workflow.engine.jpa.Document doc = manager
+                    // .find(org.imixs.workflow.engine.jpa.Document.class, eventLogEntry.getRef());
+                    // NOTE: because of new cluster mode we fetch the workitem data directly from
+                    // the event
 
-                    // if the document was found we add/update the index. Otherwise we remove the
-                    // document form the index.
-                    if (doc != null && DocumentService.EVENTLOG_TOPIC_INDEX_ADD.equals(eventLogEntry.getTopic())) {
+                    // add/update the index.
+                    if (DocumentService.EVENTLOG_TOPIC_INDEX_ADD.equals(eventLogEntry.getTopic())) {
                         // add workitem to search index....
                         long l2 = System.currentTimeMillis();
-                        ItemCollection workitem = new ItemCollection();
-                        workitem.setAllItems(doc.getData());
+                        // ItemCollection workitem = new ItemCollection();
+                        // workitem.setAllItems(doc.getData());
+                        ItemCollection workitem = new ItemCollection(eventLogEntry.getData());
                         if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
                             Document lucenedoc = createDocument(workitem);
-                            // indexWriter.updateDocument(term,lucenedoc );
-
                             updateLuceneIndex(term, lucenedoc, indexWriter, taxonomyWriter);
                             logger.log(Level.FINEST, "......lucene add/update workitem ''{0}'' to index in {1}ms",
-                                    new Object[] { doc.getId(), System.currentTimeMillis() - l2 });
+                                    new Object[] { workitem.getUniqueID(), System.currentTimeMillis() - l2 });
                         }
                     } else {
+                        // remove from index
                         long l2 = System.currentTimeMillis();
                         indexWriter.deleteDocuments(term);
                         logger.log(Level.FINEST, "......lucene remove workitem ''{0}'' from index in {1}ms",

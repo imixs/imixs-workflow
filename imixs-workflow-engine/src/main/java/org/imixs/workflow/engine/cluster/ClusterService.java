@@ -15,6 +15,8 @@
 package org.imixs.workflow.engine.cluster;
 
 import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -155,6 +157,9 @@ public class ClusterService {
     public static final String EVENTLOG_TOPIC_REMOVE = "cluster.remove";
 
     private static Logger logger = Logger.getLogger(ClusterService.class.getName());
+
+    public static List<String> CORE_DATA_ITEMS = Arrays.asList("type", "$created", "$modified", "$readaccess",
+            "$writeaccess", "$uniqueid", "$snapshotid");
 
     @Inject
     @ConfigProperty(name = ENV_WORKFLOW_CLUSTER_MODE, defaultValue = "false")

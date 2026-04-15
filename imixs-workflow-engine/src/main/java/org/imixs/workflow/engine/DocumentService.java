@@ -478,22 +478,47 @@ public class DocumentService {
 			logger.info("├── 🐞 SAVE - Cluster Mode ENABLED...");
 			logger.info("│   ├── uniqueID  =" + document.getUniqueID());
 
-			// 2.) compute a snapshot $uniqueId containing a timestamp
+			// 1.) compute a snapshot $uniqueId containing a timestamp
 			String snapshotUniqueID = document.getUniqueID() + "-" + System.currentTimeMillis();
 			logger.info("│   ├── snapshotID=" + snapshotUniqueID);
 			document.replaceItemValue(ClusterService.SNAPSHOTID, snapshotUniqueID);
 			ItemCollection snapshot = (ItemCollection) document.clone();
 
-			// send event log entry...
-			// eventLogService.createEvent(ClusterService.EVENTLOG_TOPIC_PERSIST,
-			// document.getUniqueID(), snapshot);
+			// 2.) send event log entry...
 			eventLogService.createEvent(ClusterService.EVENTLOG_TOPIC_PERSIST, snapshotUniqueID, snapshot);
 			logger.info("│   ├── cluster event log topic PERSIST created for: " + snapshot.getUniqueID());
-		}
 
-		// finally update the data field by cloning the map object (deep copy)
-		ItemCollection clone = (ItemCollection) document.clone();
-		persistedDocument.setData(clone.getAllItems());
+			// 3.) add to index
+			if (!snapshot.getItemValueBoolean(NOINDEX)) {
+				addDocumentToIndex(snapshot);
+			} else {
+				// remove from index
+				removeDocumentFromIndex(snapshot.getUniqueID());
+			}
+
+			// 4.) create cleaned data item
+			ItemCollection _tmpData = new ItemCollection();
+			for (String itemName : ClusterService.CORE_DATA_ITEMS) {
+				_tmpData.setItemValue(itemName, snapshot.getItemValue(itemName));
+			}
+			persistedDocument.setData(_tmpData.getAllItems());
+			logger.info("│   ├── final document item count=" + _tmpData.getAllItems().size());
+
+		} else {
+			// LEGACY Persistent mode
+			// finally update the data field (deep copy)
+			// finally update the data field by cloning the map object (deep copy)
+			ItemCollection clone = (ItemCollection) document.clone();
+			persistedDocument.setData(clone.getAllItems());
+
+			// add/update document into lucene index
+			if (!document.getItemValueBoolean(NOINDEX)) {
+				addDocumentToIndex(document);
+			} else {
+				// remove from index
+				removeDocumentFromIndex(document.getUniqueID());
+			}
+		}
 
 		/*
 		 * Issue #220
@@ -515,14 +540,6 @@ public class DocumentService {
 
 		// update the $isauthor flag
 		document.replaceItemValue(ISAUTHOR, isCallerAuthor(persistedDocument));
-
-		// add/update document into lucene index
-		if (!document.getItemValueBoolean(NOINDEX)) {
-			addDocumentToIndex(document);
-		} else {
-			// remove from index
-			removeDocumentFromIndex(document.getUniqueID());
-		}
 
 		/*
 		 * issue #230
@@ -555,7 +572,7 @@ public class DocumentService {
 		// skip if the flag 'noindex' = true
 		if (!document.getItemValueBoolean(DocumentService.NOINDEX)) {
 			// write a new EventLog entry for each document....
-			eventLogService.createEvent(EVENTLOG_TOPIC_INDEX_ADD, document.getUniqueID());
+			eventLogService.createEvent(EVENTLOG_TOPIC_INDEX_ADD, document.getUniqueID(), document);
 		}
 	}
 
@@ -665,11 +682,9 @@ public class DocumentService {
 								"│   ├── SnapshotID=" + snapshotId);
 						ItemCollection snapshot = dataService.loadSnapshot(snapshotId);
 						result = snapshot;
-						logger.log(Level.INFO,
-								"│   ├── Snapshot Item count=" + result.getItemList().keySet().size());
-
+						logger.log(Level.INFO, "│   ├── Snapshot Item count=" + result.getItemList().keySet().size());
 					} catch (DataException | ClusterException e) {
-						logger.warning("Failed to load Snapshot Data from cluster: " + e.getMessage());
+						logger.warning("│   ├── ⚠️ Failed to load Snapshot Data from cluster: " + e.getMessage());
 					}
 				} else {
 					logger.log(Level.WARNING, "│   ├── SnapshotID is blank!");
