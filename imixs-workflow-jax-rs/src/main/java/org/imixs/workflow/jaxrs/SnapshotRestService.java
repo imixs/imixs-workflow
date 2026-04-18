@@ -17,25 +17,37 @@ package org.imixs.workflow.jaxrs;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.logging.Logger;
 
+import org.imixs.workflow.FileData;
+import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.cluster.DataService;
 import org.imixs.workflow.engine.cluster.exceptions.ClusterException;
+import org.imixs.workflow.engine.cluster.exceptions.DataException;
+import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 
 import jakarta.annotation.Resource;
 import jakarta.ejb.SessionContext;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.Encoded;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.StreamingOutput;
+import jakarta.ws.rs.core.UriInfo;
 
 /**
  * The ClusterRestService provides methods to access Snapshot documents form the
@@ -85,35 +97,126 @@ public class SnapshotRestService {
         return new StreamingOutput() {
             public void write(OutputStream out) throws IOException, WebApplicationException {
 
-                out.write("<html><head>".getBytes());
-                out.write("<style>".getBytes());
-                out.write("table {padding:0px;width: 100%;margin-left: -2px;margin-right: -2px;}".getBytes());
+                out.write("<html><head>".getBytes(StandardCharsets.UTF_8));
+                out.write("<style>".getBytes(StandardCharsets.UTF_8));
+                out.write("table {padding:0px;width: 100%;margin-left: -2px;margin-right: -2px;}"
+                        .getBytes(StandardCharsets.UTF_8));
                 out.write(
                         "body,td,select,input,li {font-family: Verdana, Helvetica, Arial, sans-serif;font-size: 13px;}"
-                                .getBytes());
+                                .getBytes(StandardCharsets.UTF_8));
                 out.write("table th {color: white;background-color: #bbb;text-align: left;font-weight: bold;}"
-                        .getBytes());
+                        .getBytes(StandardCharsets.UTF_8));
 
-                out.write("table th,table td {font-size: 12px;}".getBytes());
+                out.write("table th,table td {font-size: 12px;}".getBytes(StandardCharsets.UTF_8));
 
-                out.write("table tr.a {background-color: #ddd;}".getBytes());
+                out.write("table tr.a {background-color: #ddd;}".getBytes(StandardCharsets.UTF_8));
 
-                out.write("table tr.b {background-color: #eee;}".getBytes());
+                out.write("table tr.b {background-color: #eee;}".getBytes(StandardCharsets.UTF_8));
 
-                out.write("</style>".getBytes());
-                out.write("</head><body>".getBytes());
+                out.write("</style>".getBytes(StandardCharsets.UTF_8));
+                out.write("</head><body>".getBytes(StandardCharsets.UTF_8));
 
                 // body
-                out.write("<h1>Imixs-Cluster REST Service</h1>".getBytes());
+                out.write("<h1>Imixs-Cluster REST Service</h1>".getBytes(StandardCharsets.UTF_8));
                 out.write(
                         "<p>See the <a href=\"http://www.imixs.org/xml/restservice/snapshotservice.html\" target=\"_blank\">Imixs REST Service API</a> for more information about this Service.</p>"
-                                .getBytes());
+                                .getBytes(StandardCharsets.UTF_8));
 
                 // end
-                out.write("</body></html>".getBytes());
+                out.write("</body></html>".getBytes(StandardCharsets.UTF_8));
             }
         };
 
+    }
+
+    /**
+     * Loads a snapshot from the archive and returns a HTML representation.
+     * 
+     * @param id - snapshot id
+     * @return XMLDataCollection
+     */
+    @GET
+    @Path("/snapshot/{id : ([0-9a-f]{8}-.*|[0-9a-f]{11}-.*)}")
+    public Response getSnapshot(@PathParam("id") String id, @QueryParam("format") String format) {
+
+        try {
+            logger.info("...read snapshot...");
+            ItemCollection snapshot = dataService.loadSnapshot(id);
+            return convertResult(snapshot, format);
+        } catch (Exception e) {
+            logger.warning("...Failed to load snapshot: " + e.getMessage());
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Snapshot not found: " + id)
+                    .build();
+
+        } finally {
+
+        }
+    }
+
+    @GET
+    @Produces("text/html")
+    @Path("/search")
+    public StreamingOutput searchSnapshots() {
+
+        return new StreamingOutput() {
+            public void write(OutputStream out) throws IOException, WebApplicationException {
+
+                // Compute the base path for the redirect
+                String rootContext = servletRequest.getContextPath() + servletRequest.getServletPath();
+
+                out.write("<html><head>".getBytes(StandardCharsets.UTF_8));
+                out.write("<style>".getBytes(StandardCharsets.UTF_8));
+                out.write(
+                        "body,td,select,input,li {font-family: Verdana, Helvetica, Arial, sans-serif;font-size: 13px;}"
+                                .getBytes(StandardCharsets.UTF_8));
+                out.write("h1 {color: #444;}".getBytes(StandardCharsets.UTF_8));
+                out.write(
+                        ".search-box {margin: 20px 0; padding: 16px; background-color: #eee; border-radius: 4px; display:inline-block;}"
+                                .getBytes());
+                out.write("input[type=text] {font-size: 13px; padding: 6px 8px; width: 340px; border: 1px solid #bbb;}"
+                        .getBytes(StandardCharsets.UTF_8));
+                out.write(
+                        "button {font-size: 13px; padding: 6px 14px; background-color: #555; color: white; border: none; cursor: pointer; margin-left: 8px;}"
+                                .getBytes(StandardCharsets.UTF_8));
+                out.write("button:hover {background-color: #333;}".getBytes(StandardCharsets.UTF_8));
+                out.write("</style>".getBytes(StandardCharsets.UTF_8));
+
+                // JavaScript redirect on form submit
+                out.write(("<script>" +
+                        "function lookup() {" +
+                        "  var uid = document.getElementById('uid').value.trim();" +
+                        "  if (uid) {" +
+                        "    window.location.href = '" + rootContext + "/snapshots/' + uid;" +
+                        "  }" +
+                        "}" +
+                        "function handleKey(event) {" +
+                        "  if (event.key === 'Enter') { lookup(); }" +
+                        "}" +
+                        "</script>").getBytes(StandardCharsets.UTF_8));
+
+                out.write("</head><body>".getBytes(StandardCharsets.UTF_8));
+
+                // Heading
+                out.write("<h1>Imixs-Cluster REST Service</h1>".getBytes(StandardCharsets.UTF_8));
+                out.write(
+                        "<p>Enter a $uniqueid to lookup current snapshots</p>"
+                                .getBytes(StandardCharsets.UTF_8));
+
+                // UniqueID lookup form
+                out.write("<div class=\"search-box\">".getBytes(StandardCharsets.UTF_8));
+                out.write("<strong>Snapshot Lookup</strong><br/><br/>".getBytes(StandardCharsets.UTF_8));
+                out.write("<label for=\"uid\">UniqueID:</label><br/>".getBytes(StandardCharsets.UTF_8));
+                out.write(
+                        "<input type=\"text\" id=\"uid\" placeholder=\"e.g. dc5e6483-6342-4a22-82ec-f363ccfe8de0\" onkeydown=\"handleKey(event)\"/>"
+                                .getBytes(StandardCharsets.UTF_8));
+                out.write("<button onclick=\"lookup()\">Show Snapshots</button>".getBytes(StandardCharsets.UTF_8));
+                out.write("</div>".getBytes(StandardCharsets.UTF_8));
+
+                // end
+                out.write("</body></html>".getBytes(StandardCharsets.UTF_8));
+            }
+        };
     }
 
     /**
@@ -138,26 +241,27 @@ public class SnapshotRestService {
 
         return new StreamingOutput() {
             public void write(OutputStream out) throws IOException, WebApplicationException {
-                out.write("<html><head>".getBytes());
-                out.write("<style>".getBytes());
-                out.write("table {padding:0px;width: 75%;margin-left: -2px;margin-right: -2px;}".getBytes());
+                out.write("<html><head>".getBytes(StandardCharsets.UTF_8));
+                out.write("<style>".getBytes(StandardCharsets.UTF_8));
+                out.write("table {padding:0px;width: 75%;margin-left: -2px;margin-right: -2px;}"
+                        .getBytes(StandardCharsets.UTF_8));
                 out.write(
                         "body,td,select,input,li {font-family: Verdana, Helvetica, Arial, sans-serif;font-size: 13px;}"
-                                .getBytes());
+                                .getBytes(StandardCharsets.UTF_8));
                 out.write("table th {color: white;background-color: #bbb;text-align: left;font-weight: bold;}"
-                        .getBytes());
+                        .getBytes(StandardCharsets.UTF_8));
 
-                out.write("table th,table td {font-size: 12px;}".getBytes());
+                out.write("table th,table td {font-size: 12px;}".getBytes(StandardCharsets.UTF_8));
 
-                out.write("table tr.a {background-color: #ddd;}".getBytes());
+                out.write("table tr.a {background-color: #ddd;}".getBytes(StandardCharsets.UTF_8));
 
-                out.write("table tr.b {background-color: #eee;}".getBytes());
+                out.write("table tr.b {background-color: #eee;}".getBytes(StandardCharsets.UTF_8));
 
-                out.write("</style>".getBytes());
-                out.write("</head><body>".getBytes());
+                out.write("</style>".getBytes(StandardCharsets.UTF_8));
+                out.write("</head><body>".getBytes(StandardCharsets.UTF_8));
 
-                out.write("<h1>Imixs-Workflow Snapshot Service</h1>".getBytes());
-                out.write("<p>".getBytes());
+                out.write("<h1>Imixs-Workflow Snapshot Service</h1>".getBytes(StandardCharsets.UTF_8));
+                out.write("<p>".getBytes(StandardCharsets.UTF_8));
 
                 // print table
 
@@ -169,17 +273,181 @@ public class SnapshotRestService {
                     e.printStackTrace();
                 }
 
-                out.write("</p>".getBytes());
+                out.write("</p>".getBytes(StandardCharsets.UTF_8));
                 // footer
                 out.write(
                         "<p>See the <a href=\"http://www.imixs.org/doc/restapi/modelservice.html\" target=\"_bank\">Imixs-Workflow REST API</a> for more information.</p>"
-                                .getBytes());
+                                .getBytes(StandardCharsets.UTF_8));
 
                 // end
-                out.write("</body></html>".getBytes());
+                out.write("</body></html>".getBytes(StandardCharsets.UTF_8));
             }
         };
 
+    }
+
+    /**
+     * Returns a file attachment based on its MD5 Checksum
+     * <p>
+     * The query parameter 'contentType' can be added to specify the returned
+     * content type.
+     * 
+     * @param md5 - md5 checksum to identify the file content
+     * @return
+     */
+    @GET
+    @Path("/md5/{md5}")
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response getSnapshotFileByMD5Checksum(@PathParam("md5") @Encoded String md5,
+            @QueryParam("contentType") String contentType) {
+
+        // load the snapshot
+        byte[] fileContent = null;
+        try {
+
+            // load snapshto without the file data
+            fileContent = dataService.loadFileContent(md5);
+
+        } catch (ClusterException | DataException e) {
+            logger.warning("...failed to load file: " + e.getMessage());
+            e.printStackTrace();
+        }
+        // extract the file...
+        try {
+
+            if (fileContent != null && fileContent.length > 0) {
+                // Set content type in order of the contentType stored
+                // in the $file attribute
+                Response.ResponseBuilder builder = Response.ok(fileContent, contentType);
+                return builder.build();
+            } else {
+                logger.warning("Unable to open file by md5 checksum: '" + md5 + "' - no content!");
+                // workitem not found
+                return Response.status(Response.Status.NOT_FOUND).build();
+            }
+
+        } catch (Exception e) {
+            logger.severe(
+                    "Unable to open file by md5 checksum: '" + md5 + "' - error: " + e.getMessage());
+
+        }
+
+        logger.severe("Unable to open file by md5 checksum: '" + md5 + "'");
+        return Response.status(Response.Status.NOT_FOUND).build();
+
+    }
+
+    /**
+     * Returns a file attachment located in the property $file of the specified
+     * snapshot
+     * <p>
+     * The file name will be encoded. With a URLDecode the filename is decoded in
+     * different formats and searched in the file list. This is not a nice solution.
+     * 
+     * @param uniqueid
+     * @return
+     */
+    @GET
+    @Path("/snapshot/{id}/file/{file}")
+    public Response getSnapshotFileByName(@PathParam("id") String id, @PathParam("file") @Encoded String file,
+            @Context UriInfo uriInfo) {
+
+        // load the snapshot
+        // Session session = null;
+        // Cluster cluster = null;
+        ItemCollection snapshot = null;
+        FileData fileData = null;
+        try {
+            logger.finest("...read snapshot...");
+            // cluster = clusterService.getCluster();
+            // session = clusterService.getArchiveSession(cluster);
+            // load snapshto without the file data
+            snapshot = dataService.loadSnapshot(id, false);
+
+            String fileNameUTF8 = URLDecoder.decode(file, "UTF-8");
+            String fileNameISO = URLDecoder.decode(file, "ISO-8859-1");
+            // try to guess encodings.....
+            fileData = snapshot.getFileData(fileNameUTF8);
+            if (fileData == null)
+                fileData = snapshot.getFileData(fileNameISO);
+            if (fileData == null)
+                fileData = snapshot.getFileData(file);
+
+            if (fileData != null) {
+                // now we load the content
+                fileData = dataService.loadFileData(fileData);
+            }
+
+        } catch (DataException | ClusterException | UnsupportedEncodingException e) {
+            logger.warning("...Failed to load file: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+
+        }
+        // extract the file...
+        try {
+
+            if (fileData != null) {
+                // Set content type in order of the contentType stored
+                // in the $file attribute
+                Response.ResponseBuilder builder = Response.ok(fileData.getContent(), fileData.getContentType());
+                return builder.build();
+            } else {
+                logger.warning("ArchiveRestService unable to open file: '" + file + "' in workitem '" + id
+                        + "' - error: Filename not found!");
+                // workitem not found
+                return Response.status(Response.Status.NOT_FOUND).build();
+            }
+
+        } catch (Exception e) {
+            logger.severe("ArchiveRestService unable to open file: '" + file + "' in workitem '" + id + "' - error: "
+                    + e.getMessage());
+            e.printStackTrace();
+        }
+
+        logger.severe("ArchiveRestService unable to open file: '" + file + "' in workitem '" + id + "'");
+        return Response.status(Response.Status.NOT_FOUND).build();
+
+    }
+
+    /**
+     * This method converts a single ItemCollection into a Jax-rs response object.
+     * <p>
+     * The method expects optional items and format string (json|xml)
+     * <p>
+     * In case the result set is null, than the method returns an empty collection.
+     * 
+     * @param result list of ItemCollection
+     * @param items  - optional item list
+     * @param format - optional format string (json|xml)
+     * @return jax-rs Response object.
+     */
+    private Response convertResult(ItemCollection workitem, String format) {
+        if (workitem == null) {
+            workitem = new ItemCollection();
+        }
+        if ("json".equals(format)) {
+            return Response
+                    // Set the status and Put your entity here.
+                    .ok(XMLDataCollectionAdapter.getDataCollection(workitem, null))
+                    // Add the Content-Type header to tell Jersey which format it should marshall
+                    // the entity into.
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON).build();
+        } else if ("xml".equals(format)) {
+            return Response
+                    // Set the status and Put your entity here.
+                    .ok(XMLDataCollectionAdapter.getDataCollection(workitem, null))
+                    // Add the Content-Type header to tell Jersey which format it should marshall
+                    // the entity into.
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML).build();
+        } else {
+            // default header param
+            return Response
+                    // Set the status and Put your entity here.
+                    .ok(XMLDataCollectionAdapter.getDataCollection(workitem, null))
+                    .build();
+
+        }
     }
 
     /**
@@ -191,14 +459,15 @@ public class SnapshotRestService {
 
             // compute rootContext:
             String rootContext = servletRequest.getContextPath() + servletRequest.getServletPath();
-
+            buffer.append("<p><a href=\"" + rootContext + "/snapshots/search\">&larr; New Search</a></p>");
             buffer.append("<table>");
             buffer.append("<tr><th>SnapshotID</th></tr>");
             // append current model version table as a html string
 
             for (String id : snapshots) {
-                buffer.append("<td><a href=\"" + rootContext + "/snapshot/" + id + "\">" + id
-                        + "</a></td>");
+
+                buffer.append("<tr><td><a href=\"" + rootContext + "/snapshots/snapshot/" + id + "\">" + id
+                        + "</a></td></tr>");
             }
 
             buffer.append("</table>");
