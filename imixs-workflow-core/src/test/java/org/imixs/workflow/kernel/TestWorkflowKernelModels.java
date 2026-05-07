@@ -372,4 +372,39 @@ public class TestWorkflowKernelModels {
 
 	}
 
+	/**
+	 * Test workflow with multiple task types
+	 * 
+	 * See issue #961
+	 * 
+	 */
+	@Test
+	public void testMultiTaskTypesModel() {
+		try {
+			workflowEngine.loadBPMNModelFromFile("/bpmn/simple-multiple-tasktypes.bpmn");
+
+			ItemCollection itemCollection = new ItemCollection();
+			itemCollection.replaceItemValue("txtTitel", "Hello");
+			itemCollection.setTaskID(1000);
+			itemCollection.setEventID(10);
+
+			itemCollection.replaceItemValue("$modelversion", "1.0.0");
+
+			itemCollection = workflowEngine.processWorkItem(itemCollection);
+			assertEquals("Hello", itemCollection.getItemValueString("txttitel"));
+			assertEquals("workitem", itemCollection.getItemValueString("type"));
+			assertEquals(1000, itemCollection.getTaskID());
+
+			itemCollection.event(20);
+			itemCollection = workflowEngine.processWorkItem(itemCollection);
+			assertEquals(1100, itemCollection.getTaskID());
+			assertEquals("workitemarchive", itemCollection.getItemValueString("type"));
+
+		} catch (Exception e) {
+			fail(e);
+			e.printStackTrace();
+		}
+
+	}
+
 }

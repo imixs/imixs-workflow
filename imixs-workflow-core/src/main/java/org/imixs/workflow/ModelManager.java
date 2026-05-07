@@ -31,6 +31,7 @@ import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.BPMNNS;
+import org.openbpmn.bpmn.BPMNTypes;
 import org.openbpmn.bpmn.elements.Activity;
 import org.openbpmn.bpmn.elements.BPMNProcess;
 import org.openbpmn.bpmn.elements.Event;
@@ -64,10 +65,6 @@ import org.w3c.dom.Element;
 public class ModelManager {
 
     private Logger logger = Logger.getLogger(ModelManager.class.getName());
-
-    public final static String TASK_ELEMENT = "task";
-    public final static String EVENT_ELEMENT = "intermediateCatchEvent";
-    public final static String PARALLELGATEWAY_ELEMENT = "parallelGateway";
 
     // cache
     private final Map<String, ItemCollection> bpmnEntityCache = new ConcurrentHashMap<>();
@@ -726,7 +723,7 @@ public class ModelManager {
     public boolean isMainParallelGatewayFlow(BPMNElementNode gatewayNode, BPMNElementNode targetNode,
             ItemCollection workitem) {
 
-        if (ModelManager.TASK_ELEMENT.equals(targetNode.getType())) {
+        if (BPMNTypes.BPMN_TASKS.contains(targetNode.getType())) {
             return true;
         }
         // find SequenceFlow

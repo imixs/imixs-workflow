@@ -45,6 +45,7 @@ import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
 import org.imixs.workflow.util.XMLParser;
 import org.openbpmn.bpmn.BPMNModel;
+import org.openbpmn.bpmn.BPMNTypes;
 import org.openbpmn.bpmn.elements.core.BPMNElementNode;
 
 /**
@@ -517,12 +518,12 @@ public class WorkflowKernel {
             }
 
             // ==> bpmn2:parallelGateway
-            if (ModelManager.PARALLELGATEWAY_ELEMENT.equals(nextElement.getType())) {
+            if (BPMNTypes.PARALLEL_GATEWAY.equals(nextElement.getType())) {
                 nextElement = handleParallelGateWay(model, workitem, nextElement, true);
             }
 
             // ==> bpmn2:intermediateCatchEvent
-            if (ModelManager.EVENT_ELEMENT.equals(nextElement.getType())) {
+            if (BPMNTypes.CATCH_EVENT.equals(nextElement.getType())) {
                 // load next event
                 logEvent(workitem.getTaskID(), workitem.getEventID(), workitem.getTaskID(), workitem);
                 event = nextElement;
@@ -532,8 +533,9 @@ public class WorkflowKernel {
                 return event;
             }
 
-            // == bpm2:task
-            if (ModelManager.TASK_ELEMENT.equals(nextElement.getType())) {
+            // == bpm2:task*
+            if (BPMNTypes.BPMN_TASKS.contains(nextElement.getType())) {
+                // if (ModelManager.TASK_ELEMENT.equals(nextElement.getType())) {
                 // update status and terminate processing life cycle
                 logEvent(workitem.getTaskID(), workitem.getEventID(),
                         nextElement.getItemValueInteger(BPMNUtil.TASK_ITEM_TASKID), workitem);
@@ -572,7 +574,7 @@ public class WorkflowKernel {
         ItemCollection result = null;
 
         // verify if we have a parallelgateway
-        if (!ModelManager.PARALLELGATEWAY_ELEMENT.equals(parallelGateway.getType())) {
+        if (!BPMNTypes.PARALLEL_GATEWAY.equals(parallelGateway.getType())) {
             throw new ModelException(ModelException.INVALID_MODEL_ENTRY,
                     "BPMN Model Parallel Gateway expected!");
         }
@@ -715,12 +717,12 @@ public class WorkflowKernel {
                 }
 
                 // ==> bpmn2:parallelGateway
-                if (ModelManager.PARALLELGATEWAY_ELEMENT.equals(nextElement.getType())) {
+                if (BPMNTypes.PARALLEL_GATEWAY.equals(nextElement.getType())) {
                     nextElement = handleParallelGateWay(model, workitem, nextElement, false);
                 }
 
                 // ==> bpmn2:intermediateCatchEvent
-                if (ModelManager.EVENT_ELEMENT.equals(nextElement.getType())) {
+                if (BPMNTypes.CATCH_EVENT.equals(nextElement.getType())) {
                     // load next event and continue processing live-cycle
                     event = nextElement;
                     workitem.event(event.getItemValueInteger("numactivityid"));
@@ -863,7 +865,7 @@ public class WorkflowKernel {
     private void updateWorkflowStatus(ItemCollection workitem, ItemCollection itemColNextTask, BPMNModel model)
             throws ModelException {
         boolean debug = logger.isLoggable(Level.FINE);
-        if (!ModelManager.TASK_ELEMENT.equals(itemColNextTask.getType())) {
+        if (!BPMNTypes.BPMN_TASKS.contains(itemColNextTask.getType())) {
             throw new ModelException(ModelException.INVALID_MODEL,
                     "Invalid Model Element - BPMN Task Element was expected to update the current workflow status.");
         }
@@ -910,7 +912,7 @@ public class WorkflowKernel {
      */
     private void updateIntermediateEvent(ItemCollection workitem, ItemCollection itemColNextEvent)
             throws ModelException {
-        if (!ModelManager.EVENT_ELEMENT.equals(itemColNextEvent.getType())) {
+        if (!BPMNTypes.CATCH_EVENT.equals(itemColNextEvent.getType())) {
             throw new ModelException(ModelException.INVALID_MODEL,
                     "Invalid Model Element - BPMN Event Element was expected to update the intermediate event status.");
         }
