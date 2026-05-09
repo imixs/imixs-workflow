@@ -27,6 +27,7 @@ import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.MockWorkflowContext;
 import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.exceptions.ModelException;
@@ -111,7 +112,6 @@ public class TestBPMNParserGroups {
 		try {
 			workflowContext.loadBPMNModelFromFile("/bpmn/multi-groups.bpmn");
 			model = workflowContext.fetchModel("protokoll-de-1.0.0");
-
 			assertNotNull(model);
 
 		} catch (ModelException e) {
@@ -147,6 +147,56 @@ public class TestBPMNParserGroups {
 		BPMNProcess defaultProcess = model.openDefaultProces();
 		assertEquals("Default Process", defaultProcess.getName());
 
+	}
+
+	/**
+	 * Tests that model-level documentation is read from the <bpmn2:documentation>
+	 * child element of the definitions node.
+	 */
+	@Test
+	public void testModelDocumentation() {
+		try {
+			workflowContext.loadBPMNModelFromFile("/bpmn/multi-groups.bpmn");
+			model = workflowContext.fetchModel("protokoll-de-1.0.0");
+
+			ItemCollection definition = modelManager.loadDefinition(model);
+			assertEquals("General model description.", definition.getItemValueString("documentation"));
+		} catch (ModelException e) {
+			fail(e.getMessage());
+		}
+	}
+
+	/**
+	 * Tests that process-level documentation is read from the <bpmn2:documentation>
+	 * child element of the matching process node.
+	 */
+	@Test
+	public void testProcessDocumentation() {
+		try {
+			workflowContext.loadBPMNModelFromFile("/bpmn/multi-groups.bpmn");
+			model = workflowContext.fetchModel("protokoll-de-1.0.0");
+
+			ItemCollection process = modelManager.loadProcess("Protokoll", model);
+
+			assertEquals("Protokoll process description.", process.getItemValueString("documentation"));
+		} catch (ModelException e) {
+			fail(e.getMessage());
+		}
+	}
+
+	/**
+	 * Tests that an empty string is returned for a process without documentation.
+	 */
+	@Test
+	public void testProcessDocumentationMissing() {
+		try {
+			workflowContext.loadBPMNModelFromFile("/bpmn/multi-groups.bpmn");
+			model = workflowContext.fetchModel("protokoll-de-1.0.0");
+			ItemCollection process = modelManager.loadProcess("Protokollpunkt", model);
+			assertEquals("", process.getItemValueString("documentation"));
+		} catch (ModelException e) {
+			fail(e.getMessage());
+		}
 	}
 
 }
