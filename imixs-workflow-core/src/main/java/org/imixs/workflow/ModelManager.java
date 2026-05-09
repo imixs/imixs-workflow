@@ -35,6 +35,7 @@ import org.openbpmn.bpmn.BPMNTypes;
 import org.openbpmn.bpmn.elements.Activity;
 import org.openbpmn.bpmn.elements.BPMNProcess;
 import org.openbpmn.bpmn.elements.Event;
+import org.openbpmn.bpmn.elements.Participant;
 import org.openbpmn.bpmn.elements.SequenceFlow;
 import org.openbpmn.bpmn.elements.core.BPMNElement;
 import org.openbpmn.bpmn.elements.core.BPMNElementNode;
@@ -160,31 +161,76 @@ public class ModelManager {
     /**
      * Returns the BPMN Process entity associated with a given workitem, based on
      * its attributes "$modelVersion", "$taskID". The process holds the name for the
-     * attribute $worklfowGroup
-     * <p>
-     * The taskID has to be unique in a process. The method throws a
-     * {@link ModelException} if no Process can be resolved based on the given model
-     * information.
+     * attribute $workflowGroup.
      * <p>
      * The method is called by the {@link WorkflowKernel} during the processing life
      * cycle to update the process group information.
-     * 
+     *
      * @param workitem
-     * @return BPMN Event entity - {@link ItemCollection}
-     * @throws ModelException if no event was found
+     * @param model
+     * @return BPMN Process entity - {@link ItemCollection}
+     * @throws ModelException if no process was found
      */
     public ItemCollection loadProcess(ItemCollection workitem, BPMNModel model) throws ModelException {
-
         String key = BPMNUtil.getVersion(model) + "~" + workitem.getTaskID();
         Activity task = (Activity) bpmnElementCache.computeIfAbsent(key,
                 k -> lookupTaskElementByID(model, workitem.getTaskID()));
-        BPMNProcess process = task.getBpmnProcess();
+        return buildProcessItemCollection(task.getBpmnProcess());
+    }
+
+    /**
+     * Returns the BPMN Process entity for a given workflow group name.
+     * <p>
+     * This method is used by the SkillController to load process meta data
+     * including documentation for the AI agent context.
+     *
+     * @param group - the workflow group name
+     * @param model
+     * @return BPMN Process entity - {@link ItemCollection}
+     * @throws ModelException if no matching process was found
+     */
+    public ItemCollection loadProcess(String group, BPMNModel model) throws ModelException {
+        if (group == null || group.isEmpty()) {
+            throw new ModelException(ModelException.UNDEFINED_MODEL_ENTRY,
+                    "loadProcess - workflow group must not be empty!");
+        }
+        for (BPMNProcess process : model.getProcesses()) {
+            if (isImixsProcess(process) && group.equals(process.getName())) {
+                return buildProcessItemCollection(process);
+            }
+        }
+        throw new ModelException(ModelException.UNDEFINED_MODEL_ENTRY,
+                "loadProcess - no process found for group '" + group + "'");
+    }
+
+    /**
+     * Builds a process meta ItemCollection from a given BPMNProcess element. Reads
+     * id, name and documentation.
+     *
+     * @param process
+     * @return ItemCollection with process meta data
+     */
+    private ItemCollection buildProcessItemCollection(BPMNProcess process) {
         ItemCollection result = new ItemCollection();
         result.setItemValue("id", process.getId());
         if (process.hasAttribute("name")) {
             result.setItemValue("name", process.getAttribute("name"));
         }
 
+        // For private processes (Pools), documentation is stored on the
+        // bpmn2:participant element, not on the bpmn2:process element.
+        // For the public default process, documentation is on the process itself.
+        String documentation = null;
+        Participant participant = process.findParticipant();
+        if (participant != null) {
+            documentation = participant.getDocumentation();
+        } else {
+            documentation = process.getDocumentation();
+        }
+
+        if (documentation != null && !documentation.isBlank()) {
+            result.setItemValue("documentation", documentation.strip());
+        }
         return result;
     }
 
@@ -771,6 +817,12 @@ public class ModelManager {
         result.setItemValue("txtname", "environment.profile");
         result.setItemValue("type", "WorkflowEnvironmentEntity");
 
+        // Read model-level documentation
+        BPMNProcess process = model.openDefaultProces();
+        if (process != null) {
+            result.setItemValue("documentation", process.getDocumentation());
+        }
+
         Element extensionElement = model.findChildNodeByName(definition,
                 BPMNNS.BPMN2, "extensionElements");
         Set<Element> imixsExtensionElements = BPMNUtil.findAllImixsElements(extensionElement, "item");
@@ -785,10 +837,6 @@ public class ModelManager {
         }
         // convert model version new item name
         result.setItemValue(WorkflowKernel.MODELVERSION, result.getItemValueString("txtworkflowmodelversion"));
-
-        // logger.info("lookupDefinition " +
-        // result.getItemValueString("txtworkflowmodelversion") + " took "
-        // + (System.currentTimeMillis() - l) + "ms");
         return result;
     }
 

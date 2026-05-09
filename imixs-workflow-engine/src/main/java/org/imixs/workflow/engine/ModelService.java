@@ -57,8 +57,8 @@ import jakarta.inject.Inject;
  * The ModelService provides methods to load and save BPMNModel data form the
  * Database and methods to find model versions based on meta information.
  * <p>
- * Note: BPMModel instances are not Thread save. For this reason the service
- * the method getBPMNModel returns an exclusive version of a BPMNModel object.
+ * Note: BPMModel instances are not Thread save. For this reason the service the
+ * method getBPMNModel returns an exclusive version of a BPMNModel object.
  * 
  * 
  * @see org.imixs.workflow.ModelManager
@@ -101,8 +101,8 @@ public class ModelService {
     /**
      * Adds a BPMNModel with its metadata into the local model store.
      * <p>
-     * The method pre initialize all processes within the BPMNModel to
-     * avoid the lazing loading.
+     * The method pre initialize all processes within the BPMNModel to avoid the
+     * lazing loading.
      * <p>
      * The Method does not store the data in the database. To store new model data
      * call {@code saveModel}
@@ -265,10 +265,9 @@ public class ModelService {
     }
 
     /**
-     * Returns a version by Group.
-     * The method computes a sorted list of all model versions containing the
-     * requested workflow group. The result is sorted in reverse order, so the
-     * highest version number is the first in the result list.
+     * Returns a version by Group. The method computes a sorted list of all model
+     * versions containing the requested workflow group. The result is sorted in
+     * reverse order, so the highest version number is the first in the result list.
      * 
      * @param group - name of the workflow group
      * @return list of matching model versions
@@ -329,8 +328,7 @@ public class ModelService {
      * will be deleted form the database first.
      * <p>
      * The param 'filename' is used to store the bpmn file in the corresponding
-     * model
-     * document.
+     * model document.
      * 
      * @param model
      * @throws ModelException
