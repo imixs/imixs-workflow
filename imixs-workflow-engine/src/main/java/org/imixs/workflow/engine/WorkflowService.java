@@ -1171,24 +1171,32 @@ public class WorkflowService implements WorkflowContext {
      * @throws PluginException if the xml structure is invalid
      */
     public List<ItemCollection> evalWorkflowResultXML(ItemCollection event, String xmlTag, String name,
-            ItemCollection documentContext,
-            boolean resolveItemValues) throws PluginException {
+            ItemCollection documentContext, boolean resolveItemValues) throws PluginException {
 
         String workflowResult = event.getItemValueString(BPMNUtil.EVENT_ITEM_WORKFLOW_RESULT);
-        // support deprecated itemname
+        // Support deprecated itemname
         if (workflowResult.isEmpty()) {
             workflowResult = event.getItemValueString("txtActivityResult");
         }
 
+        String eventInfo = "Event " + event.getItemValueInteger("numprocessid")
+                + "." + event.getItemValueInteger("numactivityid");
         try {
-            return evalXMLExpressionList(workflowResult, xmlTag, name, documentContext, resolveItemValues);
+            List<ItemCollection> result = evalXMLExpressionList(workflowResult, xmlTag, name,
+                    documentContext, resolveItemValues);
+            // Empty result is valid - tag simply not present in workflow result
+            return result;
         } catch (PluginException e) {
-            // no configuration found!
+            // Re-throw with original cause preserved in message
+            if (INVALID_TAG_FORMAT.equals(e.getErrorCode())) {
+                // Already a formatting error - just re-throw
+                throw e;
+            }
+            // Wrap unexpected parsing errors with full context
             throw new PluginException(WorkflowService.class.getSimpleName(), INVALID_TAG_FORMAT,
-                    "Missing XML definition '" + xmlTag + "' in Event " + event.getItemValueInteger("numprocessid")
-                            + "." + event.getItemValueInteger("numactivityid"));
+                    "Invalid XML definition '" + xmlTag + "' in " + eventInfo
+                            + " - cause: " + e.getMessage());
         }
-
     }
 
     /**
@@ -1222,6 +1230,40 @@ public class WorkflowService implements WorkflowContext {
      * @throws PluginException if the xml structure is invalid
      */
     public List<ItemCollection> evalXMLExpressionList(String xmlExpression, String xmlTag, String name,
+            ItemCollection documentContext, boolean resolveItemValues) throws PluginException {
+
+        List<ItemCollection> result = new ArrayList<ItemCollection>();
+
+        if (xmlExpression == null || xmlExpression.trim().isEmpty()) {
+            return result;
+        }
+
+        // Resolve dynamic item values BEFORE parsing - not interleaved with regex
+        if (resolveItemValues) {
+            xmlExpression = adaptText(xmlExpression, documentContext);
+        }
+
+        // Use DOM-based XMLParser instead of fragile regex
+        List<String> tagList = XMLParser.findNoEmptyTags(xmlExpression, xmlTag);
+        for (String tagString : tagList) {
+            // Filter by name attribute if specified
+            if (name != null && !name.isEmpty()) {
+                String nameAttr = XMLParser.findAttribute(tagString, "name");
+                if (!name.equals(nameAttr)) {
+                    continue;
+                }
+            }
+            // Parse inner structure via DOM
+            ItemCollection itemCol = XMLParser.parseTag(tagString, xmlTag);
+            if (itemCol != null && !itemCol.getAllItems().isEmpty()) {
+                result.add(itemCol);
+            }
+        }
+        return result;
+    }
+
+    @Deprecated
+    public List<ItemCollection> evalXMLExpressionListDeprecated(String xmlExpression, String xmlTag, String name,
             ItemCollection documentContext, boolean resolveItemValues) throws PluginException {
 
         List<ItemCollection> result = new ArrayList<ItemCollection>();
