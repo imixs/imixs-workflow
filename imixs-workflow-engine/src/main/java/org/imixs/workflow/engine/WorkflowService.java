@@ -1243,21 +1243,23 @@ public class WorkflowService implements WorkflowContext {
             xmlExpression = adaptText(xmlExpression, documentContext);
         }
 
-        // Use DOM-based XMLParser instead of fragile regex
+        // Use DOM-based XMLParser to parse the inner item tags
         List<String> tagList = XMLParser.findNoEmptyTags(xmlExpression, xmlTag);
         for (String tagString : tagList) {
             // Filter by name attribute if specified
             if (name != null && !name.isEmpty()) {
                 String nameAttr = XMLParser.findAttribute(tagString, "name");
-                if (!name.equals(nameAttr)) {
+                if (!name.equalsIgnoreCase(nameAttr)) {
                     continue;
                 }
             }
             // Parse inner structure via DOM
             ItemCollection itemCol = XMLParser.parseTag(tagString, xmlTag);
-            if (itemCol != null && !itemCol.getAllItems().isEmpty()) {
-                result.add(itemCol);
+            if (itemCol == null) {
+                // create a emtyp dummy ItemCollection
+                itemCol = new ItemCollection();
             }
+            result.add(itemCol);
         }
         return result;
     }
@@ -1408,7 +1410,7 @@ public class WorkflowService implements WorkflowContext {
                     // now add optional attributes if available
                     for (String attrName : attrMap.keySet()) {
                         // we need to skip the 'name' attribute
-                        if (!"name".equals(attrName)) {
+                        if (!"name".equalsIgnoreCase(attrName)) {
                             result.appendItemValue(tagName + "." + attrName, attrMap.get(attrName));
                         }
                     }
