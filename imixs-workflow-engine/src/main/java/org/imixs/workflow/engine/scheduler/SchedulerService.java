@@ -478,7 +478,7 @@ public class SchedulerService {
         ItemCollection configuration = documentService.load(id);
 
         if (configuration == null) {
-            logger.severe("...failed to load scheduler configuration for current timer. Timer will be stopped...");
+            logger.severe("└── ❌ failed to load scheduler configuration for current timer. Timer will be stopped...");
             timer.cancel();
             return;
         }
@@ -489,24 +489,24 @@ public class SchedulerService {
 
             Scheduler scheduler = findSchedulerByName(schedulerClassName);
             if (scheduler != null) {
-                logger.log(Level.INFO, "...run scheduler ''{0}'' scheduler class=''{1}''....",
-                        new Object[] { id, schedulerClassName });
+                logger.log(Level.INFO, "├── 🔃 running scheduler ''{0}'' ⇢ ''{1}''",
+                        new Object[] { schedulerClassName, id });
                 Calendar cal = Calendar.getInstance();
                 configuration.replaceItemValue(Scheduler.ITEM_LOGMESSAGE, "Started: " + cal.getTime());
 
                 configuration = scheduler.run(configuration);
-                logger.log(Level.INFO, "...run scheduler  ''{0}'' finished in: {1} ms",
+                logger.log(Level.INFO, "└── ✅ finished scheduler  ''{0}'' in {1} ms",
                         new Object[] { id, (System.currentTimeMillis()) - lProfiler });
                 cal = Calendar.getInstance();
                 configuration.appendItemValue(Scheduler.ITEM_LOGMESSAGE, "Finished: " + cal.getTime());
                 if (configuration.getItemValueBoolean(Scheduler.ITEM_SCHEDULER_ENABLED) == false) {
-                    logger.log(Level.INFO, "...scheduler ''{0}'' disabled -> timer will be stopped...", id);
+                    logger.log(Level.INFO, "└── ❌ disabled scheduler ''{0}'' ⇢ timer will be stopped...", id);
                     stop(configuration);
                 }
             } else {
                 errorMes = "Scheduler class='" + schedulerClassName + "' not found!";
                 logger.log(Level.WARNING,
-                        "...scheduler ''{0}'' scheduler class=''{1}'' not found, timer will be stopped...",
+                        "└── ❌ scheduler ''{0}'' class=''{1}'' not found, timer will be stopped...",
                         new Object[] { id, schedulerClassName });
                 configuration.setItemValue(Scheduler.ITEM_SCHEDULER_ENABLED, false);
 
@@ -518,15 +518,15 @@ public class SchedulerService {
                 e.printStackTrace();
             }
             errorMes = e.getMessage();
-            logger.log(Level.SEVERE, "Scheduler ''{0}'' failed: {1}", new Object[] { id, errorMes });
-            configuration.appendItemValue(Scheduler.ITEM_LOGMESSAGE, "Error: " + errorMes);
+            logger.log(Level.SEVERE, "└── ❌ scheduler ''{0}'' failed: {1}", new Object[] { id, errorMes });
+            configuration.appendItemValue(Scheduler.ITEM_LOGMESSAGE, "error: " + errorMes);
             configuration = stop(configuration, timer);
 
         } catch (RuntimeException e) {
             // in case of an RuntimeException we did not cancel the Timer service
             e.printStackTrace();
             errorMes = e.getMessage();
-            logger.log(Level.SEVERE, "Scheduler ''{0}'' failed: {1}", new Object[] { id, errorMes });
+            logger.log(Level.SEVERE, "└── ❌ scheduler ''{0}'' failed: {1}", new Object[] { id, errorMes });
             configuration.appendItemValue(Scheduler.ITEM_LOGMESSAGE, "Error: " + errorMes);
             // configuration = stop(configuration, timer);
         } finally {

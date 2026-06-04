@@ -119,7 +119,7 @@ public class WorkflowScheduler implements Scheduler {
 
                 if (iOffsetUnit < 1 || iOffsetUnit > 4) {
                     logger.log(Level.WARNING, "error parsing delay in ActivityEntity {0}.{1} :"
-                            + " unsuported keyActivityDelayUnit={2}",
+                            + " unsupported keyActivityDelayUnit={2}",
                             new Object[] { docActivity.getItemValueInteger("numProcessID"),
                                     docActivity.getItemValueInteger("numActivityID"), sDelayUnit });
                     return false;
@@ -151,101 +151,101 @@ public class WorkflowScheduler implements Scheduler {
             Date dateTimeNow = Calendar.getInstance().getTime();
 
             switch (iCompareType) {
-                // last process -
-                case 1: {
-                    logger.log(Level.FINEST, "......{0}: CompareType = last event", suniqueid);
+            // last process -
+            case 1: {
+                logger.log(Level.FINEST, "......{0}: CompareType = last event", suniqueid);
 
-                    // support deprecated fields $lastProcessingDate and timWorkflowLastAccess
-                    if (!doc.hasItem("$lastEventDate")) {
-                        logger.info("migrating $lasteventdate...");
-                        if (doc.hasItem("$lastProcessingDate")) {
-                            doc.replaceItemValue("$lastEventDate", doc.getItemValue("$lastProcessingDate"));
-                        } else {
-                            doc.replaceItemValue("$lastEventDate", doc.getItemValue("timWorkflowLastAccess"));
-                        }
+                // support deprecated fields $lastProcessingDate and timWorkflowLastAccess
+                if (!doc.hasItem("$lastEventDate")) {
+                    logger.info("migrating $lasteventdate...");
+                    if (doc.hasItem("$lastProcessingDate")) {
+                        doc.replaceItemValue("$lastEventDate", doc.getItemValue("$lastProcessingDate"));
+                    } else {
+                        doc.replaceItemValue("$lastEventDate", doc.getItemValue("timWorkflowLastAccess"));
                     }
-                    dateTimeCompare = doc.getItemValueDate("$lastEventDate");
-                    if (dateTimeCompare == null) {
-                        logger.log(Level.WARNING, "{0}: item ''$lastEventDate'' is missing!", suniqueid);
-                        return false;
-                    }
-
-                    // compute scheduled time
-                    logger.log(Level.FINEST, "......{0}: $lastEventDate={1}",
-                            new Object[] { suniqueid, dateTimeCompare });
-                    dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
-                    if (dateTimeCompare != null)
-                        return dateTimeCompare.before(dateTimeNow);
-                    else
-                        return false;
                 }
-
-                // last modification
-                case 2: {
-                    logger.log(Level.FINEST, "......{0}: CompareType = last modify", suniqueid);
-
-                    dateTimeCompare = doc.getItemValueDate("$modified");
-
-                    logger.log(Level.FINEST, "......{0}: modified={1}", new Object[] { suniqueid, dateTimeCompare });
-
-                    dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
-
-                    if (dateTimeCompare != null)
-                        return dateTimeCompare.before(dateTimeNow);
-                    else
-                        return false;
-                }
-
-                // creation
-                case 3: {
-                    logger.log(Level.FINEST, "......{0}: CompareType = creation", suniqueid);
-
-                    dateTimeCompare = doc.getItemValueDate("$created");
-                    logger.log(Level.FINEST, "......{0}: doc.getCreated() ={1}",
-                            new Object[] { suniqueid, dateTimeCompare });
-
-                    // Nein -> Creation date ist masstab
-                    dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
-
-                    if (dateTimeCompare != null)
-                        return dateTimeCompare.before(dateTimeNow);
-                    else
-                        return false;
-                }
-
-                // field
-                case 4: {
-                    String sNameOfField = docActivity.getItemValueString("keyTimeCompareField");
-                    logger.log(Level.FINEST, "......{0}: CompareType = field: ''{1}''",
-                            new Object[] { suniqueid, sNameOfField });
-
-                    if (!doc.hasItem(sNameOfField)) {
-                        logger.log(Level.FINEST, "......{0}: CompareType ={1} no value found!",
-                                new Object[] { suniqueid, sNameOfField });
-                        return false;
-                    }
-
-                    dateTimeCompare = doc.getItemValueDate(sNameOfField);
-
-                    logger.log(Level.FINEST, "......{0}: {1}={2}",
-                            new Object[] { suniqueid, sNameOfField, dateTimeCompare });
-
-                    dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
-                    if (dateTimeCompare != null) {
-                        logger.log(Level.FINEST, "......{0}: Compare {1} <-> {2}",
-                                new Object[] { suniqueid, dateTimeCompare, dateTimeNow });
-
-                        if (dateTimeCompare.before(dateTimeNow)) {
-                            logger.log(Level.FINEST, "......{0} isInDue!", suniqueid);
-                        }
-                        return dateTimeCompare.before(dateTimeNow);
-                    } else
-                        return false;
-                }
-                default: {
-                    logger.warning("Time Base is not defined, verify model!");
+                dateTimeCompare = doc.getItemValueDate("$lastEventDate");
+                if (dateTimeCompare == null) {
+                    logger.log(Level.WARNING, "{0}: item ''$lastEventDate'' is missing!", suniqueid);
                     return false;
                 }
+
+                // compute scheduled time
+                logger.log(Level.FINEST, "......{0}: $lastEventDate={1}",
+                        new Object[] { suniqueid, dateTimeCompare });
+                dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
+                if (dateTimeCompare != null)
+                    return dateTimeCompare.before(dateTimeNow);
+                else
+                    return false;
+            }
+
+            // last modification
+            case 2: {
+                logger.log(Level.FINEST, "......{0}: CompareType = last modify", suniqueid);
+
+                dateTimeCompare = doc.getItemValueDate("$modified");
+
+                logger.log(Level.FINEST, "......{0}: modified={1}", new Object[] { suniqueid, dateTimeCompare });
+
+                dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
+
+                if (dateTimeCompare != null)
+                    return dateTimeCompare.before(dateTimeNow);
+                else
+                    return false;
+            }
+
+            // creation
+            case 3: {
+                logger.log(Level.FINEST, "......{0}: CompareType = creation", suniqueid);
+
+                dateTimeCompare = doc.getItemValueDate("$created");
+                logger.log(Level.FINEST, "......{0}: doc.getCreated() ={1}",
+                        new Object[] { suniqueid, dateTimeCompare });
+
+                // Nein -> Creation date ist masstab
+                dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
+
+                if (dateTimeCompare != null)
+                    return dateTimeCompare.before(dateTimeNow);
+                else
+                    return false;
+            }
+
+            // field
+            case 4: {
+                String sNameOfField = docActivity.getItemValueString("keyTimeCompareField");
+                logger.log(Level.FINEST, "......{0}: CompareType = field: ''{1}''",
+                        new Object[] { suniqueid, sNameOfField });
+
+                if (!doc.hasItem(sNameOfField)) {
+                    logger.log(Level.FINEST, "......{0}: CompareType ={1} no value found!",
+                            new Object[] { suniqueid, sNameOfField });
+                    return false;
+                }
+
+                dateTimeCompare = doc.getItemValueDate(sNameOfField);
+
+                logger.log(Level.FINEST, "......{0}: {1}={2}",
+                        new Object[] { suniqueid, sNameOfField, dateTimeCompare });
+
+                dateTimeCompare = adjustBaseDate(dateTimeCompare, iOffsetUnit, iOffset);
+                if (dateTimeCompare != null) {
+                    logger.log(Level.FINEST, "......{0}: Compare {1} <-> {2}",
+                            new Object[] { suniqueid, dateTimeCompare, dateTimeNow });
+
+                    if (dateTimeCompare.before(dateTimeNow)) {
+                        logger.log(Level.FINEST, "......{0} isInDue!", suniqueid);
+                    }
+                    return dateTimeCompare.before(dateTimeNow);
+                } else
+                    return false;
+            }
+            default: {
+                logger.warning("Time Base is not defined, verify model!");
+                return false;
+            }
             }
 
         } catch (Exception e) {
@@ -386,8 +386,8 @@ public class WorkflowScheduler implements Scheduler {
             }
         }
 
-        schedulerService.logMessage("================================", configItemCollection, null);
-        schedulerService.logMessage(iProcessWorkItems + " workitems processed in total", configItemCollection, null);
+        schedulerService.logMessage("│   └── " + iProcessWorkItems + " workitems processed in total",
+                configItemCollection, null);
 
         if (unprocessedIDs.size() > 0) {
             schedulerService.logWarning(unprocessedIDs.size() + " workitems could not be processed:",
@@ -449,11 +449,11 @@ public class WorkflowScheduler implements Scheduler {
             if (Pattern.compile(classPattern).matcher(searchTerm).find()) {
                 QuerySelector selector = findSelectorByName(searchTerm);
                 if (selector != null) {
-                    schedulerService.logMessage("......CDI selector = " + searchTerm, configItemCollection, null);
+                    schedulerService.logMessage("│   ├── CDI selector = " + searchTerm, configItemCollection, null);
                     worklist = selector.find(MAX_WORKITEM_COUNT, currentPageIndex);
                 }
             } else {
-                schedulerService.logMessage("......selector = " + searchTerm, configItemCollection, null);
+                schedulerService.logMessage("│   ├── selector = " + searchTerm, configItemCollection, null);
                 worklist = documentService.find(searchTerm, MAX_WORKITEM_COUNT, currentPageIndex);
             }
 
@@ -461,7 +461,7 @@ public class WorkflowScheduler implements Scheduler {
             if (worklist.size() == 0) {
                 break;
             } else {
-                logger.log(Level.FINEST, "......{0} workitems found in total, collect due date...", worklist.size());
+                logger.log(Level.FINEST, "│   ├── {0} workitems found in total, collect due date...", worklist.size());
                 // update collector.....
                 collectWorkitemsInDue(eventEntity, modelVersion, worklist, worklistCollector);
                 if (worklist.size() < MAX_WORKITEM_COUNT) {
