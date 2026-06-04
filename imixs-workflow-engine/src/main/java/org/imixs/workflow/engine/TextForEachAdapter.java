@@ -84,6 +84,7 @@ import jakarta.interceptor.Interceptor;
  *
  */
 @Stateless
+@Deprecated
 public class TextForEachAdapter {
 
     private static final Logger logger = Logger.getLogger(TextForEachAdapter.class.getName());

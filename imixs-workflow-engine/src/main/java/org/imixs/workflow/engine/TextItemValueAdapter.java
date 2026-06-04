@@ -25,10 +25,13 @@ import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jakarta.ejb.Stateless;
-import jakarta.enterprise.event.Observes;
+
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.util.XMLParser;
+import org.imixs.workflow.util.XMLTag;
+
+import jakarta.ejb.Stateless;
+import jakarta.enterprise.event.Observes;
 
 /**
  * The TextItemValueAdapter replaces text fragments with the values of a named
@@ -65,9 +68,6 @@ public class TextItemValueAdapter {
         String text = event.getText();
         ItemCollection documentContext = event.getDocument();
 
-        String sFormat = "";
-        String sSeparator = " ";
-        String sPosition = null;
         if (text == null)
             return;
 
@@ -78,57 +78,48 @@ public class TextItemValueAdapter {
             text = text.replace("</itemValue>", "</itemvalue>");
         }
 
-        List<String> tagList = XMLParser.findTags(text, "itemvalue");
+        // Use parseTagMatches() to get exact tag positions.
+        // This fixes the indexOf() bug where duplicate tag content caused wrong
+        // replacements, and correctly handles CDATA sections in prompt templates.
+        List<XMLTag> tagList = XMLParser.parseTagMatches(text, "itemvalue");
         if (debug) {
             logger.log(Level.FINEST, "......{0} tags found", tagList.size());
         }
-        // test if a <value> tag exists...
-        for (String tag : tagList) {
 
-            // next we check if the start tag contains a 'format' attribute
-            sFormat = XMLParser.findAttribute(tag, "format");
+        // Iterate in reverse order so that replacing by position does not shift
+        // the positions of tags that have not yet been processed.
+        for (int i = tagList.size() - 1; i >= 0; i--) {
+            XMLTag tag = tagList.get(i);
 
-            // next we check if the start tag contains a 'separator' attribute
-            sSeparator = XMLParser.findAttribute(tag, "separator");
+            // Read attributes directly from the XMLTag — no second parse needed
+            String sFormat = tag.getAttribute("format");
+            String sSeparator = tag.getAttribute("separator");
+            String sPosition = tag.getAttribute("position");
 
-            // next we check if the start tag contains a 'position' attribute
-            sPosition = XMLParser.findAttribute(tag, "position");
-
-            // extract locale...
+            // Extract locale
             Locale locale = null;
-            String sLocale = XMLParser.findAttribute(tag, "locale");
+            String sLocale = tag.getAttribute("locale");
             if (sLocale != null && !sLocale.isEmpty()) {
-                // split locale
                 StringTokenizer stLocale = new StringTokenizer(sLocale, "_");
                 if (stLocale.countTokens() == 1) {
-                    // only language variant
                     String sLang = stLocale.nextToken();
-                    String sCount = sLang.toUpperCase();
-                    locale = new Locale(sLang, sCount);
+                    locale = new Locale(sLang, sLang.toUpperCase());
                 } else {
-                    // language and country
                     String sLang = stLocale.nextToken();
                     String sCount = stLocale.nextToken();
                     locale = new Locale(sLang, sCount);
                 }
             }
 
-            // extract Item Value
-            String sItemValue = XMLParser.findTagValue(tag, "itemvalue");
-
-            // format field value
-            List<?> vValue = documentContext.getItemValue(sItemValue);
-
+            // The inner content of the tag is the item name
+            List<?> vValue = documentContext.getItemValue(tag.getContent());
             String sResult = formatItemValues(vValue, sSeparator, sFormat, locale, sPosition);
 
-            // now replace the tag with the result string
-            int iStartPos = text.indexOf(tag);
-            int iEndPos = text.indexOf(tag) + tag.length();
-
-            text = text.substring(0, iStartPos) + sResult + text.substring(iEndPos);
+            // Replace by exact position — safe even when the same content appears twice
+            text = text.substring(0, tag.getStartPos()) + sResult + text.substring(tag.getEndPos());
         }
-        event.setText(text);
 
+        event.setText(text);
     }
 
     /**
@@ -275,7 +266,8 @@ public class TextItemValueAdapter {
                     singleValue = formatter.format(dateValue);
                 } catch (Exception ef) {
                     logger.log(Level.WARNING, "TextItemValueAdapter: Invalid format String ''{0}''", format);
-                    logger.log(Level.WARNING, "TextItemValueAdapter: Can not format value - error: {0}", ef.getMessage());
+                    logger.log(Level.WARNING, "TextItemValueAdapter: Can not format value - error: {0}",
+                            ef.getMessage());
                     return "" + dateValue;
                 }
             } else {
@@ -290,7 +282,7 @@ public class TextItemValueAdapter {
                     double d = Double.parseDouble(o.toString());
                     singleValue = customNumberFormat(format, locale, d);
                 } catch (IllegalArgumentException e) {
-                    logger.log(Level.WARNING, "Format Error ({0}) = {1}", new Object[]{format, e.getMessage()});
+                    logger.log(Level.WARNING, "Format Error ({0}) = {1}", new Object[] { format, e.getMessage() });
                     singleValue = "0";
                 }
 

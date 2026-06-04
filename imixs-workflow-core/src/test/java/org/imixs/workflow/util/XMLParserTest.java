@@ -25,33 +25,33 @@ public class XMLParserTest {
     @Test
     void testSimpleTag() {
         String text = "Hello <itemvalue>customer.name</itemvalue> world";
-        List<XMLParser.TagMatch> matches = XMLParser.parseTagMatches(text, "itemvalue");
+        List<XMLTag> matches = XMLParser.parseTagMatches(text, "itemvalue");
 
         assertEquals(1, matches.size());
-        XMLParser.TagMatch m = matches.get(0);
-        assertEquals("itemvalue", m.tagName);
-        assertEquals("customer.name", m.content);
-        assertEquals("<itemvalue>customer.name</itemvalue>", m.fullMatch);
-        assertEquals(6, m.startPos);
-        assertEquals(42, m.endPos); // 6 + length("<itemvalue>customer.name</itemvalue>") = 6 + 36 = 42
+        XMLTag m = matches.get(0);
+        assertEquals("itemvalue", m.getName());
+        assertEquals("customer.name", m.getContent());
+        assertEquals("<itemvalue>customer.name</itemvalue>", m.getFullMatch());
+        assertEquals(6, m.getStartPos());
+        assertEquals(42, m.getEndPos()); // 6 + length("<itemvalue>customer.name</itemvalue>") = 6 + 36 = 42
     }
 
     @Test
     void testTagWithAttributes() {
         String text = "<itemvalue ref=\"agent.ref.invoice\" format=\"###\">invoice.total</itemvalue>";
-        List<XMLParser.TagMatch> matches = XMLParser.parseTagMatches(text, "itemvalue");
+        List<XMLTag> matches = XMLParser.parseTagMatches(text, "itemvalue");
 
         assertEquals(1, matches.size());
-        XMLParser.TagMatch m = matches.get(0);
+        XMLTag m = matches.get(0);
         assertEquals("agent.ref.invoice", m.getAttribute("ref"));
         assertEquals("###", m.getAttribute("format"));
-        assertEquals("invoice.total", m.content);
+        assertEquals("invoice.total", m.getContent());
     }
 
     @Test
     void testTagWithSingleQuotedAttribute() {
         String text = "<itemvalue ref='agent.ref.invoice'>invoice.total</itemvalue>";
-        List<XMLParser.TagMatch> matches = XMLParser.parseTagMatches(text, "itemvalue");
+        List<XMLTag> matches = XMLParser.parseTagMatches(text, "itemvalue");
 
         assertEquals(1, matches.size());
         assertEquals("agent.ref.invoice", matches.get(0).getAttribute("ref"));
@@ -60,88 +60,88 @@ public class XMLParserTest {
     @Test
     void testMultipleTags() {
         String text = "<itemvalue>first</itemvalue> text <itemvalue>second</itemvalue>";
-        List<XMLParser.TagMatch> matches = XMLParser.parseTagMatches(text, "itemvalue");
+        List<XMLTag> matches = XMLParser.parseTagMatches(text, "itemvalue");
 
         assertEquals(2, matches.size());
-        assertEquals("first", matches.get(0).content);
-        assertEquals("second", matches.get(1).content);
+        assertEquals("first", matches.get(0).getContent());
+        assertEquals("second", matches.get(1).getContent());
     }
 
     @Test
     void testCdataIsSkipped() {
         // The <itemvalue> inside CDATA must NOT be matched
         String text = "<![CDATA[<itemvalue>inside.cdata</itemvalue>]]> <itemvalue>real.value</itemvalue>";
-        List<XMLParser.TagMatch> matches = XMLParser.parseTagMatches(text, "itemvalue");
+        List<XMLTag> matches = XMLParser.parseTagMatches(text, "itemvalue");
 
         assertEquals(1, matches.size());
-        assertEquals("real.value", matches.get(0).content);
+        assertEquals("real.value", matches.get(0).getContent());
     }
 
     @Test
     void testCdataInsideTagContent() {
         // CDATA inside the content of a tag we ARE looking for
         String text = "<for-each-value item=\"parts\"><![CDATA[<itemvalue>part.id</itemvalue>]]></for-each-value>";
-        List<XMLParser.TagMatch> matches = XMLParser.parseTagMatches(text, "for-each-value");
+        List<XMLTag> matches = XMLParser.parseTagMatches(text, "for-each-value");
 
         assertEquals(1, matches.size());
         // The content including CDATA is returned as-is
-        assertTrue(matches.get(0).content.contains("CDATA"));
+        assertTrue(matches.get(0).getContent().contains("CDATA"));
     }
 
     @Test
     void testCommentIsSkipped() {
         String text = "<!-- <itemvalue>ignored</itemvalue> --> <itemvalue>real</itemvalue>";
-        List<XMLParser.TagMatch> matches = XMLParser.parseTagMatches(text, "itemvalue");
+        List<XMLTag> matches = XMLParser.parseTagMatches(text, "itemvalue");
 
         assertEquals(1, matches.size());
-        assertEquals("real", matches.get(0).content);
+        assertEquals("real", matches.get(0).getContent());
     }
 
     @Test
     void testNestedSameTag() {
         // Nested tags with the same name — depth counter must track correctly
         String text = "<outer><outer>inner</outer></outer>";
-        List<XMLParser.TagMatch> matches = XMLParser.parseTagMatches(text, "outer");
+        List<XMLTag> matches = XMLParser.parseTagMatches(text, "outer");
 
         // Outer match should contain the full nested content
         assertEquals(1, matches.size());
-        assertEquals("<outer>inner</outer>", matches.get(0).content);
+        assertEquals("<outer>inner</outer>", matches.get(0).getContent());
     }
 
     @Test
     void testMultilineContent() {
         String text = "<prompt role=\"user\">\n  Please summarize:\n  order.description\n</prompt>";
-        List<XMLParser.TagMatch> matches = XMLParser.parseTagMatches(text, "prompt");
+        List<XMLTag> matches = XMLParser.parseTagMatches(text, "prompt");
 
         assertEquals(1, matches.size());
         assertEquals("user", matches.get(0).getAttribute("role"));
-        assertTrue(matches.get(0).content.contains("Please summarize"));
+        assertTrue(matches.get(0).getContent().contains("Please summarize"));
     }
 
     @Test
     void testPositionsAreCorrect() {
-        // Verify startPos/endPos so adapters can do direct replacement
+        // Verify .getStartPos()/.getEndPos() so adapters can do direct replacement
         // without calling indexOf() (which breaks on duplicate content)
         String text = "AAA<itemvalue>x</itemvalue>BBB<itemvalue>x</itemvalue>CCC";
-        List<XMLParser.TagMatch> matches = XMLParser.parseTagMatches(text, "itemvalue");
+        List<XMLTag> matches = XMLParser.parseTagMatches(text, "itemvalue");
 
         assertEquals(2, matches.size());
 
         // First match starts at position 3 (after "AAA")
-        assertEquals(3, matches.get(0).startPos);
+        assertEquals(3, matches.get(0).getStartPos());
         // First match ends right before "BBB"
-        assertEquals(text.indexOf("BBB"), matches.get(0).endPos);
+        assertEquals(text.indexOf("BBB"), matches.get(0).getEndPos());
 
         // Second match — same content "x" but at a different position
-        assertNotEquals(matches.get(0).startPos, matches.get(1).startPos);
+        assertNotEquals(matches.get(0).getStartPos(), matches.get(1).getStartPos());
 
         // Verify that position-based replacement produces the correct result.
         // text = "AAA<itemvalue>x</itemvalue>BBB<itemvalue>x</itemvalue>CCC"
         // Replacing the first match by position yields:
         // "AAA" + "REPLACED" + "BBB<itemvalue>x</itemvalue>CCC"
-        String replaced = text.substring(0, matches.get(0).startPos)
+        String replaced = text.substring(0, matches.get(0).getStartPos())
                 + "REPLACED"
-                + text.substring(matches.get(0).endPos);
+                + text.substring(matches.get(0).getEndPos());
         assertEquals("AAAREPLACEDBB" + "B<itemvalue>x</itemvalue>CCC", replaced);
     }
 
@@ -149,13 +149,13 @@ public class XMLParserTest {
     void testSelfClosingTagIncludedInFindTags() {
         // findTags() must return self-closing tags for backward compatibility
         String text = "<itemvalue/> <itemvalue>real</itemvalue>";
-        List<XMLParser.TagMatch> matches = XMLParser.parseTagMatches(text, "itemvalue");
+        List<XMLTag> matches = XMLParser.parseTagMatches(text, "itemvalue");
 
         // Both tags are returned: the self-closing one with empty content,
         // and the normal one with its content
         assertEquals(2, matches.size());
-        assertEquals("", matches.get(0).content);
-        assertEquals("real", matches.get(1).content);
+        assertEquals("", matches.get(0).getContent());
+        assertEquals("real", matches.get(1).getContent());
     }
 
     @Test
@@ -170,19 +170,19 @@ public class XMLParserTest {
 
     @Test
     void testEmptyText() {
-        List<XMLParser.TagMatch> matches = XMLParser.parseTagMatches("", "itemvalue");
+        List<XMLTag> matches = XMLParser.parseTagMatches("", "itemvalue");
         assertTrue(matches.isEmpty());
     }
 
     @Test
     void testNullText() {
-        List<XMLParser.TagMatch> matches = XMLParser.parseTagMatches(null, "itemvalue");
+        List<XMLTag> matches = XMLParser.parseTagMatches(null, "itemvalue");
         assertTrue(matches.isEmpty());
     }
 
     @Test
     void testTagNotFound() {
-        List<XMLParser.TagMatch> matches = XMLParser.parseTagMatches("no tags here", "itemvalue");
+        List<XMLTag> matches = XMLParser.parseTagMatches("no tags here", "itemvalue");
         assertTrue(matches.isEmpty());
     }
 
@@ -190,10 +190,10 @@ public class XMLParserTest {
     void testCaseInsensitiveTagName() {
         // Tag names should match case-insensitively
         String text = "<ItemValue>customer.name</ItemValue>";
-        List<XMLParser.TagMatch> matches = XMLParser.parseTagMatches(text, "itemvalue");
+        List<XMLTag> matches = XMLParser.parseTagMatches(text, "itemvalue");
 
         assertEquals(1, matches.size());
-        assertEquals("customer.name", matches.get(0).content);
+        assertEquals("customer.name", matches.get(0).getContent());
     }
 
     // =========================================================================

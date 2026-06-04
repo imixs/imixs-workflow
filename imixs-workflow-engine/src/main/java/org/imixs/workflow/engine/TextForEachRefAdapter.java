@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.util.XMLParser;
+import org.imixs.workflow.util.XMLTag;
 
 import jakarta.annotation.Priority;
 import jakarta.ejb.Stateless;
@@ -80,51 +81,46 @@ public class TextForEachRefAdapter {
      * for-each adapter is triggered before the TextItemValueAdapter
      * 
      */
-    @SuppressWarnings("unchecked")
     public void onEvent(@Observes @Priority(Interceptor.Priority.APPLICATION - 10) TextEvent event) {
 
         String text = event.getText();
-        String textResult = "";
         boolean debug = logger.isLoggable(Level.FINE);
 
-        List<String> tagList = XMLParser.findNoEmptyTags(text, "for-each-ref");
+        List<XMLTag> tagList = XMLParser.parseTagMatches(text, "for-each-ref");
         if (debug) {
             logger.log(Level.FINEST, "......{0} tags found", tagList.size());
         }
-        // test if a <for-each> tag exists...
-        for (String tag : tagList) {
-            // find the item value list...
-            String itemName = XMLParser.findAttribute(tag, "item");
-            String innervalue = XMLParser.findTagValue(tag, "for-each-ref");
 
-            // next we iterate over all item values and test for each value if the value is
-            // a basic value or an embedded ItemCollection.
+        // Iterate in reverse order for safe position-based replacement
+        for (int i = tagList.size() - 1; i >= 0; i--) {
+            XMLTag tag = tagList.get(i);
+            String textResult = "";
+
+            String itemName = tag.getAttribute("item");
+            String innervalue = tag.getContent();
+
+            // Load each referenced workitem by its uniqueid
             List<String> values = event.getDocument().getItemValue(itemName);
             for (String ref : values) {
                 ItemCollection _tempDoc = documentService.load(ref);
-                // test if the value defines an embedded ItemCollection....
                 if (_tempDoc != null) {
-
-                    // now we fire a recursive text event to process the content....
                     TextEvent _event = new TextEvent(new String(innervalue), _tempDoc);
                     if (textEvents != null) {
                         textEvents.fire(_event);
                         textResult = textResult + _event.getText();
                     } else {
                         logger.warning("CDI Support is missing - TextEvent wil not be fired");
-                        // here we apply a workaround for junit tests only....
                         TextItemValueAdapter tiva = new TextItemValueAdapter();
                         tiva.onEvent(_event);
                         textResult = textResult + _event.getText();
                     }
+                } else {
+                    logger.log(Level.WARNING, "for-each-ref: workitem ''{0}'' not found!", ref);
                 }
             }
 
-            // now replace the tag with the result string
-            int iStartPos = text.indexOf(tag);
-            int iEndPos = text.indexOf(tag) + tag.length();
-            // now replace the tag with the result string
-            text = text.substring(0, iStartPos) + textResult + text.substring(iEndPos);
+            // Replace by exact position — safe even with duplicate tag content
+            text = text.substring(0, tag.getStartPos()) + textResult + text.substring(tag.getEndPos());
         }
         event.setText(text);
     }
