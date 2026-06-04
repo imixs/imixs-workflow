@@ -72,84 +72,6 @@ public class XMLParser {
     private static final Logger logger = Logger.getLogger(XMLParser.class.getName());
 
     // =========================================================================
-    // Inner class: TagMatch
-    // =========================================================================
-
-    /**
-     * Immutable result object returned by {@link #parseTagMatches}.
-     *
-     * <p>
-     * Carrying the exact {@code startPos} / {@code endPos} of each match lets
-     * adapter classes replace tag occurrences by position rather than by calling
-     * {@code text.indexOf(fullMatch)}, which produces wrong results when the same
-     * tag content occurs more than once in a text.
-     * </p>
-     *
-     * <p>
-     * Example — given the text:
-     * </p>
-     * 
-     * <pre>
-     *   AAA&lt;itemvalue&gt;x&lt;/itemvalue&gt;BBB&lt;itemvalue&gt;x&lt;/itemvalue&gt;CCC
-     * </pre>
-     * <p>
-     * Both matches have {@code content == "x"} but different {@code startPos}
-     * values, so they can be replaced independently.
-     * </p>
-     */
-    static final class TagMatch {
-
-        /** The complete tag string: open tag + inner content + close tag. */
-        final String fullMatch;
-
-        /** The tag name in lowercase (e.g. {@code "itemvalue"}). */
-        final String tagName;
-
-        /**
-         * All attributes declared in the open tag, keyed by lowercase name. Example:
-         * {@code <itemvalue ref="a.b" format="###">} yields
-         * {@code {ref -> "a.b", format -> "###"}}.
-         */
-        final Map<String, String> attributes;
-
-        /** The raw inner content between the open tag and its matching close tag. */
-        final String content;
-
-        /** Inclusive start position of {@link #fullMatch} in the original text. */
-        final int startPos;
-
-        /** Exclusive end position of {@link #fullMatch} in the original text. */
-        final int endPos;
-
-        TagMatch(String fullMatch, String tagName, Map<String, String> attributes,
-                String content, int startPos, int endPos) {
-            this.fullMatch = fullMatch;
-            this.tagName = tagName;
-            this.attributes = attributes;
-            this.content = content;
-            this.startPos = startPos;
-            this.endPos = endPos;
-        }
-
-        /**
-         * Convenience accessor for a single attribute value.
-         *
-         * @param name attribute name (case-insensitive)
-         * @return the attribute value, or {@code null} if the attribute is absent
-         */
-        String getAttribute(String name) {
-            if (name == null)
-                return null;
-            for (Map.Entry<String, String> entry : attributes.entrySet()) {
-                if (entry.getKey().equalsIgnoreCase(name)) {
-                    return entry.getValue();
-                }
-            }
-            return null;
-        }
-    }
-
-    // =========================================================================
     // Core: state machine tag scanner
     // =========================================================================
 
@@ -223,8 +145,8 @@ public class XMLParser {
      * @param tag  the XML tag name to search for (case-insensitive)
      * @return ordered list of {@link TagMatch} objects; empty if nothing found
      */
-    static List<TagMatch> parseTagMatches(String text, String tag) {
-        List<TagMatch> result = new ArrayList<>();
+    public static List<XMLTag> parseTagMatches(String text, String tag) {
+        List<XMLTag> result = new ArrayList<>();
         if (text == null || text.isEmpty() || tag == null || tag.isEmpty()) {
             return result;
         }
@@ -315,7 +237,7 @@ public class XMLParser {
 
             if (text.charAt(openTagEnd - 1) == '/') {
                 // Self-closing tag — add with empty content and advance past it
-                result.add(new TagMatch(openTag, tagLower, attributes, "", i, openTagEnd + 1));
+                result.add(new XMLTag(openTag, tagLower, attributes, "", i, openTagEnd + 1));
                 i = openTagEnd + 1;
                 continue;
             }
@@ -396,7 +318,7 @@ public class XMLParser {
                             String content = text.substring(openTagEnd + 1, searchPos);
                             String fullMatch = text.substring(i, closeTagEnd + 1);
 
-                            result.add(new TagMatch(
+                            result.add(new XMLTag(
                                     fullMatch, tagLower, attributes,
                                     content, i, closeTagEnd + 1));
 
@@ -591,10 +513,10 @@ public class XMLParser {
      * @return list of full tag strings in order of appearance
      */
     public static List<String> findTags(String content, String tag) {
-        List<TagMatch> matches = parseTagMatches(content, tag);
+        List<XMLTag> matches = parseTagMatches(content, tag);
         List<String> result = new ArrayList<>(matches.size());
-        for (TagMatch m : matches) {
-            result.add(m.fullMatch);
+        for (XMLTag m : matches) {
+            result.add(m.getFullMatch());
         }
         return result;
     }
@@ -626,12 +548,12 @@ public class XMLParser {
      * @return list of full tag strings for tags that have inner content
      */
     public static List<String> findNoEmptyTags(String content, String tag) {
-        List<TagMatch> matches = parseTagMatches(content, tag);
+        List<XMLTag> matches = parseTagMatches(content, tag);
         List<String> result = new ArrayList<>(matches.size());
-        for (TagMatch m : matches) {
+        for (XMLTag m : matches) {
             // Exclude both <tag/> and <tag></tag> — both produce an empty content string
-            if (!m.content.isEmpty()) {
-                result.add(m.fullMatch);
+            if (!m.getContent().isEmpty()) {
+                result.add(m.getFullMatch());
             }
         }
         return result;
@@ -646,12 +568,12 @@ public class XMLParser {
      * @return list of full tag strings whose content is XML
      */
     public static List<String> findNoEmptyXMLTags(String content, String tag) {
-        List<TagMatch> matches = parseTagMatches(content, tag);
+        List<XMLTag> matches = parseTagMatches(content, tag);
         List<String> result = new ArrayList<>();
-        for (TagMatch m : matches) {
-            String trimmed = m.content.trim();
+        for (XMLTag m : matches) {
+            String trimmed = m.getContent().trim();
             if (!trimmed.isEmpty() && isXMLContent(trimmed)) {
-                result.add(m.fullMatch);
+                result.add(m.getFullMatch());
             }
         }
         return result;
@@ -678,10 +600,10 @@ public class XMLParser {
      * @return list of inner content strings in order of appearance
      */
     public static List<String> findTagValues(String content, String tag) {
-        List<TagMatch> matches = parseTagMatches(content, tag);
+        List<XMLTag> matches = parseTagMatches(content, tag);
         List<String> result = new ArrayList<>(matches.size());
-        for (TagMatch m : matches) {
-            result.add(m.content);
+        for (XMLTag m : matches) {
+            result.add(m.getContent());
         }
         return result;
     }
@@ -695,11 +617,11 @@ public class XMLParser {
      * @return inner content of the first matching tag, or {@code ""}
      */
     public static String findTagValue(String content, String tag) {
-        List<TagMatch> matches = parseTagMatches(content, tag);
+        List<XMLTag> matches = parseTagMatches(content, tag);
         if (matches.isEmpty()) {
             return "";
         }
-        return matches.get(0).content;
+        return matches.get(0).getContent();
     }
 
     // =========================================================================

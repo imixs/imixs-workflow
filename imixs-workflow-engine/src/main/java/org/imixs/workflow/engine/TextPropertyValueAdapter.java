@@ -23,12 +23,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.eclipse.microprofile.config.Config;
+import org.imixs.workflow.util.XMLParser;
+import org.imixs.workflow.util.XMLTag;
+
 import jakarta.ejb.Stateless;
 import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
-import org.eclipse.microprofile.config.Config;
-import org.imixs.workflow.engine.plugins.AbstractPlugin;
-import org.imixs.workflow.util.XMLParser;
 
 /**
  * The TextPropertyValueAdapter replaces text fragments with named system
@@ -55,6 +57,7 @@ public class TextPropertyValueAdapter {
     public void onEvent(@Observes TextEvent event) {
         String text = event.getText();
         boolean debug = logger.isLoggable(Level.FINE);
+
         // lower case <propertyValue> into <propertyvalue>
         if (text.contains("<propertyValue") || text.contains("</propertyValue>")) {
             logger.warning("Deprecated <propertyValue> tag should be lowercase <propertyvalue> !");
@@ -62,19 +65,16 @@ public class TextPropertyValueAdapter {
             text = text.replace("</propertyValue>", "</propertyvalue>");
         }
 
-        List<String> tagList = XMLParser.findTags(text, "propertyvalue");
+        List<XMLTag> tagList = XMLParser.parseTagMatches(text, "propertyvalue");
         if (debug) {
             logger.log(Level.FINEST, "......{0} tags found", tagList.size());
         }
-        // test if a <value> tag exists...
-        for (String tag : tagList) {
 
-            // now we have the start and end position of a tag and also the
-            // start and end pos of the value
+        // Iterate in reverse order for safe position-based replacement
+        for (int i = tagList.size() - 1; i >= 0; i--) {
+            XMLTag tag = tagList.get(i);
 
-            // read the property Value
-            String sPropertyKey = XMLParser.findTagValue(tag, "propertyvalue");
-
+            String sPropertyKey = tag.getContent();
             String vValue = "";
             try {
                 vValue = config.getValue(sPropertyKey, String.class);
@@ -83,16 +83,11 @@ public class TextPropertyValueAdapter {
                 vValue = "";
             }
 
-            // now replace the tag with the result string
-            int iStartPos = text.indexOf(tag);
-            int iEndPos = text.indexOf(tag) + tag.length();
-
-            // now replace the tag with the result string
-            text = text.substring(0, iStartPos) + vValue + text.substring(iEndPos);
+            // Replace by exact position — safe even with duplicate tag content
+            text = text.substring(0, tag.getStartPos()) + vValue + text.substring(tag.getEndPos());
         }
 
         event.setText(text);
-
     }
 
     /**
@@ -191,7 +186,8 @@ public class TextPropertyValueAdapter {
                     singleValue = formatter.format(dateValue);
                 } catch (Exception ef) {
                     logger.log(Level.WARNING, "TextPropertyValueAdapter: Invalid format String ''{0}''", format);
-                    logger.log(Level.WARNING, "TextPropertyValueAdapter: Can not format value - error: {0}", ef.getMessage());
+                    logger.log(Level.WARNING, "TextPropertyValueAdapter: Can not format value - error: {0}",
+                            ef.getMessage());
                     return "" + dateValue;
                 }
             } else

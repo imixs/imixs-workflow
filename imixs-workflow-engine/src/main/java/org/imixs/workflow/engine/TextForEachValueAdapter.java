@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.util.XMLParser;
+import org.imixs.workflow.util.XMLTag;
 
 import jakarta.annotation.Priority;
 import jakarta.ejb.Stateless;
@@ -80,50 +81,41 @@ public class TextForEachValueAdapter {
     public void onEvent(@Observes @Priority(Interceptor.Priority.APPLICATION - 10) TextEvent event) {
 
         String text = event.getText();
-        String textResult = "";
         boolean debug = logger.isLoggable(Level.FINE);
 
-        List<String> tagList = XMLParser.findNoEmptyTags(text, "for-each-value");
+        List<XMLTag> tagList = XMLParser.parseTagMatches(text, "for-each-value");
         if (debug) {
             logger.log(Level.FINEST, "......{0} tags found", tagList.size());
         }
-        // test if a <for-each> tag exists...
-        for (String tag : tagList) {
-            // find the item value list...
-            String itemName = XMLParser.findAttribute(tag, "item");
-            String innervalue = XMLParser.findTagValue(tag, "for-each-value");
 
-            // next we iterate over all item values and test for each value if the value is
-            // a basic value or an embedded ItemCollection.
+        // Iterate in reverse order for safe position-based replacement
+        for (int i = tagList.size() - 1; i >= 0; i--) {
+            XMLTag tag = tagList.get(i);
+            String textResult = "";
+
+            String itemName = tag.getAttribute("item");
+            String innervalue = tag.getContent();
+
             List<Object> values = event.getDocument().getItemValue(itemName);
             for (Object _value : values) {
-                ItemCollection _tempDoc = null;
-                // We treat the value as a normal object and delegate the processing by firing
-                // a TextEvent.
-                // Here we need to create a temporary document for processing....
-                _tempDoc = new ItemCollection(event.getDocument());
-                // replace the for-each item value with the current iteration!
+                // Create a temporary document with the current iteration value
+                ItemCollection _tempDoc = new ItemCollection(event.getDocument());
                 _tempDoc.setItemValue(itemName, _value);
 
-                // now we fire a recursive text event to process the content....
                 TextEvent _event = new TextEvent(new String(innervalue), _tempDoc);
                 if (textEvents != null) {
                     textEvents.fire(_event);
                     textResult = textResult + _event.getText();
                 } else {
                     logger.warning("CDI Support is missing - TextEvent wil not be fired");
-                    // here we apply a workaround for junit tests only....
                     TextItemValueAdapter tiva = new TextItemValueAdapter();
                     tiva.onEvent(_event);
                     textResult = textResult + _event.getText();
                 }
             }
 
-            // now replace the tag with the result string
-            int iStartPos = text.indexOf(tag);
-            int iEndPos = text.indexOf(tag) + tag.length();
-            // now replace the tag with the result string
-            text = text.substring(0, iStartPos) + textResult + text.substring(iEndPos);
+            // Replace by exact position — safe even with duplicate tag content
+            text = text.substring(0, tag.getStartPos()) + textResult + text.substring(tag.getEndPos());
         }
         event.setText(text);
     }

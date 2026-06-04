@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.util.XMLParser;
+import org.imixs.workflow.util.XMLTag;
 
 import jakarta.annotation.Priority;
 import jakarta.ejb.Stateless;
@@ -82,58 +83,53 @@ public class TextForEachChildAdapter {
     public void onEvent(@Observes @Priority(Interceptor.Priority.APPLICATION - 10) TextEvent event) {
 
         String text = event.getText();
-        String textResult = "";
         boolean debug = logger.isLoggable(Level.FINE);
 
-        List<String> tagList = XMLParser.findNoEmptyTags(text, "for-each-child");
+        List<XMLTag> tagList = XMLParser.parseTagMatches(text, "for-each-child");
         if (debug) {
             logger.log(Level.FINEST, "......{0} tags found", tagList.size());
         }
-        // test if a <for-each> tag exists...
-        for (String tag : tagList) {
-            // find the item value list...
-            String itemName = XMLParser.findAttribute(tag, "item");
-            String innervalue = XMLParser.findTagValue(tag, "for-each-child");
 
-            // next we iterate over all item values and test for each value if the value is
-            // a basic value or an embedded ItemCollection.
+        // Iterate in reverse order for safe position-based replacement
+        for (int i = tagList.size() - 1; i >= 0; i--) {
+            XMLTag tag = tagList.get(i);
+            String textResult = "";
+
+            String itemName = tag.getAttribute("item");
+            String innervalue = tag.getContent();
+
             List<Object> values = event.getDocument().getItemValue(itemName);
             for (Object _value : values) {
                 ItemCollection _tempDoc = null;
-                // we expect an embedded ItemCollection....
+                // We expect an embedded ItemCollection
                 if (_value instanceof Map<?, ?>) {
                     try {
                         _tempDoc = new ItemCollection((Map<String, List<Object>>) _value);
                     } catch (ClassCastException e) {
-                        // embedded value can not be processed
                         logger.warning("unable to cast embedded map to ItemCollection!");
                         continue;
                     }
                 } else {
-                    // not supported!
+                    // Simple value lists are not supported for for-each-child
                     logger.warning(
-                            "for-each-child is not supported for simple value lists! Use instead: for-each-value ");
+                            "for-each-child is not supported for simple value lists! Use instead: for-each-value");
+                    continue;
                 }
 
-                // now we fire a recursive text event to process the content....
                 TextEvent _event = new TextEvent(new String(innervalue), _tempDoc);
                 if (textEvents != null) {
                     textEvents.fire(_event);
                     textResult = textResult + _event.getText();
                 } else {
                     logger.warning("CDI Support is missing - TextEvent wil not be fired");
-                    // here we apply a workaround for junit tests only....
                     TextItemValueAdapter tiva = new TextItemValueAdapter();
                     tiva.onEvent(_event);
                     textResult = textResult + _event.getText();
                 }
             }
 
-            // now replace the tag with the result string
-            int iStartPos = text.indexOf(tag);
-            int iEndPos = text.indexOf(tag) + tag.length();
-            // now replace the tag with the result string
-            text = text.substring(0, iStartPos) + textResult + text.substring(iEndPos);
+            // Replace by exact position — safe even with duplicate tag content
+            text = text.substring(0, tag.getStartPos()) + textResult + text.substring(tag.getEndPos());
         }
         event.setText(text);
     }
