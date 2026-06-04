@@ -903,6 +903,134 @@ public class TestItemCollection {
     }
 
     /**
+     * Test the insert method - inserts a value at the beginning of the list
+     */
+    @SuppressWarnings("rawtypes")
+    @Test
+    public void testItemCollectionInsert() {
+        ItemCollection itemCollection = new ItemCollection();
+        itemCollection.replaceItemValue("txtTitel", "Hello");
+        assertEquals(itemCollection.getItemValueString("txttitel"), "Hello");
+
+        // Insert "World" at the beginning - result should be ["World", "Hello"]
+        itemCollection.insertItemValue("txttitel", "World");
+        assertEquals("World", itemCollection.getItemValueString("txttitel"));
+        List values = itemCollection.getItemValue("txtTitel");
+        assertEquals(2, values.size());
+        assertEquals("World", values.get(0));
+        assertEquals("Hello", values.get(1));
+
+        // Insert another value at the beginning - result should be ["Start", "World",
+        // "Hello"]
+        itemCollection.insertItemValue("txttitel", "Start");
+        values = itemCollection.getItemValue("txtTitel");
+        assertEquals(3, values.size());
+        assertEquals("Start", values.get(0));
+        assertEquals("World", values.get(1));
+        assertEquals("Hello", values.get(2));
+    }
+
+    /**
+     * Test insert on a non-existing item - should behave like setItemValue
+     */
+    @Test
+    public void testItemCollectionInsertOnEmptyItem() {
+        ItemCollection itemCollection = new ItemCollection();
+
+        itemCollection.insertItemValue("newItem", "First");
+        assertTrue(itemCollection.hasItem("newItem"));
+        assertEquals("First", itemCollection.getItemValueString("newItem"));
+        assertEquals(1, itemCollection.getItemValue("newItem").size());
+    }
+
+    /**
+     * Test insert with a list of values - the list should be inserted as a block at
+     * the beginning
+     */
+    @SuppressWarnings("rawtypes")
+    @Test
+    public void testItemCollectionInsertList() {
+        ItemCollection itemCollection = new ItemCollection();
+        itemCollection.replaceItemValue("team", "Anna");
+
+        // Insert a list ["Mark", "Jo"] at the beginning
+        List<String> newValues = new ArrayList<>(Arrays.asList("Mark", "Jo"));
+        itemCollection.insertItemValue("team", newValues);
+
+        List values = itemCollection.getItemValue("team");
+        assertEquals(3, values.size());
+        assertEquals("Mark", values.get(0));
+        assertEquals("Jo", values.get(1));
+        assertEquals("Anna", values.get(2));
+    }
+
+    /**
+     * Test the insertItemValueUnique method - duplicates and empty values should be
+     * removed
+     */
+    @SuppressWarnings("rawtypes")
+    @Test
+    public void testItemCollectionInsertUnique() {
+        ItemCollection itemCollection = new ItemCollection();
+        itemCollection.replaceItemValue("team", "Anna");
+        itemCollection.appendItemValue("team", "Mark");
+
+        // Insert "Anna" again - duplicate should be ignored
+        itemCollection.insertItemValueUnique("team", "Anna");
+        List values = itemCollection.getItemValue("team");
+        assertEquals(2, values.size());
+        assertEquals("Anna", values.get(0)); // "Anna" stays first
+        assertEquals("Mark", values.get(1));
+
+        // Insert a new unique value "Jo" at the beginning
+        itemCollection.insertItemValueUnique("team", "Jo");
+        values = itemCollection.getItemValue("team");
+        assertEquals(3, values.size());
+        assertEquals("Jo", values.get(0));
+        assertEquals("Anna", values.get(1));
+        assertEquals("Mark", values.get(2));
+
+        // Insert empty string - should be ignored
+        itemCollection.insertItemValueUnique("team", "");
+        values = itemCollection.getItemValue("team");
+        assertEquals(3, values.size());
+    }
+
+    /**
+     * Test insert with fluent interface
+     */
+    @Test
+    public void testItemCollectionInsertFluent() {
+        ItemCollection itemCollection = new ItemCollection();
+        itemCollection
+                .setItemValue("team", "Anna")
+                .insertItemValue("team", "Jo")
+                .insertItemValue("team", "Mark");
+
+        @SuppressWarnings("unchecked")
+        List<String> values = itemCollection.getItemValue("team");
+        assertEquals(3, values.size());
+        assertEquals("Mark", values.get(0)); // last inserted is at the front
+        assertEquals("Jo", values.get(1));
+        assertEquals("Anna", values.get(2));
+    }
+
+    /**
+     * Test insert with null value - null should be ignored
+     */
+    @Test
+    public void testItemCollectionInsertNull() {
+        ItemCollection itemCollection = new ItemCollection();
+        itemCollection.replaceItemValue("txtTitel", "Hello");
+
+        // Insert null should not change the list
+        itemCollection.insertItemValue("txtTitel", null);
+        List<?> values = itemCollection.getItemValue("txtTitel");
+        assertEquals(1, values.size());
+        assertEquals("Hello", values.get(0));
+    }
+
+    /**
      * Test no basic type
      */
     @Test
