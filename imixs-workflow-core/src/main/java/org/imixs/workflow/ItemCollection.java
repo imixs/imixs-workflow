@@ -357,6 +357,109 @@ public class ItemCollection implements Cloneable {
     }
 
     /**
+     * Inserts a value at the beginning of an existing item list. If the
+     * ItemCollection does not contain an item with the specified name, the method
+     * creates a new item and adds it to the ItemCollection. The ItemName is not
+     * case sensitive. Use hasItem to verify the existence of an item. All item
+     * names will be lower cased.
+     * <p>
+     * If a value list is provided the method inserts each single value at the
+     * beginning, preserving the order of the provided list.
+     * <p>
+     * If the value is null the method will be ignored.
+     * <p>
+     * If the ItemValue is not serializable the item will be removed.
+     *
+     * @param itemName  The name of the item where the value should be inserted.
+     * @param itemValue The value to insert at the beginning of the item list.
+     * @return current instance
+     */
+    public ItemCollection insertItemValue(String itemName, Object itemValue) {
+        insertItemValue(itemName, itemValue, false);
+        return this;
+    }
+
+    /**
+     * Inserts a value at the beginning of an existing item list. If the
+     * ItemCollection does not contain an item with the specified name, the method
+     * creates a new item and adds it to the ItemCollection. The ItemName is not
+     * case sensitive. Use hasItem to verify the existence of an item. All item
+     * names will be lower cased.
+     * <p>
+     * This method ensures that all values are unique and null or empty values will
+     * be removed.
+     *
+     * @param itemName  The name of the item where the value should be inserted.
+     * @param itemValue The value to insert at the beginning of the item list.
+     * @return current instance
+     */
+    public ItemCollection insertItemValueUnique(String itemName, Object itemValue) {
+        insertItemValue(itemName, itemValue, true);
+        return this;
+    }
+
+    /**
+     * Internal helper method to insert a value at the beginning of an item list.
+     *
+     * @param itemName  - name of the item
+     * @param itemValue - value to insert
+     * @param unique    - if true, duplicates and empty values are removed
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private void insertItemValue(String itemName, Object itemValue, boolean unique) {
+        if (itemName == null || itemValue == null) {
+            return;
+        }
+
+        // Normalize item name
+        itemName = itemName.toLowerCase().trim();
+
+        // Convert Set to List
+        if (itemValue instanceof Set) {
+            itemValue = new ArrayList<>((Set) itemValue);
+        }
+
+        // Build the list of new values to insert
+        List<Object> newValues = new ArrayList<>();
+        if (itemValue instanceof List) {
+            newValues.addAll((List<Object>) itemValue);
+            newValues.removeAll(Collections.singleton(null));
+        } else {
+            newValues.add(itemValue);
+        }
+
+        // Convert special types (Calendar, LocalDateTime, LocalDate)
+        convertItemValue(newValues);
+
+        // Validate the new values
+        if (!validateItemValue(newValues)) {
+            String message = new StringBuilder("insertItemValue failed for item '").append(itemName)
+                    .append("', the value is a non supported object type: ").append(itemValue.getClass().getName())
+                    .append(" value=").append(newValues).toString();
+            logger.warning(message);
+            throw new InvalidAccessException(message);
+        }
+
+        // Prepend new values to the existing list
+        List<Object> existingValues = new ArrayList<>(getItemValue(itemName));
+        newValues.addAll(existingValues);
+
+        if (unique) {
+            List<Object> uniqueList = new ArrayList<>();
+            for (Object entry : newValues) {
+                if (entry == null || ((entry instanceof String) && ((String) entry).isEmpty())
+                        || uniqueList.contains(entry)) {
+                    continue;
+                }
+                uniqueList.add(entry);
+            }
+            hash.put(itemName, uniqueList);
+        } else {
+            hash.put(itemName, newValues);
+        }
+    }
+
+    /**
      * Returns the value list for the specified Item. The returned list is untyped
      * and the values contained in the list are not converted to a specific type.
      * The values have the same object type as set by calling the method
@@ -889,11 +992,9 @@ public class ItemCollection implements Cloneable {
     }
 
     /**
-     * Robust string to double parser that handles:
-     * - German format: "9,6", "9.000,60"
-     * - US format: "9.6", "9,000.60"
-     * - Simple formats: "9.6", "9,6"
-     * - Edge cases: leading/trailing spaces, empty strings
+     * Robust string to double parser that handles: - German format: "9,6",
+     * "9.000,60" - US format: "9.6", "9,000.60" - Simple formats: "9.6", "9,6" -
+     * Edge cases: leading/trailing spaces, empty strings
      */
     public static double parseStringToDouble(String input) {
         if (input == null || input.trim().isEmpty()) {
@@ -951,8 +1052,8 @@ public class ItemCollection implements Cloneable {
     }
 
     /**
-     * Check if the pattern looks like thousand separators
-     * e.g. "1.000.000" or "1,234,567"
+     * Check if the pattern looks like thousand separators e.g. "1.000.000" or
+     * "1,234,567"
      */
     private static boolean isThousandSeparatorPattern(String input, int lastSeparator) {
         // If there's only one separator, it's likely decimal
