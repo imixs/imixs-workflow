@@ -18,6 +18,7 @@ package org.imixs.workflow.engine;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.engine.handler.TextItemValueAdapter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

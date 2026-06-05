@@ -13,7 +13,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0-or-later
  ****************************************************************************/
 
-package org.imixs.workflow.engine;
+package org.imixs.workflow.engine.handler;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -25,6 +25,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.microprofile.config.Config;
+import org.imixs.workflow.engine.TextEvent;
 import org.imixs.workflow.util.XMLParser;
 import org.imixs.workflow.util.XMLTag;
 

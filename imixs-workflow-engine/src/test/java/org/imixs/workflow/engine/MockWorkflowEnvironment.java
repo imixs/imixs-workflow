@@ -32,6 +32,8 @@ import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.bpmn.BPMNUtil;
+import org.imixs.workflow.engine.handler.TextForEachAdapter;
+import org.imixs.workflow.engine.handler.TextItemValueAdapter;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.mockito.InjectMocks;
@@ -56,13 +58,12 @@ import jakarta.enterprise.event.Event;
 import jakarta.enterprise.inject.Instance;
 
 /**
- * The {@code MockWorkflowEnvironment} is used as a base class for junit
- * tests to mock the Imixs WorkflowService, WorkflowContextService and
- * ModelService.
+ * The {@code MockWorkflowEnvironment} is used as a base class for junit tests
+ * to mock the Imixs WorkflowService, WorkflowContextService and ModelService.
  * <p>
- * Junit tests can instantiate this class to verify specific
- * method implementations of the workflowService, Plugin classes or Adapters in
- * a easy way.
+ * Junit tests can instantiate this class to verify specific method
+ * implementations of the workflowService, Plugin classes or Adapters in a easy
+ * way.
  * <p>
  * External projects should use the imixs-mock library instead
  * (https://github.com/imixs/imixs-mock)

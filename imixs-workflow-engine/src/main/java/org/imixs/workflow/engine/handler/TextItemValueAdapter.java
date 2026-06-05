@@ -13,25 +13,30 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0-or-later
  ****************************************************************************/
 
-package org.imixs.workflow.engine;
+package org.imixs.workflow.engine.handler;
 
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.engine.DocumentService;
+import org.imixs.workflow.engine.TextEvent;
 import org.imixs.workflow.util.XMLParser;
 import org.imixs.workflow.util.XMLTag;
 
 import jakarta.ejb.Stateless;
 import jakarta.enterprise.event.Observes;
+import jakarta.inject.Inject;
 
 /**
  * The TextItemValueAdapter replaces text fragments with the values of a named
@@ -44,6 +49,9 @@ import jakarta.enterprise.event.Observes;
 public class TextItemValueAdapter {
 
     private static final Logger logger = Logger.getLogger(TextItemValueAdapter.class.getName());
+
+    @Inject
+    DocumentService documentService;
 
     /**
      * This method reacts on CDI events of the type TextEvent and parses a string
@@ -65,8 +73,13 @@ public class TextItemValueAdapter {
      */
     public void onEvent(@Observes TextEvent event) {
         boolean debug = logger.isLoggable(Level.FINE);
+
+        // Cache for referenced workitems — avoids repeated DocumentService lookups
+        // within one adaptText() call that may contain multiple <itemvalue ref="...">
+        // tags
+        Map<String, ItemCollection> refCache = new HashMap<>();
+
         String text = event.getText();
-        ItemCollection documentContext = event.getDocument();
 
         if (text == null)
             return;
@@ -88,10 +101,10 @@ public class TextItemValueAdapter {
 
         // Iterate in reverse order so that replacing by position does not shift
         // the positions of tags that have not yet been processed.
+        // Cache for referenced workitems — avoids repeated DocumentService lookups
         for (int i = tagList.size() - 1; i >= 0; i--) {
             XMLTag tag = tagList.get(i);
 
-            // Read attributes directly from the XMLTag — no second parse needed
             String sFormat = tag.getAttribute("format");
             String sSeparator = tag.getAttribute("separator");
             String sPosition = tag.getAttribute("position");
@@ -111,11 +124,23 @@ public class TextItemValueAdapter {
                 }
             }
 
-            // The inner content of the tag is the item name
+            // Resolve the document context — either the current workitem or a
+            // referenced workitem loaded via the ref= attribute.
+            // References are cached to avoid repeated DocumentService lookups.
+            ItemCollection documentContext = resolveRef(tag.getAttribute("ref"),
+                    event.getDocument(), refCache);
+
+            if (documentContext == null) {
+                // Referenced workitem not found — skip this tag
+                logger.log(Level.WARNING,
+                        "TextItemValueAdapter: ref ''{0}'' could not be resolved — tag skipped",
+                        tag.getAttribute("ref"));
+                continue;
+            }
+
             List<?> vValue = documentContext.getItemValue(tag.getContent());
             String sResult = formatItemValues(vValue, sSeparator, sFormat, locale, sPosition);
 
-            // Replace by exact position — safe even when the same content appears twice
             text = text.substring(0, tag.getStartPos()) + sResult + text.substring(tag.getEndPos());
         }
 
@@ -296,4 +321,50 @@ public class TextItemValueAdapter {
 
     }
 
+    /**
+     * Resolves the document context for a given ref attribute value.
+     *
+     * If ref is null or empty, the current workitem is returned directly. Otherwise
+     * the ref is treated as an item name in the current workitem whose value holds
+     * the uniqueId of the referenced workitem. Loaded workitems are cached in
+     * refCache to avoid repeated DB lookups within one adaptText() call.
+     *
+     * @param ref             the ref attribute value, may be null
+     * @param currentWorkitem the current workitem from the TextEvent
+     * @param refCache        cache map for already loaded referenced workitems
+     * @return the resolved ItemCollection, or null if the ref could not be resolved
+     */
+    private ItemCollection resolveRef(String ref, ItemCollection currentWorkitem,
+            Map<String, ItemCollection> refCache) {
+        // No ref attribute — use the current workitem directly
+        if (ref == null || ref.isEmpty()) {
+            return currentWorkitem;
+        }
+
+        // Return from cache if already loaded
+        if (refCache.containsKey(ref)) {
+            return refCache.get(ref);
+        }
+
+        // The ref attribute value is the name of an item in the current workitem
+        // that holds the uniqueId of the referenced workitem.
+        if (documentService == null) {
+            // No CDI context available (e.g. unit tests) — ref cannot be resolved
+            logger.warning("TextItemValueAdapter: documentService not available — ref attribute ignored");
+            return currentWorkitem;
+        }
+        String uniqueId = currentWorkitem.getItemValueString(ref);
+        if (uniqueId == null || uniqueId.isEmpty()) {
+            logger.log(Level.WARNING,
+                    "TextItemValueAdapter: ref item ''{0}'' is empty or not found in current workitem", ref);
+            return null;
+        }
+
+        // Load the referenced workitem and cache it
+        ItemCollection referencedWorkitem = documentService.load(uniqueId);
+        if (referencedWorkitem != null) {
+            refCache.put(ref, referencedWorkitem);
+        }
+        return referencedWorkitem;
+    }
 }

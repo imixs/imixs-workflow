@@ -13,13 +13,15 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0-or-later
  ****************************************************************************/
 
-package org.imixs.workflow.engine;
+package org.imixs.workflow.engine.handler;
 
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
+import org.imixs.workflow.engine.DocumentService;
+import org.imixs.workflow.engine.TextEvent;
 import org.imixs.workflow.util.XMLParser;
 import org.imixs.workflow.util.XMLTag;
 
@@ -31,59 +33,62 @@ import jakarta.inject.Inject;
 import jakarta.interceptor.Interceptor;
 
 /**
- * The TextForEachValueAdapter can be used to format text fragments with the
- * 'for-each' tag. The adapter will iterate over the value list of a specified
- * item.
+ * The TextForEachRefAdapter can be used to format text fragments with the
+ * 'for-each-ref' tag. The adapter will iterate over all workitems referenced in
+ * the specified item.
+ * <p>
+ * The content of the for-each block will be processed in the context for each
+ * referred ItemCollection:
  * 
  * <pre>
  * {@code
- <for-each item="_partid">
-  Order-No: <itemvalue>_orderid</itemvalue> - Part ID: <itemvalue>_partid</itemvalue><br />
- </for-each>  
+  <for-each item="_orderitems">
+    <itemvalue>_orderid</itemvalue>: <itemvalue>_price</itemvalue>
+  </for-each>  
  * }
  * </pre>
- * 
- * In this example, the for-each block will be executed for each single value of
- * the item '_partid'. Within the for-each block it is possible to access the
- * current value of the iteration as also any other values of the current
- * document. The result may look like in the following example:
+ * <p>
+ * The result may look like in the following example:
  * <p>
  * 
  * <pre>
  * {@code 
- * Order-No: 111222 - Part ID: A123
- * Order-No: 111222 - Part ID: B456
+ * Order ID: A123: 50.55
+ * Order ID: B456: 150.10
  * }
  * </pre>
+ * 
  * 
  * 
  * @author rsoika
  *
  */
 @Stateless
-public class TextForEachValueAdapter {
+public class TextForEachRefAdapter {
 
-    private static final Logger logger = Logger.getLogger(TextForEachValueAdapter.class.getName());
+    private static final Logger logger = Logger.getLogger(TextForEachAdapter.class.getName());
 
     @Inject
     protected Event<TextEvent> textEvents;
 
+    @Inject
+    DocumentService documentService;
+
     /**
      * This method reacts on CDI events of the type TextEvent and parses a string
-     * for xml tag <for-each-value>. Those tags will be replaced with the
-     * corresponding system property value.
+     * for xml tag <for-each>. Those tags will be replaced with the corresponding
+     * system property value.
      * <p>
      * The priority of the CDI event is set to (APPLICATION-10) to ensure that the
      * for-each adapter is triggered before the TextItemValueAdapter
      * 
      */
-    @SuppressWarnings("unchecked")
     public void onEvent(@Observes @Priority(Interceptor.Priority.APPLICATION - 10) TextEvent event) {
 
         String text = event.getText();
         boolean debug = logger.isLoggable(Level.FINE);
 
-        List<XMLTag> tagList = XMLParser.parseTagMatches(text, "for-each-value");
+        List<XMLTag> tagList = XMLParser.parseTagMatches(text, "for-each-ref");
         if (debug) {
             logger.log(Level.FINEST, "......{0} tags found", tagList.size());
         }
@@ -96,21 +101,23 @@ public class TextForEachValueAdapter {
             String itemName = tag.getAttribute("item");
             String innervalue = tag.getContent();
 
-            List<Object> values = event.getDocument().getItemValue(itemName);
-            for (Object _value : values) {
-                // Create a temporary document with the current iteration value
-                ItemCollection _tempDoc = new ItemCollection(event.getDocument());
-                _tempDoc.setItemValue(itemName, _value);
-
-                TextEvent _event = new TextEvent(new String(innervalue), _tempDoc);
-                if (textEvents != null) {
-                    textEvents.fire(_event);
-                    textResult = textResult + _event.getText();
+            // Load each referenced workitem by its uniqueid
+            List<String> values = event.getDocument().getItemValue(itemName);
+            for (String ref : values) {
+                ItemCollection _tempDoc = documentService.load(ref);
+                if (_tempDoc != null) {
+                    TextEvent _event = new TextEvent(new String(innervalue), _tempDoc);
+                    if (textEvents != null) {
+                        textEvents.fire(_event);
+                        textResult = textResult + _event.getText();
+                    } else {
+                        logger.warning("CDI Support is missing - TextEvent wil not be fired");
+                        TextItemValueAdapter tiva = new TextItemValueAdapter();
+                        tiva.onEvent(_event);
+                        textResult = textResult + _event.getText();
+                    }
                 } else {
-                    logger.warning("CDI Support is missing - TextEvent wil not be fired");
-                    TextItemValueAdapter tiva = new TextItemValueAdapter();
-                    tiva.onEvent(_event);
-                    textResult = textResult + _event.getText();
+                    logger.log(Level.WARNING, "for-each-ref: workitem ''{0}'' not found!", ref);
                 }
             }
 
