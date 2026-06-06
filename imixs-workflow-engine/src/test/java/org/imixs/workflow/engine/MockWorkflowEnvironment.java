@@ -32,7 +32,8 @@ import org.imixs.workflow.ModelManager;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.bpmn.BPMNUtil;
-import org.imixs.workflow.engine.handler.TextForEachAdapter;
+import org.imixs.workflow.engine.handler.TextForEachChildAdapter;
+import org.imixs.workflow.engine.handler.TextForEachValueAdapter;
 import org.imixs.workflow.engine.handler.TextItemValueAdapter;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
@@ -152,12 +153,16 @@ public class MockWorkflowEnvironment {
 			TextEvent event = invocation.getArgument(0);
 
 			// Create and use the adapters
-			TextItemValueAdapter tiva = new TextItemValueAdapter();
-			TextForEachAdapter tfea = new TextForEachAdapter();
+			TextItemValueAdapter valueAdapters = new TextItemValueAdapter();
+			// TextForEachAdapter tfea = new TextForEachAdapter();
+			TextForEachValueAdapter forEachAdapters = new TextForEachValueAdapter();
+			TextForEachChildAdapter childAdapters = new TextForEachChildAdapter();
 
 			// Invoke adapters
-			tfea.onEvent(event);
-			tiva.onEvent(event);
+
+			forEachAdapters.onEvent(event);
+			childAdapters.onEvent(event);
+			valueAdapters.onEvent(event);
 
 			return null;
 		}).when(mockTextEvents).fire(Mockito.any(TextEvent.class));

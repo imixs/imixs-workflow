@@ -16,7 +16,7 @@
 package org.imixs.workflow.engine;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Calendar;
@@ -95,24 +95,18 @@ public class TestAdaptText {
 	@SuppressWarnings("unused")
 	@Test
 	public void testReplaceDynamicValuesFormatError() {
-
 		String testString = "Hello <itemvalue>txtname!";
-		String expectedString = "Hello Anna!";
 
 		// prepare data
 		logger.info("[TestAdaptText] setup test data...");
 		ItemCollection documentContext = new ItemCollection();
 		documentContext.replaceItemValue("txtName", "Anna");
 
-		String resultString = null;
-		try {
-			resultString = this.workflowEngine.workflowService.adaptText(testString, documentContext);
-			assertNotNull(resultString);
-			assertEquals(testString, resultString);
-		} catch (PluginException e) {
-			fail();
-		}
-
+		// An unclosed <itemvalue> tag must throw an IllegalArgumentException —
+		// the old behaviour of silently returning the original text was incorrect.
+		assertThrows(IllegalArgumentException.class, () -> {
+			this.workflowEngine.workflowService.adaptText(testString, documentContext);
+		});
 	}
 
 	/**
@@ -337,7 +331,7 @@ public class TestAdaptText {
 	@Test
 	public void testForEachSimpleValueList() throws PluginException {
 
-		String testString = "<for-each item=\"_partid\">Order-No: <itemvalue>_orderid</itemvalue> - Part ID: <itemvalue>_partid</itemvalue><br /></for-each>";
+		String testString = "<for-each-value item=\"_partid\">Order-No: <itemvalue>_orderid</itemvalue> - Part ID: <itemvalue>_partid</itemvalue><br /></for-each-value>";
 		String expectedStringLast = "Order-No: 111222 - Part ID: A123<br />Order-No: 111222 - Part ID: B456<br />";
 
 		// prepare data
@@ -369,7 +363,7 @@ public class TestAdaptText {
 	@Test
 	public void testForEachEmbeddedChildItemValue() throws PluginException {
 
-		String testString = "<for-each item=\"_childs\">Order ID: <itemvalue>_orderid</itemvalue>: <itemvalue>_amount</itemvalue><br /></for-each>";
+		String testString = "<for-each-child item=\"_childs\">Order ID: <itemvalue>_orderid</itemvalue>: <itemvalue>_amount</itemvalue><br /></for-each-child>";
 		String expectedStringLast = "Order ID: A123: 50.55<br />Order ID: B456: 1500000.0<br />";
 
 		// prepare data

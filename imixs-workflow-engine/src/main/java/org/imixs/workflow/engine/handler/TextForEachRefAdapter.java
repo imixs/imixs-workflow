@@ -66,7 +66,7 @@ import jakarta.interceptor.Interceptor;
 @Stateless
 public class TextForEachRefAdapter {
 
-    private static final Logger logger = Logger.getLogger(TextForEachAdapter.class.getName());
+    private static final Logger logger = Logger.getLogger(TextForEachRefAdapter.class.getName());
 
     @Inject
     protected Event<TextEvent> textEvents;
