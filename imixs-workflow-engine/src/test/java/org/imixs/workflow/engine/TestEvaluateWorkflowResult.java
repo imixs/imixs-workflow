@@ -538,6 +538,35 @@ public class TestEvaluateWorkflowResult {
 
     }
 
+    @Test
+    public void testEvaluateWorkflowResultXMLWithoutNameAttribute() {
+        ItemCollection activityEntity = new ItemCollection();
+
+        try {
+            activityEntity.replaceItemValue(BPMNUtil.EVENT_ITEM_WORKFLOW_RESULT,
+                    "  <imixs-config>\n"
+                            + "            <items>abc</items>\n"
+                            + "            <mode>123</mode>\n"
+                            + "        </imixs-config>");
+            List<ItemCollection> result = workflowEngine.workflowService.evalWorkflowResultXML(
+                    activityEntity,
+                    "imixs-config", "", new ItemCollection(), false);
+            assertNotNull(result);
+
+            assertEquals(1, result.size());
+
+            ItemCollection config = result.get(0);
+            assertNotNull(config);
+            assertEquals("abc", config.getItemValueString("items"));
+            assertEquals("123", config.getItemValueString("mode"));
+
+        } catch (PluginException e) {
+            e.printStackTrace();
+            fail();
+        }
+
+    }
+
     /**
      * This test evaluates a event result with no XML text by calling the method
      * evalWorkflowResultXMLTag. We expect an empty List of ItemCollections
