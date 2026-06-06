@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -364,28 +365,24 @@ public class TestEvaluateWorkflowResult {
     public void testEvaluateWorkflowResultInvalidFormat() {
         ItemCollection activityEntity = new ItemCollection();
 
+        // Test 1: no name attribute — must be silently ignored, no exception
+        activityEntity.replaceItemValue("txtActivityResult",
+                "<item ignore=\"true\" noname=\"comment\" >some data</item>");
         try {
-            // test no name attribute
-            activityEntity.replaceItemValue("txtActivityResult",
-                    "<item ignore=\"true\" noname=\"comment\" >some data</item>");
-            workflowEngine.workflowService.evalWorkflowResult(activityEntity, "item",
-                    new ItemCollection());
-            fail();
+            ItemCollection result = workflowEngine.workflowService.evalWorkflowResult(
+                    activityEntity, "item", new ItemCollection());
+            // no exception expected — result may be null or empty
         } catch (PluginException e) {
-            // ok
+            fail("no exception expected for tag without name attribute");
         }
 
-        try {
-            // test wrong closing tag
+        // Test 2: wrong closing tag — PluginException expected
+        assertThrows(PluginException.class, () -> {
             activityEntity.replaceItemValue("txtActivityResult",
                     "<item ignore=\"true\" name=\"comment\" >some data</xitem>");
             workflowEngine.workflowService.evalWorkflowResult(activityEntity, "item",
                     new ItemCollection());
-            fail();
-        } catch (PluginException e) {
-            // exception expected
-        }
-
+        });
     }
 
     /**

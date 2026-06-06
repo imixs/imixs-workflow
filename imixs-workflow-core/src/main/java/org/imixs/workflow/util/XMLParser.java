@@ -144,6 +144,7 @@ public class XMLParser {
      * @param text the input text to scan; may be {@code null} or empty
      * @param tag  the XML tag name to search for (case-insensitive)
      * @return ordered list of {@link TagMatch} objects; empty if nothing found
+     * @throws PluginException
      */
     public static List<XMLTag> parseTagMatches(String text, String tag) {
         List<XMLTag> result = new ArrayList<>();
@@ -153,6 +154,7 @@ public class XMLParser {
 
         final String tagLower = tag.toLowerCase();
         final int len = text.length();
+        int openTagCount = 0; // counts every opening tag found
         int i = 0; // current position in the outer scan loop
 
         while (i < len) {
@@ -241,6 +243,9 @@ public class XMLParser {
                 i = openTagEnd + 1;
                 continue;
             }
+
+            // We found a non-self-closing open tag — count it
+            openTagCount++;  // ← NEU
 
             // ------------------------------------------------------------------
             // Step 8: parse attributes from the open tag
@@ -340,9 +345,20 @@ public class XMLParser {
                 // Skip past the open tag and continue the outer scan.
                 i = openTagEnd + 1;
             }
+
             // When depth == -1 the outer loop variable i was already updated above.
 
         } // end outer scan loop
+
+        // After the outer scan loop: verify that all opening tags were properly closed.
+        // If parseTagMatches found fewer results than opening tags, at least one tag
+        // was never closed — this is a modelling error.
+        if (result.size() < openTagCount) {
+            System.out.println("openTagCount=" + openTagCount + " result.size()=" + result.size());
+
+            throw new IllegalArgumentException(
+                    "unclosed <" + tag + "> tag detected in text: " + text);
+        }
 
         return result;
     }
