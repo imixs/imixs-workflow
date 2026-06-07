@@ -532,7 +532,7 @@ public class XMLParser {
         List<XMLTag> matches = parseTagMatches(content, tag);
         List<String> result = new ArrayList<>(matches.size());
         for (XMLTag m : matches) {
-            result.add(m.getFullMatch());
+            result.add(m.getOuterXML());
         }
         return result;
     }
@@ -569,7 +569,7 @@ public class XMLParser {
         for (XMLTag m : matches) {
             // Exclude both <tag/> and <tag></tag> — both produce an empty content string
             if (!m.getContent().isEmpty()) {
-                result.add(m.getFullMatch());
+                result.add(m.getOuterXML());
             }
         }
         return result;
@@ -589,7 +589,7 @@ public class XMLParser {
         for (XMLTag m : matches) {
             String trimmed = m.getContent().trim();
             if (!trimmed.isEmpty() && isXMLContent(trimmed)) {
-                result.add(m.getFullMatch());
+                result.add(m.getOuterXML());
             }
         }
         return result;
