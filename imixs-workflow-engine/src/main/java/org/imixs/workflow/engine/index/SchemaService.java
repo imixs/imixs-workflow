@@ -24,14 +24,16 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import jakarta.annotation.PostConstruct;
-import jakarta.ejb.Singleton;
-import jakarta.inject.Inject;
+
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.exceptions.QueryException;
+
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.Singleton;
+import jakarta.inject.Inject;
 
 /**
  * The IndexSchemaService provides the index Schema.
@@ -43,7 +45,8 @@ import org.imixs.workflow.exceptions.QueryException;
  * <li>index.fields.analyze - fields indexed as analyzed keyword fields</li>
  * <li>index.fields.noanalyze - fields indexed without analyze</li>
  * <li>index.fields.store - fields stored in the index</li>
- * <li>index.fields.category - fields indexed as categories for a faceted search</li>
+ * <li>index.fields.category - fields indexed as categories for a faceted
+ * search</li>
  * <li>index.operator - default operator</li>
  * <li>index.splitwhitespace - split text on whitespace prior to analysis</li>
  * </ul>
@@ -80,7 +83,7 @@ public class SchemaService {
     @Inject
     @ConfigProperty(name = "index.fields.store")
     Optional<String> indexFieldsStore;
-    
+
     @Inject
     @ConfigProperty(name = "index.fields.category")
     Optional<String> indexFieldsCategory;
@@ -100,15 +103,15 @@ public class SchemaService {
     public static List<String> DEFAULT_NOANALYZE_FIELD_LIST = Arrays.asList("$modelversion", "$taskid", "$processid",
             "$workitemid", "$uniqueidref", "type", "$writeaccess", "$snapshotid", "$modified", "$created", "namcreator",
             "$creator", "$editor", "$lasteditor", "$workflowgroup", "$workflowstatus", "txtworkflowgroup", "name",
+            "group", "category", "topic", "date",
             "txtname", "$owner", "namowner", "txtworkitemref", "$workitemref", "$uniqueidsource", "$uniqueidversions",
             "$lasttask", "$lastevent", "$lasteventdate", "$file.count", "$file.names");
     public static List<String> DEFAULT_STORE_FIELD_LIST = Arrays.asList("type", "$taskid", "$writeaccess",
             "$snapshotid", "$modelversion", "$workflowsummary", "$workflowabstract", "$workflowgroup",
             "$workflowstatus", "$modified", "$created", "$lasteventdate", "$creator", "$editor", "$lasteditor",
             "$owner", "namowner");
-    public static List<String> DEFAULT_CATEGORY_FIELD_LIST = Arrays.asList("type", "$taskid","$workflowgroup", "$workflowstatus"
-            , "$creator", "$editor",  "$owner");
-    
+    public static List<String> DEFAULT_CATEGORY_FIELD_LIST = Arrays.asList("type", "$taskid", "$workflowgroup",
+            "$workflowstatus", "$creator", "$editor", "$owner");
 
     private static final Logger logger = Logger.getLogger(SchemaService.class.getName());
 
@@ -199,7 +202,6 @@ public class SchemaService {
                 fieldListAnalyze.add(fieldName);
             }
         }
-        
 
         // compute Index category list ()
         fieldListCategory = new ArrayList<String>();
@@ -281,7 +283,7 @@ public class SchemaService {
     public List<String> getFieldListCategory() {
         return fieldListCategory;
     }
-    
+
     /**
      * Returns the Lucene schema configuration
      * 
