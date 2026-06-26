@@ -31,7 +31,7 @@ public class XMLParserTest {
         XMLTag m = matches.get(0);
         assertEquals("itemvalue", m.getName());
         assertEquals("customer.name", m.getContent());
-        assertEquals("<itemvalue>customer.name</itemvalue>", m.getFullMatch());
+        assertEquals("<itemvalue>customer.name</itemvalue>", m.getOuterXML());
         assertEquals(6, m.getStartPos());
         assertEquals(42, m.getEndPos()); // 6 + length("<itemvalue>customer.name</itemvalue>") = 6 + 36 = 42
     }

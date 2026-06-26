@@ -1148,9 +1148,9 @@ public class WorkflowService implements WorkflowContext {
     /**
      * The method evaluates a XML tag from the WorkflowResult for a given BPMN
      * event. The method returns a list of ItemCollecitons matching the given XML
-     * tag and name attribtue. A custom XML configuriaton may contain one or many
-     * XML tags with the same name. Each result ItemCollection holds the tag values
-     * of each XML tag.
+     * tag and optional name attribtue. A custom XML configuriaton may contain one
+     * or many XML tags with different name. Each result ItemCollection holds the
+     * tag values for each embedded XML tag.
      * 
      * Example:
      * 
@@ -1163,9 +1163,11 @@ public class WorkflowService implements WorkflowContext {
      * }
      * </pre>
      * 
+     * The 'name' attribute is optional and used to filter specific XML tags only.
+     * 
      * @param event
      * @param xmlTag            - xml tag to be evaluated
-     * @param name              - value of the matching name attribute
+     * @param name              - optional value of the matching name attribute
      * @param documentContext
      * @param resolveItemValues - if true, itemValue tags will be resolved.
      * @return list of ItemCollections

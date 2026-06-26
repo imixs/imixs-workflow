@@ -71,7 +71,7 @@ import java.util.Map;
 public final class XMLTag {
 
     /** The complete tag string: open tag + inner content + close tag. */
-    private final String fullMatch;
+    private final String outerXML;
 
     /** The tag name in lowercase (e.g. {@code "itemvalue"}). */
     private final String name;
@@ -85,10 +85,10 @@ public final class XMLTag {
     /** The raw inner content between the open tag and its matching close tag. */
     private final String content;
 
-    /** Inclusive start position of {@link #fullMatch} in the original text. */
+    /** Inclusive start position of {@link #outerXML} in the original text. */
     private final int startPos;
 
-    /** Exclusive end position of {@link #fullMatch} in the original text. */
+    /** Exclusive end position of {@link #outerXML} in the original text. */
     private final int endPos;
 
     /**
@@ -103,7 +103,7 @@ public final class XMLTag {
      */
     XMLTag(String fullMatch, String name, Map<String, String> attributes,
             String content, int startPos, int endPos) {
-        this.fullMatch = fullMatch;
+        this.outerXML = fullMatch;
         this.name = name;
         // Wrap in unmodifiable map to preserve immutability
         this.attributes = Collections.unmodifiableMap(attributes);
@@ -118,8 +118,8 @@ public final class XMLTag {
      *
      * @return full tag string, never {@code null}
      */
-    public String getFullMatch() {
-        return fullMatch;
+    public String getOuterXML() {
+        return outerXML;
     }
 
     /**
