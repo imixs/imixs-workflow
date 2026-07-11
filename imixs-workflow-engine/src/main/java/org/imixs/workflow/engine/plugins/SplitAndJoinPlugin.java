@@ -87,7 +87,6 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
     @SuppressWarnings("unchecked")
     public ItemCollection run(ItemCollection workitem, ItemCollection event)
             throws PluginException, AccessDeniedException, ProcessingErrorException {
-        boolean debug = logger.isLoggable(Level.FINE);
 
         ItemCollection evalItemCollection = null;
         // test for deprecated configuration using the <item> tag....
@@ -110,9 +109,6 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
             // 1.) test for items with name subprocess_create and create the
             // defined suprocesses
             if (evalItemCollection.hasItem(SUBPROCESS_CREATE)) {
-                if (debug) {
-                    logger.finest("......processing " + SUBPROCESS_CREATE);
-                }
                 // extract the create subprocess definitions...
                 List<String> processValueList = evalItemCollection.getItemValue(SUBPROCESS_CREATE);
                 createSubprocesses(processValueList, workitem);
@@ -121,9 +117,6 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
             // 2.) test for items with name subprocess_update and create the
             // defined suprocesses
             if (evalItemCollection.hasItem(SUBPROCESS_UPDATE)) {
-                if (debug) {
-                    logger.finest("......processing " + SUBPROCESS_UPDATE);
-                }
                 // extract the create subprocess definitions...
                 List<String> processValueList = evalItemCollection.getItemValue(SUBPROCESS_UPDATE);
                 updateSubprocesses(processValueList, workitem);
@@ -132,9 +125,6 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
             // 3.) test for items with name origin_update and update the
             // origin workitem
             if (evalItemCollection.hasItem(ORIGIN_UPDATE)) {
-                if (debug) {
-                    logger.finest("......processing " + ORIGIN_UPDATE);
-                }
                 // extract the create subprocess definitions...
                 String processValue = evalItemCollection.getItemValueString(ORIGIN_UPDATE);
                 updateOrigin(processValue, workitem);
@@ -142,9 +132,6 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 
             // 4.) test for items with name sync_parent_items to update
             if (evalItemCollection.hasItem(SUBPROCESS_SYNC)) {
-                if (debug) {
-                    logger.finest("......" + SUBPROCESS_SYNC);
-                }
                 // extract the sync items definition...
                 String processValue = evalItemCollection.getItemValueString(SUBPROCESS_SYNC);
                 syncSubprocesses(processValue, workitem);
@@ -203,11 +190,11 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
      * 
      *
      * Both workitems are connected to each other. The subprocess will contain the
-     * $UniqueID of the origin process stored in the property $workitemRef.
-     * This allows also to query all connected sub process from the origin workitem
+     * $UniqueID of the origin process stored in the property $workitemRef. This
+     * allows also to query all connected sub process from the origin workitem
      * 
-     * (type:"workitem" OR type:"workitemarchive")
-     * AND ($workitemref:<UNIQUEID_ORIGIN>)
+     * (type:"workitem" OR type:"workitemarchive") AND
+     * ($workitemref:<UNIQUEID_ORIGIN>)
      *
      * 
      * The tag 'action' is optional and allows to overwrite the action result
@@ -227,7 +214,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
             // no definition found
             return;
         }
-        boolean debug = logger.isLoggable(Level.FINE);
+        boolean debug = false;
         // we iterate over each declaration of a SUBPROCESS_CREATE item....
         for (String processValue : subProcessDefinitions) {
 
@@ -239,6 +226,10 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
             ItemCollection processData = XMLParser.parseItemStructure(processValue);
 
             if (processData != null) {
+                debug = processData.getItemValueBoolean("debug");
+                if (debug) {
+                    logger.info("├── processing " + SUBPROCESS_CREATE);
+                }
                 // create new process instance
                 ItemCollection workitemSubProcess = new ItemCollection();
 
@@ -249,26 +240,36 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
                 String sModelVersion = processData.getItemValueString("modelversion");
                 if (sModelVersion.isEmpty()) {
                     sModelVersion = originWorkitem.getModelVersion();
+                    logger.info("│   ├── modelversion not specified in configuration using orign modelversion ="
+                            + sModelVersion);
                 }
                 workitemSubProcess.replaceItemValue(WorkflowKernel.MODELVERSION, sModelVersion);
 
-                String task_pattern = processData.getItemValueString("task");
+                String taskId = processData.getItemValueString("task");
                 // support deprecated tag 'processid' (issue #446)
-                if (task_pattern.isEmpty() && processData.hasItem("processid")) {
-                    task_pattern = processData.getItemValueString("processid");
+                if (taskId.isEmpty() && processData.hasItem("processid")) {
+                    taskId = processData.getItemValueString("processid");
                     logger.warning(
-                            "...subprocess_create uses deprecated tag 'processid' instead of 'task'. Please check your model");
+                            "│   ├── subprocess_create uses deprecated tag 'processid' instead of 'task'. Please check your model");
                 }
-                workitemSubProcess.setTaskID(Integer.valueOf(task_pattern));
 
-                String event_pattern = processData.getItemValueString("event");
+                workitemSubProcess.setTaskID(Integer.valueOf(taskId));
+
+                String eventId = processData.getItemValueString("event");
                 // support deprecated tag 'processid' (issue #446)
-                if (event_pattern.isEmpty() && processData.hasItem("activityid")) {
-                    event_pattern = processData.getItemValueString("activityid");
+                if (eventId.isEmpty() && processData.hasItem("activityid")) {
+                    eventId = processData.getItemValueString("activityid");
                     logger.warning(
                             "...subprocess_create uses deprecated tag 'activityid' instead of 'event'. Please check your model");
                 }
-                workitemSubProcess.setEventID(Integer.valueOf(event_pattern));
+
+                if (debug) {
+                    logger.info("│   ├── modelversion=" + sModelVersion);
+                    logger.info("│   ├── task=" + taskId);
+                    logger.info("│   ├── event=" + eventId);
+                }
+
+                workitemSubProcess.setEventID(Integer.valueOf(eventId));
 
                 // add the origin reference
                 workitemSubProcess.replaceItemValue(LINK_PROPERTY, originWorkitem.getUniqueID());
@@ -276,7 +277,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
                 // process the new subprocess...
                 workitemSubProcess = getWorkflowService().processWorkItem(workitemSubProcess);
                 if (debug) {
-                    logger.finest("...... successful created new subprocess.");
+                    logger.info("└── ✅ successful created new subprocess.");
                 }
                 // finally add the new workitemRef into the origin
                 // documentContext
@@ -331,7 +332,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
             // no definition found
             return;
         }
-        boolean debug = logger.isLoggable(Level.FINE);
+
         // we iterate over each declaration of a SUBPROCESS_CREATE item....
         for (String processValue : subProcessDefinitions) {
 
@@ -342,77 +343,83 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
             // evaluate the item content (XML format expected here!)
             ItemCollection processData = XMLParser.parseItemStructure(processValue);
 
-            if (processData != null) {
-                // we need to lookup all subprocess instances which are matching
-                // the process definition
+            // we need to lookup all subprocess instances which are matching
+            // the process definition
+            boolean debug = processData.getItemValueBoolean("debug");
+            if (debug) {
+                logger.info("├── processing " + SUBPROCESS_UPDATE);
+            }
 
-                String model_pattern = processData.getItemValueString("modelversion");
-                String task_pattern = processData.getItemValueString("task");
-                // support deprecated tag 'processid' (issue #446)
-                if (task_pattern.isEmpty() && processData.hasItem("processid")) {
-                    task_pattern = processData.getItemValueString("processid");
-                    logger.warning(
-                            "...subprocess_update uses deprecated tag 'processid' instead of 'task'. Please check your model");
+            String model_pattern = processData.getItemValueString("modelversion");
+            String task_pattern = processData.getItemValueString("task");
+            // support deprecated tag 'processid' (issue #446)
+            if (task_pattern.isEmpty() && processData.hasItem("processid")) {
+                task_pattern = processData.getItemValueString("processid");
+                logger.warning(
+                        "│   ├── subprocess_update uses deprecated tag 'processid' instead of 'task'. Please check your model");
+            }
+
+            List<String> subProcessRefList = originWorkitem.getItemValue(LINK_PROPERTY);
+            if (subProcessRefList.isEmpty() && originWorkitem.hasItem(LINK_PROPERTY_DEPRECATED)) {
+                // test for deprecated link property!
+                subProcessRefList = originWorkitem.getItemValue(LINK_PROPERTY_DEPRECATED);
+            }
+
+            for (String subProcessRef : subProcessRefList) {
+                ItemCollection workitemSubProcess = this.getWorkflowService().getWorkItem(subProcessRef);
+
+                // test if process matches
+                String subModelVersion = workitemSubProcess.getModelVersion();
+                String subProcessID = "" + workitemSubProcess.getTaskID();
+
+                if (debug) {
+                    logger.info("│   ├── sub modelversion=" + subModelVersion);
+                    logger.info("│   ├── sub taskID=" + subProcessID);
                 }
 
-                List<String> subProcessRefList = originWorkitem.getItemValue(LINK_PROPERTY);
-                if (subProcessRefList.isEmpty() && originWorkitem.hasItem(LINK_PROPERTY_DEPRECATED)) {
-                    // test for deprecated link property!
-                    subProcessRefList = originWorkitem.getItemValue(LINK_PROPERTY_DEPRECATED);
-                }
-
-                for (String subProcessRef : subProcessRefList) {
-                    ItemCollection workitemSubProcess = this.getWorkflowService().getWorkItem(subProcessRef);
-
-                    // test if process matches
-                    String subModelVersion = workitemSubProcess.getModelVersion();
-                    String subProcessID = "" + workitemSubProcess.getTaskID();
-
-                    if (Pattern.compile(model_pattern).matcher(subModelVersion).find()
-                            && Pattern.compile(task_pattern).matcher(subProcessID).find()) {
-                        if (debug) {
-                            logger.finest("...... subprocess matches criteria.");
-                        }
-                        // now clone the field list...
-                        copyItemList(processData.getItemValueString("items"), originWorkitem, workitemSubProcess);
-
-                        String event_pattern = processData.getItemValueString("event");
-                        // support deprecated tag 'processid' (issue #446)
-                        if (event_pattern.isEmpty() && processData.hasItem("activityid")) {
-                            event_pattern = processData.getItemValueString("activityid");
-                            logger.warning(
-                                    "...subprocess_update uses deprecated tag 'activityid' instead of 'event'. Please check your model");
-                        }
-                        workitemSubProcess.setEventID(Integer.valueOf(event_pattern));
-                        // process the exisitng subprocess...
-
-                        workitemSubProcess = getWorkflowService().processWorkItem(workitemSubProcess);
-
-                        // test for optional action result..
-                        if (processData.hasItem("action")) {
-                            String workflowResult = processData.getItemValueString("action");
-                            if (!workflowResult.isEmpty()) {
-                                workflowResult = getWorkflowService().adaptText(workflowResult,
-                                        workitemSubProcess);
-                                originWorkitem.replaceItemValue("action", workflowResult);
-                            }
-                        }
-                        if (debug) {
-                            logger.finest("...... successful updated subprocess.");
-                        }
+                if (Pattern.compile(model_pattern).matcher(subModelVersion).find()
+                        && Pattern.compile(task_pattern).matcher(subProcessID).find()) {
+                    if (debug) {
+                        logger.info("│   ├── subprocess matches criteria.");
                     }
+                    // now clone the field list...
+                    copyItemList(processData.getItemValueString("items"), originWorkitem, workitemSubProcess);
+
+                    String event_pattern = processData.getItemValueString("event");
+                    // support deprecated tag 'processid' (issue #446)
+                    if (event_pattern.isEmpty() && processData.hasItem("activityid")) {
+                        event_pattern = processData.getItemValueString("activityid");
+                        logger.warning(
+                                "│   ├── subprocess_update uses deprecated tag 'activityid' instead of 'event'. Please check your model");
+                    }
+                    workitemSubProcess.setEventID(Integer.valueOf(event_pattern));
+                    // process the exisitng subprocess...
+
+                    workitemSubProcess = getWorkflowService().processWorkItem(workitemSubProcess);
 
                     // test for optional action result..
                     if (processData.hasItem("action")) {
                         String workflowResult = processData.getItemValueString("action");
                         if (!workflowResult.isEmpty()) {
-                            workflowResult = getWorkflowService().adaptText(workflowResult, workitemSubProcess);
+                            workflowResult = getWorkflowService().adaptText(workflowResult,
+                                    workitemSubProcess);
                             originWorkitem.replaceItemValue("action", workflowResult);
                         }
-
+                    }
+                    if (debug) {
+                        logger.finest("└── ✅ successful updated subprocess.");
                     }
                 }
 
+                // test for optional action result..
+                if (processData.hasItem("action")) {
+                    String workflowResult = processData.getItemValueString("action");
+                    if (!workflowResult.isEmpty()) {
+                        workflowResult = getWorkflowService().adaptText(workflowResult, workitemSubProcess);
+                        originWorkitem.replaceItemValue("action", workflowResult);
+                    }
+
+                }
             }
 
         }
@@ -487,10 +494,13 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
             // no definition
             return;
         }
-        boolean debug = logger.isLoggable(Level.FINE);
 
         // evaluate the item content (XML format expected here!)
         ItemCollection processData = XMLParser.parseItemStructure(originProcessDefinition);
+        boolean debug = processData.getItemValueBoolean("debug");
+        if (debug) {
+            logger.info("├── processing " + ORIGIN_UPDATE);
+        }
 
         String model_pattern = processData.getItemValueString("modelversion");
         if (model_pattern.isEmpty()) {
@@ -502,7 +512,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
         if (task_pattern.isEmpty() && processData.hasItem("processid")) {
             task_pattern = processData.getItemValueString("processid");
             logger.warning(
-                    "...origin_update uses deprecated tag 'processid' instead of 'task'. Please check your model");
+                    "│   ├── origin_update uses deprecated tag 'processid' instead of 'task'. Please check your model");
         }
 
         // first we need to lookup the corresponding origin process instance
@@ -522,7 +532,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
                 if (Pattern.compile(model_pattern).matcher(subModelVersion).find()
                         && Pattern.compile(task_pattern).matcher(subProcessID).find()) {
                     if (debug) {
-                        logger.finest("...... origin matches criteria.");
+                        logger.info("│   ├── origin matches criteria.");
                     }
                     // process the origin workitem
                     String event_pattern = processData.getItemValueString("event");
@@ -530,7 +540,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
                     if (event_pattern.isEmpty() && processData.hasItem("activityid")) {
                         event_pattern = processData.getItemValueString("activityid");
                         logger.warning(
-                                "...origin_update uses deprecated tag 'activityid' instead of 'event'. Please check your model");
+                                "│   ├── origin_update uses deprecated tag 'activityid' instead of 'event'. Please check your model");
                     }
                     originWorkitem.setEventID(Integer.valueOf(event_pattern));
 
@@ -550,7 +560,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
 
                     }
                     if (debug) {
-                        logger.finest("...... successful processed originprocess.");
+                        logger.info("└── ✅ successful processed originprocess.");
                     }
                 }
 
@@ -614,34 +624,4 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
         }
     }
 
-    /**
-     * This methods adds a new workItem reference into a workitem
-     */
-    // @SuppressWarnings("unchecked")
-    // protected void addWorkitemRef(String aUniqueID, ItemCollection workitem) {
-    // boolean debug = logger.isLoggable(Level.FINE);
-    // if (debug) {
-    // logger.log(Level.FINE, "LinkController add workitem reference: {0}",
-    // aUniqueID);
-    // }
-
-    // List<String> refList = workitem.getItemValue(LINK_PROPERTY);
-    // if (refList.isEmpty() && workitem.hasItem(LINK_PROPERTY_DEPRECATED)) {
-    // // test for deprecated link property!
-    // refList = workitem.getItemValue(LINK_PROPERTY_DEPRECATED);
-    // }
-
-    // // clear empty entry if set
-    // if (refList.size() == 1 && "".equals(refList.get(0)))
-    // refList.remove(0);
-
-    // // test if not yet a member of
-    // if (refList.indexOf(aUniqueID) == -1) {
-    // refList.add(aUniqueID);
-    // workitem.replaceItemValue(LINK_PROPERTY, refList);
-    // // support deprecated field name
-    // workitem.replaceItemValue(LINK_PROPERTY_DEPRECATED, refList);
-    // }
-
-    // }
 }

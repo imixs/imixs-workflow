@@ -35,9 +35,12 @@ To create a new sub-process instance, the following XML definition need to be ad
     	<task>100</task>
     	<event>10</event>
     	<items>namTeam</items>
+        <debug>true</debug>
     </split>
 
 The `name` attribute of the `split` tag defines the function name. In this example Plugin will create a new subprocess instance with the model version `1.0.0` and the initial task `100`, which will be processed by the eventID `10`.
+
+The `debug` tag is optional to print debug information into the server log.
 
 **Note:** A new sub-process instance can run in the same model as the origin process instance or run in a complete different model.
 

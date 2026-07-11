@@ -701,6 +701,24 @@ public class ModelManager {
             for (BPMNElementNode element : initEventNodes) {
                 result.add(BPMNEntityBuilder.build(element));
             }
+
+            // next test also boundary events
+            List<Event> boundaryEvents = taskElement.getAllBoundaryEvents();
+            if (boundaryEvents != null && boundaryEvents.size() > 0) {
+                Event boundaryEvent = boundaryEvents.get(0);
+                // find next imixs event
+                BPMNLinkedFlowIterator<BPMNElementNode> boundaryElementNavigator;
+                boundaryElementNavigator = new BPMNLinkedFlowIterator<BPMNElementNode>(
+                        boundaryEvent,
+                        node -> ((BPMNUtil.isImixsEventElement(node))));
+
+                if (boundaryElementNavigator.hasNext()) {
+                    BPMNElementNode targetEvent = boundaryElementNavigator.next();
+                    result.add(BPMNEntityBuilder.build(targetEvent));
+
+                }
+            }
+
         }
         return result;
     }
@@ -956,15 +974,8 @@ public class ModelManager {
         }
 
         // not yet found, collect all incoming events...
-        // List<Event> allIncomingEvents = new ArrayList<>();
-        // BPMNUtil.findAllIncomingEventNodes(task, allIncomingEvents);
-
         List<BPMNElementNode> allIncomingEvents = findInitEventNodes(task);
-
-        // for (Event inEvent : allIncomingEvents) {
         for (BPMNElementNode inEvent : allIncomingEvents) {
-            // Event inEvent = (Event)
-            // model.findElementNodeById(initEventItemcol.getItemValueString("id"));
             String id = inEvent.getExtensionAttribute(BPMNUtil.getNamespace(), "activityid");
             if (id == null || id.isEmpty()) {
                 continue; // no match...
@@ -982,6 +993,28 @@ public class ModelManager {
                         inEvent.getId() + " invalid attribute 'imixs:activityid' = " + id + "  Number expected");
             }
         }
+
+        // Test Boundary Events...
+        List<BPMNElementNode> allBoundaryEvents = findBoundaryEventNodes(task);
+        for (BPMNElementNode boundaryEvent : allBoundaryEvents) {
+            String id = boundaryEvent.getExtensionAttribute(BPMNUtil.getNamespace(), "activityid");
+            if (id == null || id.isEmpty()) {
+                continue; // no match...
+            }
+            try {
+                if (eventID == Long.parseLong(id)) {
+                    // match!
+                    // logger.info(
+                    // "lookupEventByID " + keyEvent + " took " + (System.currentTimeMillis() - l) +
+                    // "ms");
+                    return (Event) boundaryEvent;
+                }
+            } catch (NumberFormatException e) {
+                logger.warning(
+                        boundaryEvent.getId() + " invalid attribute 'imixs:activityid' = " + id + "  Number expected");
+            }
+        }
+
         // not found!
         return null;
     }
@@ -1012,6 +1045,37 @@ public class ModelManager {
                 // recursive call....
                 List<BPMNElementNode> subResult = findInitEventNodes(element);
                 collector.addAll(subResult);
+            }
+        }
+        return collector;
+    }
+
+    /**
+     * Iterates tough all boundary events assigned with the current activity and
+     * collects the assigned event node
+     * 
+     * @param currentNode
+     */
+    private List<BPMNElementNode> findBoundaryEventNodes(BPMNElementNode currentNode) {
+        List<BPMNElementNode> collector = new ArrayList<>();
+
+        if (currentNode instanceof Activity) {
+
+            // Test Boundary Events....
+            List<Event> boundaryEvents = ((Activity) currentNode).getAllBoundaryEvents();
+            if (boundaryEvents != null && boundaryEvents.size() > 0) {
+
+                Event boundaryEvent = boundaryEvents.get(0);
+
+                // find next imixs event
+                BPMNLinkedFlowIterator<BPMNElementNode> boundaryElementNavigator;
+                boundaryElementNavigator = new BPMNLinkedFlowIterator<BPMNElementNode>(
+                        boundaryEvent,
+                        node -> ((BPMNUtil.isImixsEventElement(node))));
+                if (boundaryElementNavigator.hasNext()) {
+                    BPMNElementNode targetEvent = boundaryElementNavigator.next();
+                    collector.add(targetEvent);
+                }
             }
         }
         return collector;
