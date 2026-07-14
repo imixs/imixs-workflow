@@ -679,6 +679,10 @@ public class ModelManager {
      * Returns a list of all Events assigned to a Task. The event can be either
      * connected by an outgoing sequence flow or by an ingoing sequence flow
      * (init-event-node).
+     * <p>
+     * The method verifies the uniqueness of the returned event ItemCollection by
+     * comparing the eventID of each event found. If an event is duplicated the
+     * method logs a warning.
      * 
      * @param model
      * @param taskID
@@ -694,12 +698,15 @@ public class ModelManager {
                     node -> ((BPMNUtil.isImixsEventElement(node))));
 
             while (elementNavigator.hasNext()) {
-                result.add(BPMNEntityBuilder.build(elementNavigator.next()));
+                ItemCollection event = BPMNEntityBuilder.build(elementNavigator.next());
+                addEventIfUnique(result, model, event, taskID);
             }
+
             // next we also add all initEvent nodes
             List<BPMNElementNode> initEventNodes = findInitEventNodes(taskElement);
             for (BPMNElementNode element : initEventNodes) {
-                result.add(BPMNEntityBuilder.build(element));
+                ItemCollection event = BPMNEntityBuilder.build(element);
+                addEventIfUnique(result, model, event, taskID);
             }
 
             // next test also boundary events
@@ -714,13 +721,35 @@ public class ModelManager {
 
                 if (boundaryElementNavigator.hasNext()) {
                     BPMNElementNode targetEvent = boundaryElementNavigator.next();
-                    result.add(BPMNEntityBuilder.build(targetEvent));
-
+                    ItemCollection event = BPMNEntityBuilder.build(targetEvent);
+                    addEventIfUnique(result, model, event, taskID);
                 }
             }
-
         }
         return result;
+    }
+
+    /**
+     * Adds the given event to the result list only if no event with the same
+     * eventID already exists in the list. If a duplicate is found, a warning
+     * is logged and the event is skipped.
+     *
+     * @param result the current result list
+     * @param event  the event to add
+     * @param taskID the task id (used for logging context)
+     */
+    private void addEventIfUnique(List<ItemCollection> result, final BPMNModel model, ItemCollection event,
+            int taskID) {
+        int eventID = event.getItemValueInteger("eventID");
+        boolean alreadyExists = result.stream()
+                .anyMatch(existing -> existing.getItemValueInteger("eventID") == eventID);
+
+        if (alreadyExists) {
+            logger.warning("Duplicate event in Model '" + BPMNUtil.getVersion(model) + " eventID=" + eventID
+                    + " taskID=" + taskID + " - event skipped.");
+        } else {
+            result.add(event);
+        }
     }
 
     /**
