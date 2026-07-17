@@ -102,9 +102,9 @@ public class SchemaService {
     public static List<String> DEFAULT_SEARCH_FIELD_LIST = Arrays.asList("$workflowsummary", "$workflowabstract");
     public static List<String> DEFAULT_NOANALYZE_FIELD_LIST = Arrays.asList("$modelversion", "$taskid", "$processid",
             "$workitemid", "$uniqueidref", "type", "$writeaccess", "$snapshotid", "$modified", "$created", "namcreator",
-            "$creator", "$editor", "$lasteditor", "$workflowgroup", "$workflowstatus", "txtworkflowgroup", "name",
-            "group", "category", "topic", "date",
-            "txtname", "$owner", "namowner", "txtworkitemref", "$workitemref", "$uniqueidsource", "$uniqueidversions",
+            "$creator", "$editor", "$lasteditor", "$workflowgroup", "$workflowstatus", "id", "name",
+            "group", "category", "topic", "date", "sequencenumber",
+            "txtname", "$owner", "namowner", "$workitemref", "$uniqueidsource", "$uniqueidversions",
             "$lasttask", "$lastevent", "$lasteventdate", "$file.count", "$file.names");
     public static List<String> DEFAULT_STORE_FIELD_LIST = Arrays.asList("type", "$taskid", "$writeaccess",
             "$snapshotid", "$modelversion", "$workflowsummary", "$workflowabstract", "$workflowgroup",
