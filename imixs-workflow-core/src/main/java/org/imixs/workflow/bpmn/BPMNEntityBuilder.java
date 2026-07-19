@@ -43,8 +43,7 @@ import org.w3c.dom.NodeList;
  * <p>
  * Through the item 'id' it is possible to access the BPMN element directly from
  * an {@code ItemCollection} by the BPMN element id which should be unique. In
- * addition,
- * the item "type" is set to 'TASK' or 'EVENT', which reflects the
+ * addition, the item "type" is set to 'TASK' or 'EVENT', which reflects the
  * type of an element.
  * <p>
  * Example:
@@ -71,8 +70,8 @@ public class BPMNEntityBuilder {
     }
 
     /**
-     * This method converts a Imixs BPMNElement into an ItemCollection
-     * All imixs Extension values will be added as items.
+     * This method converts a Imixs BPMNElement into an ItemCollection All imixs
+     * Extension values will be added as items.
      * 
      * Example:
      * 
@@ -189,7 +188,7 @@ public class BPMNEntityBuilder {
                         }
                     }
                 } catch (NumberFormatException e) {
-                    logger.warning("Invalid Boundary Event - missing timeDuration: " + e.getMessage());
+                    logger.fine("Invalid Boundary Event - missing timeDuration: " + e.getMessage());
                 }
             }
         }
@@ -239,9 +238,8 @@ public class BPMNEntityBuilder {
 
     /**
      * This method resolves message tags for an event element. The method pares for
-     * the text fragment
-     * <bpmn2:message>...</bpmn2:message> and replaces the tag with the
-     * corresponding message if available
+     * the text fragment <bpmn2:message>...</bpmn2:message> and replaces the tag
+     * with the corresponding message if available
      * 
      * @param elementNode - the bpmn event element
      * @param entity      - the ItemCollection of the event
