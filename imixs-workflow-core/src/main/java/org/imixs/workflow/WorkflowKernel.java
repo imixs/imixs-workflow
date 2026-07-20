@@ -35,6 +35,8 @@ import java.util.UUID;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.imixs.workflow.bpmn.BPMNEntityBuilder;
 import org.imixs.workflow.bpmn.BPMNLinkedFlowIterator;
@@ -767,6 +769,19 @@ public class WorkflowKernel {
      * <p>
      * The method is called during the processing live-cycle of the workflowKernel.
      * 
+     * <p>
+     * Optional the tag values can be resolved by using the '<itemvalue>' tag
+     * 
+     * <pre>
+     * {@code
+     * <model>     
+     *    <version>sub-model-1.0.0</version>
+     *    <task><itemvalue>my.taskid</itemvalue></task>
+     *    <event><itemvalue>my.eventid</itemvalue></event>
+     * </model>
+     * }
+     * </pre>
+     * 
      * @param workitem
      * @param event
      * @param log      - indicates if the procedure should be logged into the server
@@ -791,10 +806,10 @@ public class WorkflowKernel {
         // extract the model tag information - version and event are mandatory
         ItemCollection modelData;
         modelData = XMLParser.parseTag(modelTags.get(0), "model");
+        String version = evalItemValueString(modelData.getItemValueString("version"), workitem);
+        int iTask = evalItemValueInteger(modelData.getItemValueString("task"), workitem);
+        int iNextEvent = evalItemValueInteger(modelData.getItemValueString("event"), workitem);
 
-        String version = modelData.getItemValueString("version");
-        int iNextEvent = modelData.getItemValueInteger("event");
-        int iTask = modelData.getItemValueInteger("task");
         if (version.trim().isEmpty() || iNextEvent <= 0) {
             String sErrorMessage = "Invalid model tag in event " +
                     +event.getItemValueInteger(BPMNUtil.EVENT_ITEM_EVENTID) + " (" + event.getModelVersion();
@@ -816,6 +831,46 @@ public class WorkflowKernel {
         }
         return true;
 
+    }
+
+    /**
+     * Resolves a single, self-contained <itemvalue>fieldname</itemvalue> tag by
+     * replacing it with the corresponding item value from the workitem.
+     * <p>
+     * This is intentionally minimal - it only supports the case where the entire
+     * trimmed input consists of exactly one <itemvalue> tag. Mixed content,
+     * multiple tags, or nested structures are not supported and are returned
+     * unchanged.
+     *
+     * @param content  the raw tag content, possibly containing an <itemvalue> tag
+     * @param workitem the workitem used to resolve the referenced item value
+     * @return the resolved value, or the original content if no matching tag was
+     *         found
+     */
+    private String evalItemValueString(String content, ItemCollection workitem) {
+        if (content == null) {
+            return content;
+        }
+        Pattern ITEMVALUE_PATTERN = Pattern.compile("<itemvalue>(.*?)</itemvalue>", Pattern.DOTALL);
+        Matcher matcher = ITEMVALUE_PATTERN.matcher(content.trim());
+        if (matcher.matches()) {
+            String fieldName = matcher.group(1).trim();
+            return workitem.getItemValueString(fieldName);
+        }
+        return content;
+    }
+
+    private int evalItemValueInteger(String content, ItemCollection workitem) {
+        if (content == null) {
+            return 0;
+        }
+        Pattern ITEMVALUE_PATTERN = Pattern.compile("<itemvalue>(.*?)</itemvalue>", Pattern.DOTALL);
+        Matcher matcher = ITEMVALUE_PATTERN.matcher(content.trim());
+        if (matcher.matches()) {
+            String fieldName = matcher.group(1).trim();
+            return workitem.getItemValueInteger(fieldName);
+        }
+        return Integer.parseInt(content);
     }
 
     /**
