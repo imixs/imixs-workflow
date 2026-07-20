@@ -313,7 +313,6 @@ public class EventLogService {
      * 
      * @param eventLog
      */
-    @TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
     public void removeEvent(final EventLog _eventLog) {
         boolean debug = logger.isLoggable(Level.FINE);
         EventLog eventLog = _eventLog;
@@ -340,7 +339,6 @@ public class EventLogService {
      * 
      * @param eventLog
      */
-    @TransactionAttribute(value = TransactionAttributeType.REQUIRES_NEW)
     public void removeEvent(final String id) {
         EventLog eventLog = null;
         boolean debug = logger.isLoggable(Level.FINE);
