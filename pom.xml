@@ -79,7 +79,7 @@
 		<connection>scm:git:git@github.com:imixs/imixs-workflow.git</connection>
 		<developerConnection>scm:git:git@github.com:imixs/imixs-workflow.git</developerConnection>
 		<url>https://github.com/imixs/imixs-workflow/</url>
-		<tag>imixs-workflow-6.2.7</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<issueManagement>
