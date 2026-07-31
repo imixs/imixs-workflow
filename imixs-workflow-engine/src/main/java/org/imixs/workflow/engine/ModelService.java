@@ -39,13 +39,13 @@ import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.bpmn.BPMNUtil;
+import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.openbpmn.bpmn.BPMNModel;
 import org.openbpmn.bpmn.elements.BPMNProcess;
 import org.openbpmn.bpmn.exceptions.BPMNModelException;
 import org.openbpmn.bpmn.util.BPMNModelFactory;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import jakarta.annotation.security.DeclareRoles;
 import jakarta.annotation.security.RolesAllowed;
@@ -91,11 +91,62 @@ public class ModelService {
     }
 
     /**
-     * Lazy loading of ModelManager
+     * This method loads all existing Model Entities from the database and adds the
+     * BPMNModel objects into the ModelManager.
+     * <p>
+     * The method also checks the stored models for duplicates and removes
+     * deprecated duplicated model entities from the database.
+     * 
+     * @throws AccessDeniedException
      */
-    @PostConstruct
-    public void init() {
+    public void initModels() throws AccessDeniedException {
+        boolean debug = logger.isLoggable(Level.FINE);
+        logger.info("├── initializing models...");
+        // cleard all old versions
+        modelDataStore.clear();
 
+        // first remove existing model entities
+        Collection<ItemCollection> col = documentService.getDocumentsByType("model");
+        logger.finest("...found " + col.size() + " model entities");
+        List<ItemCollection> deprecatedModelEntities = new ArrayList<>();
+        for (ItemCollection modelEntity : col) {
+            logger.finest(".. " + modelEntity.getItemValueString("name") + " created -> "
+                    + modelEntity.getItemValueDate("$created"));
+            List<FileData> files = modelEntity.getFileData();
+            for (FileData file : files) {
+                if (debug) {
+                    logger.log(Level.FINEST, "......loading file:{0}", file.getName());
+                }
+                byte[] rawData = file.getContent();
+                InputStream bpmnInputStream = new ByteArrayInputStream(rawData);
+                try {
+                    BPMNModel model = BPMNModelFactory.read(bpmnInputStream);
+                    String version = BPMNUtil.getVersion(model);
+                    // test if model is a deprecated duplicate entry!
+                    if (this.hasModelVersion(version)) {
+                        logger.warning("│   ├── duplicated Model Entity found (" + modelEntity.getUniqueID()
+                                + ") for model version '" + version
+                                + "' - entity will be removed!");
+                        deprecatedModelEntities.add(modelEntity);
+                    } else {
+                        logger.log(Level.INFO, "│   ├── loaded model: {0} ▶ {1}  ({2})", new Object[] { file.getName(),
+                                BPMNUtil.getVersion(model), modelEntity.getUniqueID() });
+                        // Add the model into the ModelService
+                        this.addModelData(version, model, modelEntity);
+                    }
+                } catch (BPMNModelException e) {
+                    logger.log(Level.WARNING, "Failed to load model ''{0}'' : {1}",
+                            new Object[] { file.getName(), e.getMessage() });
+                }
+            }
+        }
+
+        // remove duplicated entries (this should not happen!)
+        if (deprecatedModelEntities.size() > 0) {
+            for (ItemCollection deprecatedEntry : deprecatedModelEntities) {
+                documentService.remove(deprecatedEntry);
+            }
+        }
     }
 
     /**
@@ -336,8 +387,10 @@ public class ModelService {
     public void saveModel(BPMNModel model, String _filename) throws ModelException {
         if (model != null) {
             String version = BPMNUtil.getVersion(model);
+
             // first delete existing model entities
-            this.removeModelData(version);
+            this.deleteModelData(version);
+            // this.removeModelData(version);
             // store model into internal cache
 
             ItemCollection modelItemCol = new ItemCollection();
@@ -355,7 +408,7 @@ public class ModelService {
                 // default filename
                 filename = version + ".bpmn";
             }
-            logger.log(Level.INFO, "Import bpmn-model: {0} ▶ {1}", new Object[] { filename,
+            logger.log(Level.INFO, "├── Import bpmn-model: {0} ▶ {1}", new Object[] { filename,
                     BPMNUtil.getVersion(model) });
             // Write the model XML object into a byte array and store it into the
             // modelItemCol as a FileData object
@@ -388,21 +441,19 @@ public class ModelService {
      */
     public void deleteModelData(String version) throws ModelException {
         if (version != null && !version.isEmpty()) {
-            boolean debug = logger.isLoggable(Level.FINE);
-            if (debug) {
-                logger.log(Level.FINEST, "......delete BPMNModel ''{0}''...", version);
-            }
+
             Collection<ItemCollection> col = documentService.getDocumentsByType("model");
             for (ItemCollection modelEntity : col) {
                 // test version...
                 String oldVersion = modelEntity.getItemValueString("name");
                 if (version.equals(oldVersion)) {
+                    logger.log(Level.INFO, "├── Delete bpmn-model " + version + " (" + modelEntity.getUniqueID() + ")");
                     documentService.remove(modelEntity);
                 }
             }
             this.removeModelData(version);
         } else {
-            logger.severe("deleteModel - invalid model version!");
+            logger.severe("Failed to delete Model - invalid model version!");
             throw new ModelException(ModelException.INVALID_ID, "deleteModel - invalid model version!");
         }
     }

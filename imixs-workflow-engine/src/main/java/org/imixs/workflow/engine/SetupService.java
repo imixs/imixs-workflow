@@ -31,10 +31,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
-import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
-import org.imixs.workflow.bpmn.BPMNUtil;
 import org.imixs.workflow.engine.index.SearchService;
 import org.imixs.workflow.engine.index.UpdateService;
 import org.imixs.workflow.engine.scheduler.Scheduler;
@@ -144,10 +142,8 @@ public class SetupService {
         logger.info("/___/_/_/_/_//_\\_\\/___/   V6.2");
         logger.info("");
 
-        logger.info("├── initializing models...");
-
         // Load existing models
-        initModels();
+        modelService.initModels();
         // if no models are loaded scan for default models
         List<String> models = modelService.getVersions();
         if (models.isEmpty() || modelDefaultDataOverwrite == true) {
@@ -170,64 +166,6 @@ public class SetupService {
         logger.info("├── initializing schedulers...");
         schedulerService.startAllSchedulers();
 
-    }
-
-    /**
-     * This method loads all existing Model Entities from the database and adds the
-     * BPMNModel objects into the ModelManager.
-     * <p>
-     * The method also checks the stored models for duplicates and removes
-     * deprecated duplicated model entities from the database.
-     * 
-     * @throws AccessDeniedException
-     */
-    private void initModels() throws AccessDeniedException {
-        boolean debug = logger.isLoggable(Level.FINE);
-
-        // first remove existing model entities
-        Collection<ItemCollection> col = documentService.getDocumentsByType("model");
-        logger.finest("...found " + col.size() + " model entities");
-        List<ItemCollection> deprecatedModelEntities = new ArrayList<>();
-        for (ItemCollection modelEntity : col) {
-            logger.finest(".. " + modelEntity.getItemValueString("name") + " created -> "
-                    + modelEntity.getItemValueDate("$created"));
-            List<FileData> files = modelEntity.getFileData();
-            for (FileData file : files) {
-                if (debug) {
-                    logger.log(Level.FINEST, "......loading file:{0}", file.getName());
-                }
-                byte[] rawData = file.getContent();
-                InputStream bpmnInputStream = new ByteArrayInputStream(rawData);
-                try {
-                    BPMNModel model = BPMNModelFactory.read(bpmnInputStream);
-                    String version = BPMNUtil.getVersion(model);
-                    // test if model is a deprecated duplicate entry!
-                    if (modelService.hasModelVersion(version)) {
-                        logger.warning("│   ├── duplicated Model Entity found (" + modelEntity.getUniqueID()
-                                + ") for model version '" + version
-                                + "' - entity will be removed!");
-                        deprecatedModelEntities.add(modelEntity);
-                    } else {
-                        logger.log(Level.INFO, "│   ├── loaded model: {0} ▶ {1}", new Object[] { file.getName(),
-                                BPMNUtil.getVersion(model) });
-                        // Add the model into the ModelManger and put the model into the ModelService
-                        // model store
-                        modelService.addModelData(version, model, modelEntity);
-                        // modelService.getModelEntityStore().put(version, modelEntity);
-                    }
-                } catch (BPMNModelException e) {
-                    logger.log(Level.WARNING, "Failed to load model ''{0}'' : {1}",
-                            new Object[] { file.getName(), e.getMessage() });
-                }
-            }
-        }
-
-        // remove duplicated entries (this should not happen!)
-        if (deprecatedModelEntities.size() > 0) {
-            for (ItemCollection deprecatedEntry : deprecatedModelEntities) {
-                documentService.remove(deprecatedEntry);
-            }
-        }
     }
 
     /**
