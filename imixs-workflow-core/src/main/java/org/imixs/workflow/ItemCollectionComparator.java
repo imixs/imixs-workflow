@@ -100,7 +100,34 @@ public class ItemCollectionComparator implements Comparator<ItemCollection> {
                 result = -result;
             }
             return result;
+        }
 
+        // long compare?
+        if (a.isItemValueLong(itemName)) {
+            int result = Long.compare(a.getItemValueLong(itemName), b.getItemValueLong(itemName));
+            if (!this.ascending) {
+                result = -result;
+            }
+            return result; // Type Mismatch!!
+
+        }
+
+        // float compare?
+        if (a.isItemValueFloat(itemName)) {
+            int result = Float.compare(a.getItemValueFloat(itemName), b.getItemValueFloat(itemName));
+            if (!this.ascending) {
+                result = -result;
+            }
+            return result;
+        }
+
+        // double compare?
+        if (a.isItemValueDouble(itemName)) {
+            int result = Double.compare(a.getItemValueDouble(itemName), b.getItemValueDouble(itemName));
+            if (!this.ascending) {
+                result = -result;
+            }
+            return result;
         }
 
         // String compare
