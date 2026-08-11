@@ -14,6 +14,7 @@ The Imixs `WorkflowService` provides the following adapter classes:
 - TextForEachChildAdapter
 - TextForEachRefAdapter
 - TextPropertyAdapter
+- TextTimestampAdapter
 
 The adapter classes are called by the CDI observer pattern which allows to implement custom text adapters as well. See the section 'Custom Text Adapters' below for more details.
 
@@ -207,6 +208,26 @@ Please use the following Link to open the Application:
 ```
 
 The values from the `imixs.properties` file are accessed by the [PropertyService](../propertyservice.html).
+
+---
+
+## Adapting Timestamp values
+
+The `TextTimestampAdapter` adapts text blocks with timestamp values. A static message text will be automatically replaced with the corresponding time and format. The tag is used in the following way:
+
+```xml
+Yesterday was the <timestamp format=\"dd. MMM yyyy\" adjustDays=\"-1\" />
+```
+
+The time can be formatted with Java formatting rules and adjusted by days, months, minutes or seconds.
+
+| Attribute     | Description                                                   |
+| ------------- | ------------------------------------------------------------- |
+| format        | Formats the current time based on Java time formatting rules. |
+| adjustDays    | Adjusts the current time by days.                             |
+| adjustMonths  | Adjusts the current time by months.                           |
+| adjustMinutes | Adjusts the current time by minutes.                          |
+| adjustSeconds | Adjusts the current time by seconds.                          |
 
 ---
 
