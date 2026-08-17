@@ -220,13 +220,19 @@ public class DocumentRestService {
             @QueryParam("format") String format) {
         List<ItemCollection> result = null;
         try {
-            // decode query...
-            String decodedQuery = URLDecoder.decode(query, "UTF-8");
+            // Issue #978
+            // Note: query is already decoded by JAX-RS during @PathParam binding.
+            // Do NOT decode it again here - a literal '%' in the query (e.g. from a
+            // LIKE '...%' clause) would otherwise be misinterpreted as the start of
+            // a percent-encoded escape sequence and throw an IllegalArgumentException.
+            // String decodedQuery = URLDecoder.decode(query, "UTF-8");
+
             // compute first result....
             int firstResult = pageIndex * pageSize;
-            result = documentService.getDocumentsByQuery(decodedQuery, firstResult, pageSize);
+            result = documentService.getDocumentsByQuery(query, firstResult, pageSize);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.WARNING, "findDocumentsByJPQL failed for query '" + query + "': " + e.getMessage(), e);
+
         }
         return convertResultList(result, items, format);
     }
