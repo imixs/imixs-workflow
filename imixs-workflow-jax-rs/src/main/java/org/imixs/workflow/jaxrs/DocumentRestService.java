@@ -248,6 +248,7 @@ public class DocumentRestService {
      */
     @GET
     @Path("/count/{query}")
+    @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
     public Response countTotalHitsByQuery(@PathParam("query") String query,
             @DefaultValue("-1") @QueryParam("maxResult") int maxResult, @QueryParam("format") String format) {
         XMLCount xmlcount = new XMLCount();
@@ -293,6 +294,7 @@ public class DocumentRestService {
      */
     @GET
     @Path("/countpages/{query}")
+    @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
     public Response countTotalPagesByQuery(@PathParam("query") String query,
             @DefaultValue("-1") @QueryParam("pageSize") int pageSize, @QueryParam("format") String format) {
         XMLCount xmlcount = new XMLCount();
