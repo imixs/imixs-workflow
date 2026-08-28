@@ -28,6 +28,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -354,6 +355,33 @@ public class ModelService {
         throw new ModelException(ModelException.INVALID_ID,
                 "Failed to find version for group '" + group + "', no matching model available.");
 
+    }
+
+    /**
+     * This method returns a sorted list of model versions matching a given regex
+     * for a model version. The result is sorted in reverse order, so the highest
+     * version number is the first in the result list.
+     * 
+     * @param group
+     * @return
+     */
+    public List<String> findVersionsByRegEx(String modelRegex) {
+        boolean debug = logger.isLoggable(Level.FINE);
+        List<String> result = new ArrayList<String>();
+        if (debug) {
+            logger.log(Level.FINEST, "......searching model versions for regex ''{0}''...", modelRegex);
+        }
+        // try to find matching model version by regex
+        List<String> versions = getVersions();
+
+        for (String _version : versions) {
+            if (Pattern.compile(modelRegex).matcher(_version).find()) {
+                result.add(_version);
+            }
+        }
+        // sort result
+        Collections.sort(result, Collections.reverseOrder());
+        return result;
     }
 
     /**

@@ -17,12 +17,14 @@ package org.imixs.workflow.jaxrs;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.EventLogService;
 import org.imixs.workflow.engine.index.SearchService;
 import org.imixs.workflow.engine.jpa.EventLog;
+import org.imixs.workflow.xml.XMLCount;
 import org.imixs.workflow.xml.XMLDataCollection;
 import org.imixs.workflow.xml.XMLDataCollectionAdapter;
 import org.imixs.workflow.xml.XMLDocument;
@@ -42,9 +44,9 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import java.util.logging.Level;
 
 /**
  * The EventLogRestService supports methods to access the event log entries by
@@ -221,6 +223,76 @@ public class EventLogRestService {
             eventLogService.createEvent(topic, refID, XMLDocumentAdapter.putDocument(xmlworkitem));
         } else {
             eventLogService.createEvent(topic, refID);
+        }
+    }
+
+    /**
+     * Returns the total count of all eventLog entries.
+     *
+     * @return - total number of eventLog entries
+     */
+    @GET
+    @Path("/count")
+    @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+    public Response countAllEventLogEntries(@QueryParam("format") String format) {
+        XMLCount xmlcount = new XMLCount();
+        logger.log(Level.INFO, "......count all eventLogEntries");
+        xmlcount.count = eventLogService.countAllEvents();
+        if ("json".equals(format)) {
+            return Response
+                    // Set the status and Put your entity here.
+                    .ok(xmlcount)
+                    // Add the Content-Type header to tell Jersey which format it should marshall
+                    // the entity into.
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON).build();
+        } else if ("xml".equals(format)) {
+            return Response
+                    // Set the status and Put your entity here.
+                    .ok(xmlcount)
+                    // Add the Content-Type header to tell Jersey which format it should marshall
+                    // the entity into.
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML).build();
+        } else {
+            return Response
+                    // Set the status and Put your entity here.
+                    .ok(xmlcount).build();
+        }
+    }
+
+    /**
+     * Returns the count of eventLog entries for a given topic. Multiple topics
+     * can be separated by a swung dash (~).
+     *
+     * @param topic - topic to count event log entries for.
+     * @return - number of matching eventLog entries
+     */
+    @GET
+    @Path("/count/{topic}")
+    @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+    public Response countEventLogEntriesByTopic(@PathParam("topic") String topic, @QueryParam("format") String format) {
+        XMLCount xmlcount = new XMLCount();
+        logger.log(Level.FINE, "......count eventLogEntries by topic: {0}", topic);
+        // we split the topic by swung dash if multiple topics are provided
+        String[] topicList = topic.split("~");
+        xmlcount.count = eventLogService.countEventsByTopic(topicList);
+        if ("json".equals(format)) {
+            return Response
+                    // Set the status and Put your entity here.
+                    .ok(xmlcount)
+                    // Add the Content-Type header to tell Jersey which format it should marshall
+                    // the entity into.
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON).build();
+        } else if ("xml".equals(format)) {
+            return Response
+                    // Set the status and Put your entity here.
+                    .ok(xmlcount)
+                    // Add the Content-Type header to tell Jersey which format it should marshall
+                    // the entity into.
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML).build();
+        } else {
+            return Response
+                    // Set the status and Put your entity here.
+                    .ok(xmlcount).build();
         }
     }
 

@@ -307,6 +307,51 @@ public class EventLogService {
     }
 
     /**
+     * Returns the total count of all eventLog entries.
+     *
+     * @return - total number of eventLog entries
+     */
+    public long countAllEvents() {
+        boolean debug = logger.isLoggable(Level.FINE);
+        String query = "SELECT COUNT(eventlog) FROM EventLog AS eventlog";
+
+        Query q = manager.createQuery(query);
+        long result = (Long) q.getSingleResult();
+        if (debug) {
+            logger.log(Level.FINE, "counted {0} event log entries", result);
+        }
+        return result;
+    }
+
+    /**
+     * Returns the count of events for one or many given topics.
+     *
+     * @param topic - list of topics
+     * @return - number of matching eventLog entries
+     */
+    public long countEventsByTopic(String... topic) {
+        boolean debug = logger.isLoggable(Level.FINE);
+        String query = "SELECT COUNT(eventlog) FROM EventLog AS eventlog ";
+        query += "WHERE (";
+        for (String _topic : topic) {
+            if (_topic != null && !_topic.isEmpty()) {
+                query += "eventlog.topic = '" + _topic + "' OR ";
+            }
+        }
+        // cut last OR
+        query = query.substring(0, query.length() - 3);
+        query += ")";
+
+        Query q = manager.createQuery(query);
+        long result = (Long) q.getSingleResult();
+        if (debug) {
+            logger.log(Level.FINE, "counted {0} events for topics {1}",
+                    new Object[] { result, Arrays.toString(topic) });
+        }
+        return result;
+    }
+
+    /**
      * Deletes an existing eventLog. The method catches
      * jakarta.persistence.OptimisticLockException as this may occur during parallel
      * requests.
