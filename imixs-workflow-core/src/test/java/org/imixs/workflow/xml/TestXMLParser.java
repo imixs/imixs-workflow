@@ -482,6 +482,40 @@ public class TestXMLParser {
             assertEquals(2, result.size());
             assertEquals("Harry Potter and the Philosopher's Stone", result.get(0).getItemValue("title").get(0));
         } catch (PluginException e) {
+            fail(e);
+        }
+    }
+
+    /**
+     * Test regex content
+     */
+    @Test
+    public void testParseTagWithRegexString() {
+
+        // Raise logging level to see XMLParser's finest output for this test
+        // Logger xmlParserLogger = Logger.getLogger(XMLParser.class.getName());
+        // xmlParserLogger.setLevel(Level.FINEST);
+        // ConsoleHandler handler = new ConsoleHandler();
+        // handler.setLevel(Level.FINEST);
+        // xmlParserLogger.addHandler(handler);
+
+        // arrange
+        String xmlString = "<item name=\"subprocess_create\">\n" +
+                "   <modelversion>data-export-4.0</modelversion>\n" +
+                "   <task>5700</task>\n" +
+                "   <event>10</event>\n" +
+                "   <items>(?!txtworkflowhistory)(^[a-zA-Z]|^_)</items>\n" +
+                "</item>";
+        try {
+            // act
+            List<ItemCollection> result = XMLParser.parseTagList(xmlString, "item");
+            // assert
+            assertEquals(1, result.size());
+
+            ItemCollection itemCol = result.get(0);
+            assertEquals(5700, itemCol.getItemValueInteger("task"));
+        } catch (PluginException e) {
+            fail(e);
         }
     }
 

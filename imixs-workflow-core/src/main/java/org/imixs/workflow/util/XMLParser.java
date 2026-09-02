@@ -245,7 +245,7 @@ public class XMLParser {
             }
 
             // We found a non-self-closing open tag — count it
-            openTagCount++;  // ← NEU
+            openTagCount++;
 
             // ------------------------------------------------------------------
             // Step 8: parse attributes from the open tag
@@ -309,30 +309,44 @@ public class XMLParser {
                     String ahead = text.substring(searchPos,
                             searchPos + closeTagStr.length()).toLowerCase();
                     if (ahead.equals(closeTagStr)) {
-                        depth--;
-                        if (depth == 0) {
-                            // This is the matching close tag.
-                            // Locate its closing '>' to determine the full match boundary.
-                            int closeTagEnd = text.indexOf('>', searchPos);
-                            if (closeTagEnd < 0) {
-                                // Malformed close tag — abort inner loop
+                        // Boundary check (FIX): the character right after "</tagname"
+                        // must be '>' or whitespace — otherwise this is the close tag
+                        // of a DIFFERENT, longer tag name that merely starts with the
+                        // same prefix, e.g. "</items>" must NOT match a search for
+                        // "</item>". Without this check depth is decremented too
+                        // early, the match ends prematurely, and the returned
+                        // fragment is left with an unclosed open tag.
+                        int afterName = searchPos + closeTagStr.length();
+                        boolean validBoundary = (afterName >= len)
+                                || Character.isWhitespace(text.charAt(afterName))
+                                || text.charAt(afterName) == '>';
+
+                        if (validBoundary) {
+                            depth--;
+                            if (depth == 0) {
+                                // This is the matching close tag.
+                                // Locate its closing '>' to determine the full match boundary.
+                                int closeTagEnd = text.indexOf('>', searchPos);
+                                if (closeTagEnd < 0) {
+                                    // Malformed close tag — abort inner loop
+                                    break;
+                                }
+                                // Extract inner content: everything between the open tag's '>'
+                                // and the start of the close tag.
+                                String content = text.substring(openTagEnd + 1, searchPos);
+                                String fullMatch = text.substring(i, closeTagEnd + 1);
+
+                                result.add(new XMLTag(
+                                        fullMatch, tagLower, attributes,
+                                        content, i, closeTagEnd + 1));
+
+                                // Advance the outer loop past the close tag
+                                i = closeTagEnd + 1;
+
+                                // Sentinel: signal to the outer if-check that we succeeded
+                                depth = -1;
                                 break;
                             }
-                            // Extract inner content: everything between the open tag's '>'
-                            // and the start of the close tag.
-                            String content = text.substring(openTagEnd + 1, searchPos);
-                            String fullMatch = text.substring(i, closeTagEnd + 1);
-
-                            result.add(new XMLTag(
-                                    fullMatch, tagLower, attributes,
-                                    content, i, closeTagEnd + 1));
-
-                            // Advance the outer loop past the close tag
-                            i = closeTagEnd + 1;
-
-                            // Sentinel: signal to the outer if-check that we succeeded
-                            depth = -1;
-                            break;
                         }
                     }
                 }
@@ -354,8 +368,7 @@ public class XMLParser {
         // If parseTagMatches found fewer results than opening tags, at least one tag
         // was never closed — this is a modelling error.
         if (result.size() < openTagCount) {
-            System.out.println("openTagCount=" + openTagCount + " result.size()=" + result.size());
-
+            logger.warning("openTagCount=" + openTagCount + " result.size()=" + result.size());
             throw new IllegalArgumentException(
                     "unclosed <" + tag + "> tag detected in text: " + text);
         }
@@ -676,6 +689,8 @@ public class XMLParser {
         boolean debug = logger.isLoggable(Level.FINE);
         if (debug) {
             logger.finest("......parseItemStructure...");
+            // Log the actual fragment that will be handed to the DOM parser
+            logger.finest("......xmlContent to parse: [" + xmlContent + "]");
         }
         ItemCollection result = new ItemCollection();
         if (xmlContent.length() > 0) {
@@ -739,7 +754,7 @@ public class XMLParser {
             throws PluginException {
         List<ItemCollection> result = new ArrayList<>();
         List<String> tagList = findNoEmptyTags(content, tag);
-        logger.finest("..found " + tagList.size() + " tags matching " + tag);
+        logger.finest("..found " + tagList.size() + " tags matching '" + tag + "'");
         for (String _tag : tagList) {
             result.add(parseTag(_tag, tag));
         }
