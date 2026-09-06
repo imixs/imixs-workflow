@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -695,8 +696,7 @@ public class XMLParser {
         ItemCollection result = new ItemCollection();
         if (xmlContent.length() > 0) {
             try {
-                DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance()
-                        .newDocumentBuilder();
+                DocumentBuilder documentBuilder = XMLParser.getSecureDocumentBuilder();
                 Document doc = documentBuilder.parse(
                         new InputSource(new StringReader(xmlContent)));
                 Node node = doc.importNode(doc.getDocumentElement(), true);
@@ -787,6 +787,31 @@ public class XMLParser {
             }
         }
         return sb.toString();
+    }
+
+    /**
+     * Creates a securely configured {@link DocumentBuilder} that is hardened
+     * against XXE (XML External Entity) injection (@see Issue #982).
+     * <p>
+     * DOCTYPE declarations are disallowed entirely, which is sufficient to
+     * prevent XXE since no ENTITY can be declared without one. Secure processing
+     * is additionally enabled to guard against entity-expansion attacks (e.g.
+     * "Billion Laughs"), which do not require a DOCTYPE and are therefore not
+     * covered by disallowing it.
+     *
+     * @return a hardened {@link DocumentBuilder}
+     * @throws ParserConfigurationException if the underlying parser does not
+     *                                      support the required features
+     */
+    public static DocumentBuilder getSecureDocumentBuilder() throws ParserConfigurationException {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        // Reject any DOCTYPE declaration - this alone prevents XXE, since an
+        // external entity cannot be declared without one.
+        factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        // Guard against entity-expansion / XML bomb attacks (e.g. "Billion Laughs"),
+        // which do not require a DOCTYPE and are therefore not covered above.
+        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        return factory.newDocumentBuilder();
     }
 
 }
