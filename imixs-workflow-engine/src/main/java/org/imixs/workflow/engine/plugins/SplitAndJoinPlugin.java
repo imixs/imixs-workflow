@@ -15,6 +15,7 @@
 
 package org.imixs.workflow.engine.plugins;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -24,12 +25,16 @@ import java.util.regex.Pattern;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
+import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.WorkflowService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.ModelException;
 import org.imixs.workflow.exceptions.PluginException;
 import org.imixs.workflow.exceptions.ProcessingErrorException;
+import org.imixs.workflow.exceptions.QueryException;
 import org.imixs.workflow.util.XMLParser;
+
+import jakarta.inject.Inject;
 
 /**
  * The Imixs Split&Join Plugin provides functionality to create and update
@@ -68,6 +73,9 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
     public static final String SUBPROCESS_SYNC = "subprocess_sync"; // synchronize items from parent
 
     private static final Logger logger = Logger.getLogger(SplitAndJoinPlugin.class.getName());
+
+    @Inject
+    DocumentService documentService;
 
     /**
      * The method evaluates the workflow activity result for items with name:
@@ -359,12 +367,7 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
                         "│   ├── subprocess_update uses deprecated tag 'processid' instead of 'task'. Please check your model");
             }
 
-            List<String> subProcessRefList = originWorkitem.getItemValue(LINK_PROPERTY);
-            if (subProcessRefList.isEmpty() && originWorkitem.hasItem(LINK_PROPERTY_DEPRECATED)) {
-                // test for deprecated link property!
-                subProcessRefList = originWorkitem.getItemValue(LINK_PROPERTY_DEPRECATED);
-            }
-
+            List<String> subProcessRefList = resolveSubprocessWorkitemsByOrigin(originWorkitem);
             for (String subProcessRef : subProcessRefList) {
                 ItemCollection workitemSubProcess = this.getWorkflowService().getWorkItem(subProcessRef);
 
@@ -423,6 +426,45 @@ public class SplitAndJoinPlugin extends AbstractPlugin {
             }
 
         }
+    }
+
+    /**
+     * This helper method resolves the subprocess workitems for the given orign
+     * workitem.
+     * 
+     * Because of the backward compatiblity this method also resolves the old
+     * references stored in $workitemref of the origin workitem. In newer versions
+     * this not necessary
+     * 
+     * @param origin
+     * @return
+     * @throws PluginException
+     */
+    private List<String> resolveSubprocessWorkitemsByOrigin(ItemCollection origin) throws PluginException {
+        List<String> result = new ArrayList<>();
+        String originID = origin.getUniqueID();
+
+        // First we select the sub processes by the origin $uniqueidref
+        // This reflects the new dataGroup concept where the subprocess points to the
+        // orign workitem.
+        String query = "( (type:workitem OR type:workitemarchive) AND ($workitemref:" + originID + ")  )";
+        try {
+            List<ItemCollection> workitems = documentService.findStubs(query, 999, 0, "$created", true);
+            for (ItemCollection _workitem : workitems) {
+                result.add(_workitem.getUniqueID());
+            }
+        } catch (QueryException e) {
+            throw new PluginException(e.getErrorContext(), e.getErrorCode(), e.getMessage(), e);
+        }
+
+        // Second we support the old direction and add the directly referred ids!
+        List<String> deprecatedSubProcessRefList = origin.getItemValue(LINK_PROPERTY);
+        if (deprecatedSubProcessRefList.isEmpty() && origin.hasItem(LINK_PROPERTY_DEPRECATED)) {
+            // test for deprecated link property!
+            deprecatedSubProcessRefList = origin.getItemValue(LINK_PROPERTY_DEPRECATED);
+        }
+        result.addAll(deprecatedSubProcessRefList);
+        return result;
     }
 
     /**
