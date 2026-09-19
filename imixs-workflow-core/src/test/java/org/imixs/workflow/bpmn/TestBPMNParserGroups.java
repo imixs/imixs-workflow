@@ -144,7 +144,7 @@ public class TestBPMNParserGroups {
 		assertEquals(4, activities.size());
 
 		// test the Default Group (Public Process)
-		BPMNProcess defaultProcess = model.openDefaultProces();
+		BPMNProcess defaultProcess = model.openDefaultProcess();
 		assertEquals("Default Process", defaultProcess.getName());
 
 	}

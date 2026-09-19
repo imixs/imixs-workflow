@@ -162,15 +162,15 @@ public class ModelService {
      */
     public void addModelData(String version, BPMNModel model, ItemCollection metadata) {
         // pre open all processes
-        try {
-            Set<BPMNProcess> processes = model.getProcesses();
-            for (BPMNProcess process : processes) {
-                process.init();
-            }
-        } catch (BPMNModelException e) {
-            logger.warning("Failed to open process: " + e.getMessage());
-            e.printStackTrace();
-        }
+        // try {
+        // List<BPMNProcess> processes = model.getBpmnProcessList();
+        // // for (BPMNProcess process : processes) {
+        // // process.init();
+        // // }
+        // } catch (BPMNModelException e) {
+        // logger.warning("Failed to open process: " + e.getMessage());
+        // e.printStackTrace();
+        // }
 
         // if metaData not provided create one on the fly...
         if (metadata == null) {
@@ -303,7 +303,7 @@ public class ModelService {
         for (Map.Entry<String, BPMNModelData> entry : modelDataStore.entrySet()) {
             BPMNModelData modelData = entry.getValue();
             BPMNModel model = modelData.bpmnModel;
-            Set<BPMNProcess> processList = model.getProcesses();
+            List<BPMNProcess> processList = model.getBpmnProcessList();
             for (BPMNProcess _process : processList) {
                 String name = _process.getName();
                 if (!result.contains(name)) {
@@ -337,7 +337,7 @@ public class ModelService {
         for (Map.Entry<String, BPMNModelData> entry : modelDataStore.entrySet()) {
             BPMNModelData modelData = entry.getValue();
             BPMNModel model = modelData.bpmnModel;
-            Set<BPMNProcess> processList = model.getProcesses();
+            List<BPMNProcess> processList = model.getBpmnProcessList();
             for (BPMNProcess _process : processList) {
                 String name = _process.getName();
                 if (group.equals(name)) {

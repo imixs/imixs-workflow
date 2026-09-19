@@ -77,7 +77,7 @@ public class TestBPMNParserRuleEvents {
 			assertNotNull(profile);
 
 			// test count of task elements
-			Set<Activity> tasks = model.openDefaultProces().getActivities();
+			Set<Activity> tasks = model.openDefaultProcess().getActivities();
 			assertEquals(9, tasks.size());
 
 			// test task 1000

@@ -118,6 +118,7 @@ public class ModelManager {
             model = workflowContext.fetchModel(version);
             modelStore.put(version, model);
         }
+
         return model;
     }
 
@@ -194,7 +195,8 @@ public class ModelManager {
             throw new ModelException(ModelException.UNDEFINED_MODEL_ENTRY,
                     "loadProcess - workflow group must not be empty!");
         }
-        for (BPMNProcess process : model.getProcesses()) {
+
+        for (BPMNProcess process : model.getBpmnProcessList()) {
             if (isImixsProcess(process) && group.equals(process.getName())) {
                 return buildProcessItemCollection(process);
             }
@@ -221,7 +223,8 @@ public class ModelManager {
         // bpmn2:participant element, not on the bpmn2:process element.
         // For the public default process, documentation is on the process itself.
         String documentation = null;
-        Participant participant = process.findParticipant();
+
+        Participant participant = process.getModel().findParticipantByProcessId(process.getId());
         if (participant != null) {
             documentation = participant.getDocumentation();
         } else {
@@ -394,7 +397,7 @@ public class ModelManager {
             result = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
             // find Process containing matching the process group
-            for (BPMNProcess _process : _model.getProcesses()) {
+            for (BPMNProcess _process : _model.getBpmnProcessList()) {
                 if (isImixsProcess(_process)) {
                     String groupName = _process.getName();
                     result.add(groupName);
@@ -508,7 +511,7 @@ public class ModelManager {
         }
 
         // find Process containing matching the process group
-        Set<BPMNProcess> processList = model.getProcesses();
+        List<BPMNProcess> processList = model.getBpmnProcessList();
         for (BPMNProcess _process : processList) {
             if (isImixsProcess(_process)) {
                 if (processGroup.equals(_process.getName())) {
@@ -541,7 +544,7 @@ public class ModelManager {
     public List<BPMNProcess> findAllImixsProcesses(BPMNModel _model) {
         List<BPMNProcess> result = new ArrayList<>();
         // find Process containing matching the process group
-        for (BPMNProcess _process : _model.getProcesses()) {
+        for (BPMNProcess _process : _model.getBpmnProcessList()) {
             try {
                 if (isImixsProcess(_process)) {
                     result.add(_process);
@@ -564,15 +567,15 @@ public class ModelManager {
      */
     public boolean isImixsProcess(BPMNProcess _process) throws ModelException {
         if (_process != null) {
-            try {
-                _process.init();
-                BPMNStartElementIterator<Activity> startElements = new BPMNStartElementIterator<>(_process,
-                        node -> (BPMNUtil.isImixsTaskElement(node)));
-                return startElements.hasNext();
-            } catch (BPMNModelException e) {
-                throw new ModelException(ModelException.INVALID_MODEL,
-                        "Invalid process model: " + e.getMessage(), e);
-            }
+            // try {
+            // _process.init();
+            BPMNStartElementIterator<Activity> startElements = new BPMNStartElementIterator<>(_process,
+                    node -> (BPMNUtil.isImixsTaskElement(node)));
+            return startElements.hasNext();
+            // } catch (BPMNModelException e) {
+            // throw new ModelException(ModelException.INVALID_MODEL,
+            // "Invalid process model: " + e.getMessage(), e);
+            // }
         }
         return false;
     }
@@ -603,7 +606,7 @@ public class ModelManager {
         }
 
         // find Process containing matching the process group name
-        Set<BPMNProcess> processList = model.getProcesses();
+        List<BPMNProcess> processList = model.getBpmnProcessList();
         for (BPMNProcess _process : processList) {
             if (isImixsProcess(_process)) {
                 logger.fine("process name=" + _process.getName());
@@ -652,7 +655,7 @@ public class ModelManager {
         }
 
         // find Process containing matching the process group
-        Set<BPMNProcess> processList = model.getProcesses();
+        List<BPMNProcess> processList = model.getBpmnProcessList();
         for (BPMNProcess _process : processList) {
             if (isImixsProcess(_process)) {
                 if (processGroup.equals(_process.getName())) {
@@ -865,7 +868,7 @@ public class ModelManager {
         result.setItemValue("type", "WorkflowEnvironmentEntity");
 
         // Read model-level documentation
-        BPMNProcess process = model.openDefaultProces();
+        BPMNProcess process = model.openDefaultProcess();
         if (process != null) {
             result.setItemValue("documentation", process.getDocumentation());
         }
