@@ -24,6 +24,7 @@
 		<menu name="Core Concepts">
 			<item name="BPMN 2.0" href="modelling/index.html" collapse="true">
 				<item name="How to Model..." href="modelling/howto.html" />
+				<item name="Semantic Modelling" href="modelling/sematic_modelling.html" />
 				<item name="Process &amp; Pools" href="modelling/bpmn_process.html" />
 				<item name="Task Element" href="modelling/bpmn_task_element.html" />
 				<item name="Event Element" href="modelling/bpmn_event_element.html" />
