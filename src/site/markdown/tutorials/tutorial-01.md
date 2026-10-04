@@ -1,27 +1,28 @@
 # How to get Started with Imixs Workflow
 
 <p class="lead">
-In this tutorial you will learn how get started with your own Imixs-Workflow Project.
-Imixs-Workflow is an open-source BPMN 2.0 workflow engine based on Java. It allows developers to model, execute, and monitor business processes in Java EE environments. In this tutorial you will learn :
+In this tutorial you will set up your own Imixs-Workflow project and model your first workflow.
+Imixs-Workflow is an open source BPMN 2.0 workflow engine for Jakarta EE and microservice architectures. You model your business process visually, and the engine executes it.
+In this tutorial you will learn :
 </p>
 
-- Deploy in containerized environments (Docker)
-- Install the Imixs Open BPMN Modeller
-- How to design your own workflows using BPMN 2.0
-- write your first Java Workflow Plugin
+- How to run Imixs-Workflow with Docker
+- How to install the Open-BPMN modeler
+- How to change a form and a workflow in your BPMN model
+- How an event-driven workflow works
 
 Before you get started, ensure you have:
 
-- Java JDK 17 or later installed
-- Apache Maven 3.6+
-- Git installed and a basic understanding about Git.
-- Docker installed (for container deployment) and a basic understanding about Docker
-- Basic knowledge in Java and JavaScript
+- Git
+- Docker
+- Visual Studio Code (only needed to edit models, see Step 3)
+
+You do not need to write any Java code in this tutorial.
 
 ## Step 1: Setting Up Your Development Environment
 
-The easiest way to get started is with the Imixs Starter project 'Imixs-Forms'.
-Imixs Forms is a SinglePage Application connected to the Imixs-Workflow engine via the Imixs Rest API. This allows you to get familiar with the basis concepts. You can implement Applications in any other programming language using the Rest API. We will also implement a Java Plugin to learn how to implement your own business logic. And of course it is also possible to implement a pure Jakarta EE Application with Imixs-Workflow.
+The easiest way to get started is with the Imixs starter project 'Imixs-Forms'.
+Imixs-Forms is a single-page application connected to the Imixs-Workflow engine via the Imixs REST API. This lets you get familiar with the basic concepts without writing any Java code. Because the engine is accessed through a REST API, you can use any programming language for your own applications.
 
 So first get a copy of the imixs-forms project using Git:
 
@@ -59,9 +60,11 @@ http://localhost:8080/app/?modelversion=ticket-en-1.0&taskid=1000
 
 <img src="../images/imixs-tutorial-01.png" class="screenshot" />
 
-This shows you a Web Form with some input elements and a submit button. The submit button will already trigger the Workflow Engine and creates a new so called 'process instance'.
+Your browser will ask you to log in. Use the default test user `admin` with the password `adminadmin`.
 
-That's it - you Imixs Workflow project is up and running. Next let's see how to model a BPMN model.
+The application shows a Web Form with some input elements and a submit button. The submit button will already trigger the Workflow Engine and creates a new so called 'process instance'.
+
+That's it - your Imixs-Workflow project is up and running. Next let's see how to model a BPMN model.
 
 ## Step 3: Create your own Model
 
@@ -71,7 +74,7 @@ Next go to the ‘Extensions’ section and search for ‘Open-BPMN’. Install 
 
 <img src="../images/imixs-tutorial-02.png" class="screenshot" />
 
-Now let's see how the Imixs BPMN Model works. If we take a closer look at the `ticket-en-1.0.0.bpmn` model you can see a BPMN Start Element (gree cycle) and a BPMN Task element (blue box) named 'New Ticket'.
+Now let's see how the Imixs BPMN Model works. If we take a closer look at the `ticket-en-1.0.0.bpmn` model you can see a BPMN Start Element (green cycle) and a BPMN Task element (blue box) named 'New Ticket'.
 
 <img src="../images/imixs-tutorial-03.png" class="screenshot" />
 
@@ -103,7 +106,7 @@ Add the following line below the item "budget"
 ...
 ```
 
-Save the Model and restart your Docker server (stop it with 'ctrl + c')
+Save the Model and restart your Docker stack (stop it with 'ctrl + c')
 
 Now you will see a new Input Field named "Cost Center" beside the Budget field.
 
@@ -111,7 +114,7 @@ Now you will see a new Input Field named "Cost Center" beside the Budget field.
 
 The Imixs-Workflow Engine will automatically store the field values in a new process instance and we can use this information for further processing steps.
 
-Now lets see what happens when we click on the "Submit". In the BPMN event you can see the Submit button is defined as an BPMN Cath Event. And the event is connected by a sequence flow with the Task named "Open"
+Now lets see what happens when we click on the "Submit". In the BPMN event you can see the Submit button is defined as an BPMN Catch Event. And the event is connected by a sequence flow with the Task named "Open"
 
 <img src="../images/imixs-tutorial-05.png" class="screenshot" />
 
@@ -123,4 +126,22 @@ The buttons you see are the corresponding BPMN Events in our model connected wit
 
 <img src="../images/imixs-tutorial-07.png" class="screenshot" />
 
-This is called a "Event Driven Workflow". Each BPMN Event defines what happens if the user triggers the event. Each event can change the status in our process flow and also triggere different backend services as we will see later.
+This is called a "Event Driven Workflow". Each BPMN Event defines what happens if the user triggers the event. Each event can change the status in our process flow and also trigger different backend services as we will see later.
+
+## What You Have Learned
+
+- Imixs-Workflow runs as a Docker service, started with a single command.
+- A BPMN model defines the process **and** the input form. Change the model, restart, and your form changes with it.
+- Each BPMN event is an action the user can trigger. The engine moves the process instance from one task to the next. This is the event-driven workflow.
+
+All of this came from your model, without writing any Java code.
+
+## What's Next?
+
+Depending on what you want to build, there are three ways to continue:
+
+- **Call the engine from your own application.** The REST API works with any programming language. See the [Imixs REST API](https://www.imixs.org/doc/restapi/index.html).
+- **Add your own business logic with Java.** Plugins run your code when an event is triggered, for example to validate data or to call another service. See the [Plugin API](https://www.imixs.org/doc/engine/plugins/index.html).
+- **Embed the engine in a Jakarta EE application.** See [Imixs-Workflow and Jakarta EE](https://www.imixs.org/sub_jee.html).
+
+If you want to know why a workflow engine saves you work, read [Why should I use it?](https://www.imixs.org/doc/quickstart/why.html)

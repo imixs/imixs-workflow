@@ -13,7 +13,8 @@
 		<menu name="Documentation">
 			<item name="Overview" href="index.html" collapse="true">
 				<item name="Tutorial" href="tutorials/tutorial-01.html" />
-				<item name="Why should I use it?" href="quickstart/why.html" />
+				<item name="Why Imixs-Worklfow?" href="quickstart/why.html" />
+				<item name="Open Process Management" href="quickstart/open_process_management.html" />
 				<item name="Human Centric" href="quickstart/human.html" />
 				<item name="Business Data" href="quickstart/workitem.html" />
 				<item name="Modelling Roles" href="quickstart/roles_responsibilities.html" />
