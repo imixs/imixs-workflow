@@ -11,13 +11,13 @@ In this tutorial you will learn :
 - How to change a form and a workflow in your BPMN model
 - How an event-driven workflow works
 
-Before you get started, ensure you have:
+**Before you get started, ensure you have:**
 
 - Git
 - Docker
 - Visual Studio Code (only needed to edit models, see Step 3)
 
-You do not need to write any Java code in this tutorial.
+You do not need to write any Java code in this tutorial. If you want to learn how to extend the Imixs Workflow engine follow [Tutorial Part-2](./tutorial-02.html).
 
 ## Step 1: Setting Up Your Development Environment
 
@@ -140,6 +140,7 @@ All of this came from your model, without writing any Java code.
 
 Depending on what you want to build, there are three ways to continue:
 
+- **Learn how to Extend the Engine with Plugin and Adapter classes** in [Tutorial Part-2](./tutorial-02.html)
 - **Call the engine from your own application.** The REST API works with any programming language. See the [Imixs REST API](https://www.imixs.org/doc/restapi/index.html).
 - **Add your own business logic with Java.** Plugins run your code when an event is triggered, for example to validate data or to call another service. See the [Plugin API](https://www.imixs.org/doc/engine/plugins/index.html).
 - **Embed the engine in a Jakarta EE application.** See [Imixs-Workflow and Jakarta EE](https://www.imixs.org/sub_jee.html).
