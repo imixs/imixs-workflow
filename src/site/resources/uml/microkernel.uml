@@ -1,0 +1,80 @@
+@startuml
+
+autonumber
+
+participant WorkflowKernel order 1
+participant Model order 2
+participant SignalAdapter order 3
+collections Plugin order 50
+participant GenericAdapter order 90
+collections Service order 99
+participant ExternalSystem order 100
+
+box "Workflow Engine" #White
+	participant WorkflowKernel
+	participant Model
+	participant SignalAdapter
+	participant Plugin
+	participant GenericAdapter
+end box
+
+box "Application Services" #LightBlue
+	participant Service
+end box
+
+box "External" #White
+	participant ExternalSystem
+end box
+
+hide footbox
+
+activate WorkflowKernel
+
+note over WorkflowKernel, Service: Everything runs in one container transaction
+
+WorkflowKernel -> Model: load BPMN Event
+activate Model
+Model --> WorkflowKernel:
+deactivate Model
+
+
+WorkflowKernel -> SignalAdapter: execute Signal Adapters
+activate SignalAdapter
+SignalAdapter -> Service: call Service (CDI / EJB)
+activate Service
+Service --> SignalAdapter
+deactivate Service
+SignalAdapter --> WorkflowKernel
+deactivate SignalAdapter
+
+
+WorkflowKernel -> Plugin: init Plug-Ins
+activate Plugin
+WorkflowKernel -> Plugin: run Plug-Ins
+
+Plugin -> Service: call Service (CDI / EJB)
+activate Service
+Service -> ExternalSystem: external API Call
+activate ExternalSystem
+note right of ExternalSystem: not part of\nthe transaction
+ExternalSystem --> Service
+deactivate ExternalSystem
+Service --> Plugin
+deactivate Service
+
+WorkflowKernel -> Plugin: close Plug-Ins
+deactivate Plugin
+
+
+WorkflowKernel -> GenericAdapter: execute Generic Adapters
+activate GenericAdapter
+GenericAdapter -> Service: call Service (CDI / EJB)
+activate Service
+Service --> GenericAdapter
+deactivate Service
+GenericAdapter --> WorkflowKernel
+deactivate GenericAdapter
+
+deactivate WorkflowKernel
+
+@enduml

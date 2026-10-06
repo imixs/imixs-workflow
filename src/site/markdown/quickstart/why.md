@@ -95,5 +95,6 @@ Continue reading more about:
 - [Tutorial: Your First Workflow](../tutorials/tutorial-01.html)
 - [What Means Human Centric Workflow?](../quickstart/human.html)
 - [Imixs-BPMN - The Modeler User Guide](../modelling/index.html)
-- [The Imixs-Workflow Plugin API](../engine/plugins/index.html)
+- [The Imixs Microkernel Architecture](../architecture/microkernel.html)
+- [The Imixs-Workflow Plugin API](../core/plugin-api.html)
 - [The Imixs-Workflow REST API](../restapi/index.html)
