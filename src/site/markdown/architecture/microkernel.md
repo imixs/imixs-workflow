@@ -1,20 +1,21 @@
 # The Imixs Microkernel Architecture
 
 <p class="lead">
-A BPMN model describes the flow of a process with tasks, events and gateways. A task describes a state, while an event describes the transition from one state to the next. But an event is also responsible for executing business logic, for example 
+The Imixs microkernel architecture let you extend the Imixs Workflow engine with your own business logic. Without changing the engine itself and without moving the process logic out of the model.
+In Imixs-Workflow a BPMN task element describes a state, while an event describes the transition from one state to the next. 
+But an event is also responsible for executing business logic, for example 
 validate data with business rules in the <a href="../engine/plugins/ruleplugin.html">Rule Plugin</a>, 
  send an email with the <a href="../engine/plugins/mailplugin.html">Mail Plugin</a>
- or set the access rights for a process instance. 
- The Imixs microkernel architecture lets you extend this logic with your own code, without changing the engine itself and without moving the process logic out of the model.
+ or set the access rights for a process instance. You can also code your own extensions and add them into your BPMN model. 
 </p>
 
 ## The Idea
 
 Imixs-Workflow consists of two layers.
 
-The **WorkflowKernel** is a plain Java class (POJO) that does not depend on any framework. It knows how to process a BPMN event and how to move a process instance from one task to the next, and it makes sure that the process instance follows the workflow described in the model. The same kernel can run in different environments, for example in an engine on Jakarta EE or on Quarkus.
+- The **WorkflowKernel** is a plain Java class (POJO) that does not depend on any framework. It knows how to process a BPMN event and how to move a process instance from one task to the next, and it makes sure that the process instance follows the workflow described in the model. The same kernel can run in different environments, for example in an engine on Jakarta EE or on Quarkus.
 
-The **Workflow Engine** wraps the kernel and adds the runtime environment. On Jakarta EE this is the `WorkflowService`. It calls the kernel to compute the new state of a process instance and runs the plugins and adapters that are bound to an event, all within one container transaction. This is done with CDI, so your extensions are managed by the application server and can use all of its services.
+- The **Workflow Engine** wraps the kernel and adds the runtime environment. On Jakarta EE this is the `WorkflowService`. It calls the kernel to compute the new state of a process instance and runs the plugins and adapters that are bound to an event, all within one container transaction. This is done with CDI, so your extensions are managed by the application server and can use all of its services.
 
 This gives you a clear separation:
 
