@@ -991,31 +991,37 @@ public class WorkflowKernel {
         if (debug) {
             logger.finest("......executing SignalAdapters...");
         }
-        // execute adapters if adapter class is defined....
-        String adapterClass = event.getItemValueString("adapter.id");
-        if (!adapterClass.isEmpty() && adapterClass.matches("^(?:\\w+|\\w+\\.\\w+)+$")) {
-            Adapter adapter = adapterRegistry.get(adapterClass);
-            if (adapter != null) {
 
-                if (adapter instanceof GenericAdapter) {
-                    logger.log(Level.WARNING, "...GenericAdapter ''{0}'' should not be associated with a Signal Event."
-                            + " Adapter will not be executed.", adapterClass);
-                    // ...stop execution as the GenericAdapter was already executed by the method
-                    // executeGenericAdapters...
-                } else {
-                    // execute only instance of signal Adapters...
-                    if (adapter instanceof SignalAdapter) {
-                        executeAdaper(adapter, documentResult, event);
+        List<String> adapterList = event.getItemValue("adapter.id");
+        for (String adapterClass : adapterList) {
+            // execute adapters if adapter class is defined....
+            // String adapterClass = event.getItemValueString("adapter.id");
+            if (!adapterClass.isEmpty() && adapterClass.matches("^(?:\\w+|\\w+\\.\\w+)+$")) {
+                Adapter adapter = adapterRegistry.get(adapterClass);
+                if (adapter != null) {
+
+                    if (adapter instanceof GenericAdapter) {
+                        logger.log(Level.WARNING,
+                                "...GenericAdapter ''{0}'' should not be associated with a Signal Event."
+                                        + " Adapter will not be executed.",
+                                adapterClass);
+                        // ...stop execution as the GenericAdapter was already executed by the method
+                        // executeGenericAdapters...
                     } else {
-                        throw new PluginException(WorkflowKernel.class.getSimpleName(), PLUGIN_ERROR,
-                                "Abstract Adapter '" + adapterClass
-                                        + "' can not be executed - use SignalAdapter or GenericAdapter instead!");
+                        // execute only instance of signal Adapters...
+                        if (adapter instanceof SignalAdapter) {
+                            executeAdaper(adapter, documentResult, event);
+                        } else {
+                            throw new PluginException(WorkflowKernel.class.getSimpleName(), PLUGIN_ERROR,
+                                    "Abstract Adapter '" + adapterClass
+                                            + "' can not be executed - use SignalAdapter or GenericAdapter instead!");
 
+                        }
                     }
+                } else {
+                    throw new ModelException(ModelException.INVALID_MODEL,
+                            "...Adapter '" + adapterClass + "' not registered - verify model!");
                 }
-            } else {
-                throw new ModelException(ModelException.INVALID_MODEL,
-                        "...Adapter '" + adapterClass + "' not registered - verify model!");
             }
         }
     }
