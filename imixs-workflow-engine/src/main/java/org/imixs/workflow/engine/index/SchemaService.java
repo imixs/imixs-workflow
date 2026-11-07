@@ -102,7 +102,7 @@ public class SchemaService {
     public static List<String> DEFAULT_SEARCH_FIELD_LIST = Arrays.asList("$workflowsummary", "$workflowabstract");
     public static List<String> DEFAULT_NOANALYZE_FIELD_LIST = Arrays.asList("$modelversion", "$taskid", "$processid",
             "$workitemid", "$uniqueidref", "type", "$writeaccess", "$snapshotid", "$modified", "$created", "namcreator",
-            "$creator", "$editor", "$lasteditor", "$workflowgroup", "$workflowstatus", "id", "name",
+            "$creator", "$editor", "$lasteditor", "$workflowgroup", "$workflowstatus", "$migration", "id", "name",
             "group", "category", "topic", "date", "sequencenumber",
             "txtname", "$owner", "namowner", "$workitemref", "$uniqueidsource", "$uniqueidversions",
             "$lasttask", "$lastevent", "$lasteventdate", "$file.count", "$file.names");
