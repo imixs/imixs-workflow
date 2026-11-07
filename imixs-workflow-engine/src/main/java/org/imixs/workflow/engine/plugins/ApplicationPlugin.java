@@ -85,11 +85,15 @@ public class ApplicationPlugin extends AbstractPlugin {
 
         // set Editor if defined
         if (sEditorID != null && !sEditorID.isBlank()) {
+            workitem.setItemValue("$application.editor", sEditorID);
+            // support deprecated field
             workitem.setItemValue("txtWorkflowEditorID", sEditorID);
         }
 
         // set ImageURL if defined
         if (sImageURL != null && !sImageURL.isBlank()) {
+            workitem.setItemValue("$application.icon", sImageURL);
+            // support deprecated field
             workitem.setItemValue("txtWorkflowImageURL", sImageURL);
         }
 

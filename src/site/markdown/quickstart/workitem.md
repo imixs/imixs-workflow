@@ -40,40 +40,45 @@ As explained before, a workitem can not only contain business data, but also inf
 
 The following table provides an overview about all data items managed by the Imixs-Workflow Engine. The column '_read/write_' indicates if the item can be controlled by an application. The column '_indexed_' indicates if the item can be searched by the [search index](../engine/queries.html#Query_Items):
 
-| Property                 | Type    | read/write | indexed | Description                                                                                                                           |
-| ------------------------ | ------- | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| $ModelVersion            | String  | yes        | yes     | The Version of the model the workitem belongs to                                                                                      |
-| $TaskID                  | Integer | yes        | yes     | The current taskID of the workitem                                                                                                    |
-| $EventID                 | Integer | yes        | yes     | Current event processed by the Workflow Engine. Is 0 if no processing lifecycle is executed.                                          |
-| $workflowGroup           | String  | no         | yes     | The name of the current process group                                                                                                 |
-| $workflowStatus          | String  | no         | yes     | The name of the current workflow status                                                                                               |
-| $Created                 | Date    | no         | yes     | Date of creation                                                                                                                      |
-| $Modified                | Date    | no         | yes     | Date of last modification                                                                                                             |
-| $ReadAccess              | List    | no         | yes     | String list of User/Roles with read access                                                                                            |
-| $WriteAccess             | List    | no         | yes     | String list of User/Roles with write access                                                                                           |
-| $uniqueId                | String  | no         | yes     | The unique ID of this workItem                                                                                                        |
-| $uniqueIdRef             | String  | yes        | yes     | A reference to a connected workItem (child process)                                                                                   |
-| $workitemId              | String  | no         | yes     | A unique process instance id of a workitem and all its versions                                                                       |
-| $uniqueIDSource          | String  | no         | yes     | The UniqueID of the Source workitem for a version (See [Workflow Kernel split-events](../core/workflowkernel.html))                   |
-| $uniqueIDVersions        | String  | no         | yes     | A list of UniqueIDs to all created versions of this workitem (See [Workflow Kernel split-events](../core/workflowkernel.html))        |
-| $lastTask                | Integer | no         | yes     | The last assigned Task ID (processid)                                                                                                 |
-| $lastEvent               | Integer | no         | yes     | The last processed event ID                                                                                                           |
-| $lastEventDate           | Date    | no         | yes     | The timestamp of the last processing action                                                                                           |
-| $eventLog                | List    | no         | no      | Log of processed workflow events                                                                                                      |
-| $creator                 | String  | no         | yes     | The user who created the workItem.                                                                                                    |
-| $editor                  | String  | no         | yes     | The user who invoked the processWorkitem() method.                                                                                    |
-| $lasteditor              | String  | no         | yes     | The last user, that invoked the process method before the $editor                                                                     |
-| $noindex                 | Boolean | yes        | no      | If set to 'true', the document will not be added into the index. (See [DocumentService](../engine/documentservice.html) for details.) |
-| $immutable               | Boolean | yes        | no      | If set to 'true' updateing the workitem is no longer allowed. (See [DocumentService](../engine/documentservice.html) for details.)    |
-| $Participants            | List    | no         | yes     | String list of Users having executed this WorkItem.                                                                                   |
-| $owner                   | List    | no         | yes     | String list of User/Roles, that are owners of that WorkItem.                                                                          |
-| $workflowsummary         | String  | no         | yes     | A short description of the current status                                                                                             |
-| $workflowabstract        | String  | no         | yes     | A long description of the current status                                                                                              |
-| $file                    | List    | yes        | no      | List of FileData objects                                                                                                              |
-| $file.count              | Integer | no         | yes     | Count of FileData objects                                                                                                             |
-| $file.filenames          | List    | yes        | yes     | List of file names                                                                                                                    |
-| txtworkflowimageurl      | String  | no         | no      | A link to an image which displays the current status                                                                                  |
-| txtworkflowresultmessage | String  | no         | no      | The result message of last process step                                                                                               |
+| Property            | Type    | read/write | indexed | Description                                                                                                                           |
+| ------------------- | ------- | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| $ModelVersion       | String  | yes        | yes     | The Version of the model the workitem belongs to                                                                                      |
+| $TaskID             | Integer | yes        | yes     | The current taskID of the workitem                                                                                                    |
+| $EventID            | Integer | yes        | yes     | Current event processed by the Workflow Engine. Is 0 if no processing lifecycle is executed.                                          |
+| $workflowGroup      | String  | no         | yes     | The name of the current process group                                                                                                 |
+| $workflowStatus     | String  | no         | yes     | The name of the current workflow status                                                                                               |
+| $Created            | Date    | no         | yes     | Date of creation                                                                                                                      |
+| $Modified           | Date    | no         | yes     | Date of last modification                                                                                                             |
+| $ReadAccess         | List    | no         | yes     | String list of User/Roles with read access                                                                                            |
+| $WriteAccess        | List    | no         | yes     | String list of User/Roles with write access                                                                                           |
+| $uniqueId           | String  | no         | yes     | The unique ID of this workItem                                                                                                        |
+| $uniqueIdRef        | String  | yes        | yes     | A reference to a connected workItem (child process)                                                                                   |
+| $workitemId         | String  | no         | yes     | A unique process instance id of a workitem and all its versions                                                                       |
+| $uniqueIDSource     | String  | no         | yes     | The UniqueID of the Source workitem for a version (See [Workflow Kernel split-events](../core/workflowkernel.html))                   |
+| $uniqueIDVersions   | String  | no         | yes     | A list of UniqueIDs to all created versions of this workitem (See [Workflow Kernel split-events](../core/workflowkernel.html))        |
+| $lastTask           | Integer | no         | yes     | The last assigned Task ID (processid)                                                                                                 |
+| $lastEvent          | Integer | no         | yes     | The last processed event ID                                                                                                           |
+| $lastEventDate      | Date    | no         | yes     | The timestamp of the last processing action                                                                                           |
+| $eventLog           | List    | no         | no      | Log of processed workflow events                                                                                                      |
+| $creator            | String  | no         | yes     | The user who created the workItem.                                                                                                    |
+| $editor             | String  | no         | yes     | The user who invoked the processWorkitem() method.                                                                                    |
+| $lasteditor         | String  | no         | yes     | The last user, that invoked the process method before the $editor                                                                     |
+| $noindex            | Boolean | yes        | no      | If set to 'true', the document will not be added into the index. (See [DocumentService](../engine/documentservice.html) for details.) |
+| $immutable          | Boolean | yes        | no      | If set to 'true' updateing the workitem is no longer allowed. (See [DocumentService](../engine/documentservice.html) for details.)    |
+| $Participants       | List    | no         | yes     | String list of Users having executed this WorkItem.                                                                                   |
+| $owner              | List    | no         | yes     | String list of User/Roles, that are owners of that WorkItem.                                                                          |
+| $workflowsummary    | String  | no         | yes     | A short description of the current status                                                                                             |
+| $workflowabstract   | String  | no         | yes     | A long description of the current status                                                                                              |
+| $application.editor | String  | no         | no      | Application editor definition from last BPMN processing cyle status                                                                   |
+| $application.icon   | String  | no         | no      | Application icon definition from last BPMN processing cyle status                                                                     |
+| $file               | List    | yes        | no      | List of FileData objects                                                                                                              |
+| $file.count         | Integer | no         | yes     | Count of FileData objects                                                                                                             |
+| $file.filenames     | List    | yes        | yes     | List of file names                                                                                                                    |
+| $migration          | List    | yes        | yes     | Optional migration/version flag                                                                                                       |
+| id                  | String  | yes        | yes     | Optional ID field                                                                                                                     |
+| group               | List    | yes        | yes     | Optional List of group names                                                                                                          |
+| topic               | List    | yes        | yes     | Optional list of topic names                                                                                                          |
+| category            | List    | yes        | yes     | Optional List of category names                                                                                                       |
 
 ### Temporary Attributes
 
