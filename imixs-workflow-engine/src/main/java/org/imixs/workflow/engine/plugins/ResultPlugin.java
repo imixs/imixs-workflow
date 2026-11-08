@@ -47,7 +47,7 @@ import org.imixs.workflow.exceptions.PluginException;
  */
 public class ResultPlugin extends AbstractPlugin {
 
-    public static List<String> SPPORTED_KERNEL_ITEMS = Arrays.asList("$file", "$snapshot.history");
+    public static List<String> SPPORTED_KERNEL_ITEMS = Arrays.asList("$file", "$snapshot.history", "$migration");
 
     private static final Logger logger = Logger.getLogger(ResultPlugin.class.getName());
 
@@ -85,6 +85,7 @@ public class ResultPlugin extends AbstractPlugin {
         // only if name starts with $ we need to check the SUPPORTED_KERNEL_ITEMS
         if (itemName.startsWith("$")) {
             if (!SPPORTED_KERNEL_ITEMS.contains(itemName.toLowerCase())) {
+                logger.log(Level.WARNING, "<item> tag ''{0}'' is immutable", itemName);
                 return false;
             }
         }
