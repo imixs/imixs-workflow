@@ -19,12 +19,8 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import jakarta.annotation.Resource;
-import jakarta.annotation.security.DeclareRoles;
-import jakarta.annotation.security.RunAs;
-import jakarta.inject.Inject;
 
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
@@ -33,15 +29,18 @@ import org.imixs.workflow.engine.plugins.OwnerPlugin;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 import org.imixs.workflow.exceptions.PluginException;
 
+import jakarta.annotation.Resource;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RunAs;
 import jakarta.ejb.LocalBean;
 import jakarta.ejb.SessionContext;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
-import java.util.logging.Level;
+import jakarta.inject.Inject;
 
 /**
- * JobHandler to upgrate existing workItems to the latest workflow version.
+ * JobHandler to upgrade existing workItems to the latest workflow version.
  * 
  * Missing workflow items will be added.
  * 
@@ -118,8 +117,8 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
         List<ItemCollection> workitemList = documentService.getDocumentsByQuery(query, iIndex, iBlockSize);
         int colSize = workitemList.size();
         // Update index
-        logger.log(Level.INFO,"Job " + AdminPService.JOB_UPGRADE
-                + " ({0}) - verifeing {1} workitems...", new Object[]{adminp.getUniqueID(), colSize});
+        logger.log(Level.INFO, "Job " + AdminPService.JOB_UPGRADE
+                + " ({0}) - verifeing {1} workitems...", new Object[] { adminp.getUniqueID(), colSize });
         int iCount = 0;
         for (ItemCollection workitem : workitemList) {
             // only look into documents with a model version...
@@ -146,9 +145,9 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
             time = 1;
         }
 
-        logger.log(Level.INFO,"Job " + AdminPService.JOB_UPGRADE + " ({0}) - {1} documents processed,"
+        logger.log(Level.INFO, "Job " + AdminPService.JOB_UPGRADE + " ({0}) - {1} documents processed,"
                 + " {2} updates in {3} sec.  (in total: {4} processed, {5} updates)",
-                new Object[]{adminp.getUniqueID(), colSize, iCount, time, iProcessed, iUpdates});
+                new Object[] { adminp.getUniqueID(), colSize, iCount, time, iProcessed, iUpdates });
 
         // if colSize<numBlockSize we can stop the timer
         if (colSize < iBlockSize) {
@@ -201,34 +200,28 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
             workitem.replaceItemValue("$taskid", workitem.getItemValue("$processid"));
             bUpgrade = true;
         }
-        
 
         if (!workitem.hasItem(OwnerPlugin.OWNER)) {
             workitem.replaceItemValue(OwnerPlugin.OWNER, workitem.getItemValue("namowner"));
             bUpgrade = true;
         }
-        
-        
-        
+
         if (!workitem.hasItem("process.name")) {
             workitem.replaceItemValue("process.name", workitem.getItemValue("txtprocessname"));
             workitem.replaceItemValue("process.ref", workitem.getItemValue("txtprocessRef"));
             workitem.replaceItemValue("space.name", workitem.getItemValue("txtspacename"));
             workitem.replaceItemValue("space.ref", workitem.getItemValue("txtspaceRef"));
-            
+
             workitem.replaceItemValue("space.assist", workitem.getItemValue("namspaceassist"));
             workitem.replaceItemValue("space.team", workitem.getItemValue("namspaceTeam"));
             workitem.replaceItemValue("space.manager", workitem.getItemValue("namspaceManager"));
-            
+
             workitem.replaceItemValue("process.assist", workitem.getItemValue("namprocessassist"));
             workitem.replaceItemValue("process.team", workitem.getItemValue("namprocessTeam"));
             workitem.replaceItemValue("process.manager", workitem.getItemValue("namprocessManager"));
 
             bUpgrade = true;
         }
-        
-        
-        
 
         return bUpgrade;
     }
@@ -264,9 +257,9 @@ public class JobHandlerUpgradeWorkitems implements JobHandler {
             query += " AND document.type IN(" + sType + ")";
             bAddAnd = true;
         } else {
-        	// default to workitem
-        	  query += " AND document.type IN('workitem')";
-        	  bAddAnd = true;
+            // default to workitem
+            query += " AND document.type IN('workitem')";
+            bAddAnd = true;
         }
 
         if (datFilterFrom != null) {

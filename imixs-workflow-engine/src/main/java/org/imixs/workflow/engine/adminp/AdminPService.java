@@ -20,24 +20,23 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import jakarta.annotation.Resource;
-import jakarta.annotation.security.DeclareRoles;
-import jakarta.annotation.security.RunAs;
-import jakarta.enterprise.inject.Any;
-import jakarta.enterprise.inject.Instance;
-import jakarta.inject.Inject;
-
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.Plugin;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.exceptions.AccessDeniedException;
 
+import jakarta.annotation.Resource;
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RunAs;
 import jakarta.ejb.EJBException;
 import jakarta.ejb.SessionContext;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.Timeout;
 import jakarta.ejb.Timer;
+import jakarta.enterprise.inject.Any;
+import jakarta.enterprise.inject.Instance;
+import jakarta.inject.Inject;
 
 /**
  * The AmdinPService provides a mechanism to start long running jobs. Those jobs
@@ -75,6 +74,7 @@ public class AdminPService {
 
     public static final String JOB_RENAME_USER = "RENAME_USER";
     public static final String JOB_REBUILD_INDEX = "JOB_REBUILD_INDEX";
+    public static final String JOB_UPDATE_WORKITEMS = "UPDATE_WORKITEMS";
     public static final String JOB_UPGRADE = "UPGRADE";
     public static final String JOB_MIGRATION = "MIGRATION";
     public static final int DEFAULT_INTERVAL = 60;
@@ -96,6 +96,9 @@ public class AdminPService {
 
     @Inject
     JobHandlerRebuildIndex jobHandlerRebuildIndex;
+
+    @Inject
+    JobHandlerUpdateWorkitems jobHandlerUpdateItems;
 
     @Inject
     @Any
@@ -142,7 +145,7 @@ public class AdminPService {
         // generate new UniqueID...
         adminp.replaceItemValue(WorkflowKernel.UNIQUEID, WorkflowKernel.generateUniqueID());
 
-        // Test interval - in minutes
+        // Test interval - in seconds
         int interval = adminp.getItemValueInteger("numInterval");
         if (interval <= 0) {
             interval = DEFAULT_INTERVAL;
@@ -162,7 +165,7 @@ public class AdminPService {
         Timer timer = timerService.createTimer(terminationDate, (interval * 1000),
                 adminp.getItemValueString(WorkflowKernel.UNIQUEID));
 
-        logger.log(Level.INFO, "Job {0} ({1}) started... ", new Object[]{jobtype, timer.getInfo().toString()});
+        logger.log(Level.INFO, "Job {0} ({1}) started... ", new Object[] { jobtype, timer.getInfo().toString() });
         return adminp;
     }
 
@@ -184,23 +187,24 @@ public class AdminPService {
      * Method to restart an existing job.
      * 
      * The method first tries to cancel a running timer and than creates a new one
+     * 
      * @param id
      */
     public void restartJobByID(String id) {
-        logger.info("...Restart AdminP Job: "+id);
+        logger.info("...Restart AdminP Job: " + id);
         // try to cancel...
         ItemCollection job = cancelTimer(id);
-        if (job!=null) {
+        if (job != null) {
             String jobtype = job.getItemValueString("job");
             int interval = job.getItemValueInteger("numInterval");
             Calendar cal = Calendar.getInstance();
             Date terminationDate = cal.getTime();
             // restart timer...
             Timer timer = timerService.createTimer(terminationDate, (interval * 1000),
-            job.getUniqueID());
+                    job.getUniqueID());
             logger.info("Job " + jobtype + " (" + timer.getInfo().toString() + ") restarted... ");
         } else {
-            logger.info("Restart failed - unable to load job with id: "+id);
+            logger.info("Restart failed - unable to load job with id: " + id);
         }
     }
 
@@ -234,7 +238,7 @@ public class AdminPService {
             }
 
             String job = adminp.getItemValueString("job");
-            logger.log(Level.INFO, "Job {0} ({1})  processing...", new Object[]{job, adminp.getUniqueID()});
+            logger.log(Level.INFO, "Job {0} ({1})  processing...", new Object[] { job, adminp.getUniqueID() });
 
             // boolean jobfound = false;
 
@@ -252,6 +256,10 @@ public class AdminPService {
                 jobHandler = jobHandlerRebuildIndex;
             }
 
+            if (job.equals(JOB_UPDATE_WORKITEMS)) {
+                jobHandler = jobHandlerUpdateItems;
+            }
+
             if (jobHandler == null) {
                 // try to find the jobHandler by CDI .....
                 jobHandler = findJobHandlerByName(job);
@@ -267,7 +275,8 @@ public class AdminPService {
                 if (adminp.getItemValueBoolean("iscompleted")) {
                     timer.cancel();
                     adminp.replaceItemValue("$workflowStatus", "COMPLETED");
-                    logger.log(Level.INFO, "Job {0} ({1}) completed - timer stopped", new Object[]{job, adminp.getUniqueID()});
+                    logger.log(Level.INFO, "Job {0} ({1}) completed - timer stopped",
+                            new Object[] { job, adminp.getUniqueID() });
                 } else {
                     adminp.replaceItemValue("$workflowStatus", "WAITING");
                 }
@@ -304,7 +313,8 @@ public class AdminPService {
             }
         }
 
-        logger.log(Level.FINE, "...timer call finished successfull after {0} ms", (System.currentTimeMillis()) - lProfiler);
+        logger.log(Level.FINE, "...timer call finished successfull after {0} ms",
+                (System.currentTimeMillis()) - lProfiler);
 
     }
 
