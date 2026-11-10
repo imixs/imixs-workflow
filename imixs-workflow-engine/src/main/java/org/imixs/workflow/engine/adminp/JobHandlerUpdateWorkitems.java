@@ -40,9 +40,8 @@ import jakarta.inject.Inject;
 
 /**
  * The JobHandlerUpdateWorkitems updates a single item in all workitems selected
- * by
- * a given Lucene search query. Optionally each workitem can be processed by the
- * WorkflowService with a given event.
+ * by a given Lucene search query. Optionally each workitem can be processed by
+ * the WorkflowService with a given event.
  * <p>
  * The following job attributes are expected:
  * <ul>
@@ -102,7 +101,7 @@ public class JobHandlerUpdateWorkitems implements JobHandler {
         long lProfiler = System.currentTimeMillis();
 
         // read and validate job parameters
-        String query = adminp.getItemValueString("query").trim();
+        String rawQuery = adminp.getItemValueString("query").trim();
         String itemName = adminp.getItemValueString("itemname").trim();
         // raw value list - keeps the types defined by the client
         List<Object> itemValues = new ArrayList<>(adminp.getItemValue("itemvalue"));
@@ -110,8 +109,8 @@ public class JobHandlerUpdateWorkitems implements JobHandler {
         int eventId = adminp.getItemValueInteger("eventid");
         String jobId = adminp.getUniqueID();
 
-        logger.info("├── run update job....");
-        logger.info("│   ├── ⚙ Query: " + query);
+        logger.info("├── ⚙ Run update job....");
+        logger.info("│   ├── Query: " + rawQuery);
         logger.info("│   ├── ItemName: " + itemName);
         logger.info(() -> "│   ├── itemValues: " + itemValues.stream()
                 .map(String::valueOf)
@@ -120,7 +119,7 @@ public class JobHandlerUpdateWorkitems implements JobHandler {
         logger.info("│   ├── eventId: " + eventId);
         logger.info("│   ├── jobId: " + jobId);
 
-        if (query.isEmpty() || itemName.isEmpty()) {
+        if (rawQuery.isEmpty() || itemName.isEmpty()) {
             throw new AdminPException(AdminPException.INVALID_PARAMS,
                     "Invalid job configuration - attributes 'query' or 'itemname' are empty.");
         }
@@ -137,11 +136,14 @@ public class JobHandlerUpdateWorkitems implements JobHandler {
 
         // wrap the user query in brackets so an OR inside does not break the logic,
         // and exclude all workitems already marked by this job
-        String searchQuery = "(" + query + ") AND NOT " + ITEM_MIGRATION + ":\"" + jobId + "\"";
+        String searchQuery = "(" + rawQuery + ") AND NOT " + ITEM_MIGRATION + ":\"" + jobId + "\"";
         adminp.replaceItemValue("txtQuery", searchQuery);
 
         Collection<ItemCollection> col;
         try {
+            long totalCount = documentService.count(searchQuery);
+            logger.info("│   ├── ↻ " + totalCount + " workitems remaining");
+            logger.info("│   ├── ⚙ Processing next " + blockSize + " workitems...");
             // always page 0 - updated workitems drop out of the result set
             col = documentService.find(searchQuery, blockSize, 0, "$created", false);
         } catch (QueryException e) {
@@ -168,8 +170,8 @@ public class JobHandlerUpdateWorkitems implements JobHandler {
 
         long time = (System.currentTimeMillis() - lProfiler) / 1000;
         logger.log(Level.INFO,
-                "Job " + AdminPService.JOB_UPDATE_WORKITEMS
-                        + " ({0}) - {1} workitems updated in {2} sec. (in total: {3})",
+                "├── ✓ Job " + AdminPService.JOB_UPDATE_WORKITEMS
+                        + " ({0}) Block finished - {1} workitems updated in {2} sec. (in total: {3})",
                 new Object[] { jobId, colSize, time, updates });
 
         // a block smaller than the block size means no more workitems are left
