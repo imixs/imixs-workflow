@@ -20,6 +20,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<!-- dependency versions -->
+		<maven.compiler.release>21</maven.compiler.release>
 		<jakarta.version>10.0.0</jakarta.version>
 		<microprofile.version>6.0</microprofile.version>
 		<lucene.version>7.7.3</lucene.version>
@@ -115,15 +116,13 @@
 
 	<build>
 		<plugins>
-
 			<!-- use JDK settings for compiling -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
+				<version>3.13.0</version>
 				<configuration>
-					<source>21</source>
-					<target>21</target>
+					<release>${maven.compiler.release}</release>
 				</configuration>
 			</plugin>
 			<!-- License -->
