@@ -39,12 +39,15 @@ import org.apache.lucene.facet.FacetsConfig;
 import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyWriter;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexFormatTooOldException;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.index.SegmentInfos;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.util.Version;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
@@ -79,8 +82,9 @@ public class LuceneIndexService {
     // Lucene 9+ moved the ClassicAnalyzer from 'analysis.standard' to
     // 'analysis.classic'
     public static final String DEFAULT_ANALYZER = "org.apache.lucene.analysis.classic.ClassicAnalyzer";
-    // Lucene 10 can not read Lucene 7 indices - an empty directory forces a rebuild
-    public static final String DEFAULT_INDEX_DIRECTORY = "imixs-workflow-index";
+    // Lucene 10 can not read Lucene 7 indices - a new default directory forces a
+    // rebuild
+    public static final String DEFAULT_INDEX_DIRECTORY = "imixs-workflow-index-v10";
     public static final String TAXONOMY_INDEXFIELD_PRAFIX = ".taxonomy";
 
     // Lucene 7 class name of the ClassicAnalyzer, still accepted for backward
@@ -118,6 +122,11 @@ public class LuceneIndexService {
     protected Event<IndexEvent> indexEvents;
 
     private boolean bRebuildIndex; // indicator if we have triggered a rebuild index job.
+
+    // The index format is verified only once per JVM. The flags are static because
+    // this is a stateless bean with multiple pooled instances.
+    private static volatile boolean indexFormatVerified = false;
+    private static volatile boolean taxonomyFormatVerified = false;
 
     public String getLuceneIndexDir() {
         // issue #599
@@ -683,6 +692,9 @@ public class LuceneIndexService {
             logger.log(Level.INFO, "├── 📂 index directory ''{0}'' is empty or does not yet exist"
                     + " ⇢ rebuild index...", getLuceneIndexDir());
             rebuildIndex(indexDir);
+        } else if (!indexFormatVerified) {
+            verifyIndexFormat(indexDir, getLuceneIndexDir());
+            indexFormatVerified = true;
         }
         return indexDir;
     }
@@ -710,8 +722,41 @@ public class LuceneIndexService {
             logger.log(Level.INFO, "├── 📂 taxonomy directory ''{0}'' is empty or does not yet exist"
                     + " ⇢ rebuild taxonomy index...", sPath);
             rebuildIndex(indexDir);
+        } else if (!taxonomyFormatVerified) {
+            verifyIndexFormat(indexDir, sPath);
+            taxonomyFormatVerified = true;
         }
         return indexDir;
+    }
+
+    /**
+     * Verifies that an existing index can be read by the current Lucene version.
+     * Lucene only supports indices created by the current or the previous major
+     * version. An index created by an older version (e.g. Lucene 7) can not be
+     * opened and must be rebuilt.
+     * <p>
+     * The method does not delete an outdated index automatically. Instead it logs
+     * a warning and throws an IndexException, so an administrator can decide how
+     * to handle the existing index (e.g. backup, move or delete).
+     *
+     * @param directory - the index directory to be verified
+     * @param path      - the path of the directory, used for logging
+     * @throws IOException
+     */
+    private void verifyIndexFormat(Directory directory, String path) throws IOException {
+        try {
+            // reads only the latest commit point - a cheap operation
+            SegmentInfos.readLatestCommit(directory);
+        } catch (IndexFormatTooOldException e) {
+            logger.log(Level.WARNING, "├── ⚠️ index directory ''{0}'' was created by an outdated Lucene version!",
+                    path);
+            logger.log(Level.WARNING, "│   ├── the index can not be read by Lucene {0}", Version.LATEST);
+            logger.log(Level.WARNING, "│   ├── {0}", e.getMessage());
+            logger.log(Level.WARNING, "│   └── 👉 remove or move the index directory ''{0}'' and the taxonomy"
+                    + " directory - the index will be rebuilt automatically on next startup", path);
+            throw new IndexException(IndexException.INVALID_INDEX,
+                    "Index directory '" + path + "' was created by an outdated Lucene version", e);
+        }
     }
 
 }
