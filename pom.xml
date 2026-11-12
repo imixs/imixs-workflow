@@ -13,14 +13,15 @@
 		<module>imixs-workflow-engine</module>
 		<module>imixs-workflow-faces</module>
 		<module>imixs-workflow-jax-rs</module>
+		<module>imixs-workflow-index</module>
 		<module>imixs-workflow-index-lucene</module>
 		<module>imixs-workflow-index-solr</module>
 	</modules>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<!-- dependency versions -->
 		<maven.compiler.release>21</maven.compiler.release>
+		<!-- dependency versions -->
 		<jakarta.version>10.0.0</jakarta.version>
 		<microprofile.version>6.0</microprofile.version>
 		<lucene.version>7.7.3</lucene.version>
