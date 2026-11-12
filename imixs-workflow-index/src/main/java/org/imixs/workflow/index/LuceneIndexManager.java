@@ -195,7 +195,7 @@ public class LuceneIndexManager {
         long l = System.currentTimeMillis();
         getTaxonomyWriter().commit();
         getIndexWriter().commit();
-        logger.log(Level.FINEST, "│   ├── 💾 index committed in {0}ms", System.currentTimeMillis() - l);
+        logger.log(Level.FINEST, "│   ├── ✓ index committed in {0}ms", System.currentTimeMillis() - l);
     }
 
     public Directory getIndexDirectory() {

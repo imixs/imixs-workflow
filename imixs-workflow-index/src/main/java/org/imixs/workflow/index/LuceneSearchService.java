@@ -152,7 +152,7 @@ public class LuceneSearchService implements SearchService {
             return workitems;
         }
 
-        logger.log(Level.FINEST, "├── 🔍 search: pageIndex={0} pageSize={1}", new Object[] { pageIndex, pageSize });
+        logger.log(Level.FINEST, "├── search: pageIndex={0} pageSize={1}", new Object[] { pageIndex, pageSize });
 
         IndexSearcher searcher = null;
         try {
@@ -171,7 +171,7 @@ public class LuceneSearchService implements SearchService {
             if ((startIndex + pageSize) > DEFAULT_MAX_SEARCH_RESULT) {
                 // adjust maxSearchResult
                 maxSearchResult = startIndex + (3 * pageSize);
-                logger.log(Level.WARNING, "│   ├── ⚠️ page {0}x{1} exceeded DEFAULT_MAX_SEARCH_RESULT ({2})"
+                logger.log(Level.WARNING, "│   ├── ⚠ page {0}x{1} exceeded DEFAULT_MAX_SEARCH_RESULT ({2})"
                         + " ⇢ MAX_SEARCH_RESULT set to {3}",
                         new Object[] { pageSize, pageIndex, DEFAULT_MAX_SEARCH_RESULT, maxSearchResult });
             }
@@ -223,7 +223,7 @@ public class LuceneSearchService implements SearchService {
                 if (imixsDoc != null) {
                     workitems.add(imixsDoc);
                 } else {
-                    logger.log(Level.WARNING, "│   ├── ⚠️ index returned unreadable document ''{0}''", sID);
+                    logger.log(Level.WARNING, "│   ├── ⚠ index returned unreadable document ''{0}''", sID);
                     documentService.removeDocumentFromIndex(sID);
                     // this situation happens if the search index returned
                     // documents the current user has no read access.
@@ -233,7 +233,7 @@ public class LuceneSearchService implements SearchService {
                 }
             }
 
-            logger.log(Level.FINE, "│   └── ✅ search result computed in {0}ms - loadStubs={1}",
+            logger.log(Level.FINE, "│   └── ✓ search result computed in {0}ms - loadStubs={1}",
                     new Object[] { System.currentTimeMillis() - ltime, loadStubs });
 
         } catch (IOException e) {

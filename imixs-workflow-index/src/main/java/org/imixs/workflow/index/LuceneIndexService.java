@@ -66,7 +66,9 @@ import jakarta.persistence.PersistenceContext;
 @Stateless
 public class LuceneIndexService {
 
-    public static final int EVENTLOG_ENTRY_FLUSH_COUNT = 16;
+    // number of event log entries processed in one block - each block ends with a
+    // Lucene commit (fsync), so a larger block reduces the commit overhead
+    public static final int EVENTLOG_ENTRY_FLUSH_COUNT = 256;
 
     public static final String ANONYMOUS = "ANONYMOUS";
     public static final String TAXONOMY_INDEXFIELD_PRAFIX = ".taxonomy";
@@ -97,9 +99,11 @@ public class LuceneIndexService {
      * Flush the EventLog cache. This method is called by the LuceneSerachService
      * only.
      * <p>
-     * The method flushes the cache in smaller blocks of the given junkSize. to
-     * avoid a heap size problem. The default flush size is 16. The eventLog cache
-     * is tracked by the flag 'dirtyIndex'.
+     * The method flushes the cache in blocks of EVENTLOG_ENTRY_FLUSH_COUNT entries.
+     * Each block is committed to the index. The total number of entries processed
+     * in one transaction is limited by the given junkSize to avoid a heap size
+     * problem, because all loaded documents remain in the persistence context
+     * until the transaction ends.
      * <p>
      * issue #439 - The method returns false if the event log contains more entries
      * as defined by the given JunkSize. In this case the caller should recall the
@@ -141,7 +145,7 @@ public class LuceneIndexService {
                 }
 
             } catch (IndexException e) {
-                logger.log(Level.WARNING, "├── ⚠️ unable to flush index event log: {0}", e.getMessage());
+                logger.log(Level.WARNING, "├── ⚠ unable to flush index event log: {0}", e.getMessage());
                 return true;
             }
         }
@@ -173,7 +177,7 @@ public class LuceneIndexService {
                 if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
                     // create term
                     Term term = new Term("$uniqueid", workitem.getItemValueString("$uniqueid"));
-                    logger.log(Level.FINEST, "│   ├── ➕ add/update document ''{0}''",
+                    logger.log(Level.FINEST, "│   ├── + add/update document ''{0}''",
                             workitem.getItemValueString(WorkflowKernel.UNIQUEID));
 
                     Document lucenedoc = createDocument(workitem);
@@ -183,16 +187,16 @@ public class LuceneIndexService {
             // persist changes - this replaces the former IndexWriter.close()
             luceneIndexManager.commit();
         } catch (IOException luceneEx) {
-            logger.log(Level.WARNING, "├── ⚠️ unable to update index: {0}", luceneEx.getMessage());
+            logger.log(Level.WARNING, "├── ⚠ unable to update index: {0}", luceneEx.getMessage());
             throw new IndexException(IndexException.INVALID_INDEX, "Unable to update lucene search index", luceneEx);
         }
 
         long updateTime = (System.currentTimeMillis() - ltime);
         if (updateTime > 5000) {
-            logger.log(Level.WARNING, "│   └── ⚠️ update index block took {0}ms ({1} documents in total)",
+            logger.log(Level.WARNING, "│   └── ⚠ update index block took {0}ms ({1} documents in total)",
                     new Object[] { updateTime, documents.size() });
         } else {
-            logger.log(Level.FINE, "│   └── ✅ update index block completed in {0}ms ({1} documents in total)",
+            logger.log(Level.FINE, "│   └── ✓ update index block completed in {0}ms ({1} documents in total)",
                     new Object[] { updateTime, documents.size() });
         }
     }
@@ -213,7 +217,7 @@ public class LuceneIndexService {
                 DocumentService.EVENTLOG_TOPIC_INDEX_REMOVE);
 
         if (events != null && events.size() > 0) {
-            logger.log(Level.FINE, "├── 🔃 processing {0} index event(s)....", events.size());
+            logger.log(Level.FINE, "├── ♻ processing {0} index event(s)....", events.size());
             try {
                 // use the long-lived writers of the LuceneIndexManager
                 IndexWriter indexWriter = luceneIndexManager.getIndexWriter();
@@ -235,13 +239,13 @@ public class LuceneIndexService {
                         if (!workitem.getItemValueBoolean(DocumentService.NOINDEX)) {
                             Document lucenedoc = createDocument(workitem);
                             updateLuceneIndex(term, lucenedoc, indexWriter, taxonomyWriter);
-                            logger.log(Level.FINEST, "│   ├── ➕ add/update document ''{0}'' ⇢ {1}ms",
+                            logger.log(Level.FINEST, "│   ├── + add/update document ''{0}'' ⇢ {1}ms",
                                     new Object[] { doc.getId(), System.currentTimeMillis() - l2 });
                         }
                     } else {
                         long l2 = System.currentTimeMillis();
                         indexWriter.deleteDocuments(term);
-                        logger.log(Level.FINEST, "│   ├── ➖ remove document ''{0}'' ⇢ {1}ms",
+                        logger.log(Level.FINEST, "│   ├── x remove document ''{0}'' ⇢ {1}ms",
                                 new Object[] { eventLogEntry.getRef(), System.currentTimeMillis() - l2 });
                     }
 
@@ -258,7 +262,7 @@ public class LuceneIndexService {
                     }
                 }
             } catch (IOException luceneEx) {
-                logger.log(Level.WARNING, "│   └── ⚠️ unable to flush index event log: {0}", luceneEx.getMessage());
+                logger.log(Level.WARNING, "│   └── ⚠ unable to flush index event log: {0}", luceneEx.getMessage());
                 // We just log a warning here and close the flush mode to no longer block the
                 // writer.
                 return true;
@@ -274,7 +278,7 @@ public class LuceneIndexService {
                 }
             }
 
-            logger.log(Level.FINE, "│   └── ✅ {0} index event(s) flushed in {1}ms - last entry: {2}",
+            logger.log(Level.FINE, "│   └── ✓ {0} index event(s) flushed in {1}ms - last entry: {2}",
                     new Object[] { events.size(), System.currentTimeMillis() - l, lastEventDate });
         }
 
