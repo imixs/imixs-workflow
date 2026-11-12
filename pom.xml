@@ -15,7 +15,6 @@
 		<module>imixs-workflow-jax-rs</module>
 		<module>imixs-workflow-index</module>
 		<module>imixs-workflow-index-lucene</module>
-		<module>imixs-workflow-index-solr</module>
 	</modules>
 
 	<properties>
