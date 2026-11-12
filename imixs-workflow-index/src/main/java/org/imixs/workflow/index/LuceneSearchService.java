@@ -95,6 +95,9 @@ public class LuceneSearchService implements SearchService {
     private LuceneIndexService luceneIndexService;
 
     @Inject
+    private LuceneIndexManager luceneIndexManager;
+
+    @Inject
     private DocumentService documentService;
 
     @Inject
@@ -360,17 +363,16 @@ public class LuceneSearchService implements SearchService {
     }
 
     /**
-     * Returns a IndexSearcher instance.
-     * <p>
-     * In case no index yet exits, the method tries to create a new index. This
-     * typically is necessary after first deployment.
+     * Returns a IndexSearcher instance based on the last commit point of the
+     * index. The index itself is created by the LuceneIndexManager on startup.
      *
      * @return IndexSearcher
      * @throws IOException
      */
     IndexSearcher createIndexSearcher() throws IOException {
         IndexReader reader = null;
-        Directory indexDir = luceneIndexService.createIndexDirectory();
+        // the directory is provided by the LuceneIndexManager
+        Directory indexDir = luceneIndexManager.getIndexDirectory();
         try {
             // if the index dose not yet exits we got a IO Exception (issue #329)
             reader = DirectoryReader.open(indexDir);
@@ -405,7 +407,8 @@ public class LuceneSearchService implements SearchService {
      * @throws IOException
      */
     TaxonomyReader createTaxonomyReader() throws IOException {
-        Directory taxoDir = luceneIndexService.createTaxonomyDirectory();
+        // the directory is provided by the LuceneIndexManager
+        Directory taxoDir = luceneIndexManager.getTaxonomyDirectory();
         return new DirectoryTaxonomyReader(taxoDir);
     }
 

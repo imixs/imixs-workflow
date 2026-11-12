@@ -16,8 +16,6 @@
 package org.imixs.workflow.index;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -27,8 +25,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.classic.ClassicAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.SortedDocValuesField;
@@ -37,23 +33,13 @@ import org.apache.lucene.document.TextField;
 import org.apache.lucene.facet.FacetField;
 import org.apache.lucene.facet.FacetsConfig;
 import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyWriter;
-import org.apache.lucene.index.CorruptIndexException;
-import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexFormatTooOldException;
 import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.SegmentInfos;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.Version;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.WorkflowKernel;
 import org.imixs.workflow.engine.DocumentService;
 import org.imixs.workflow.engine.EventLogService;
-import org.imixs.workflow.engine.adminp.AdminPService;
 import org.imixs.workflow.engine.index.IndexEvent;
 import org.imixs.workflow.engine.index.SchemaService;
 import org.imixs.workflow.engine.jpa.EventLog;
@@ -69,6 +55,10 @@ import jakarta.persistence.PersistenceContext;
 
 /**
  * This session ejb provides functionality to maintain a local Lucene index.
+ * <p>
+ * The Lucene writers are provided by the LuceneIndexManager, which holds one
+ * long-lived IndexWriter and TaxonomyWriter per JVM. Changes are persisted by
+ * an explicit commit after each processed block.
  *
  * @version 2.0
  * @author rsoika
@@ -79,17 +69,7 @@ public class LuceneIndexService {
     public static final int EVENTLOG_ENTRY_FLUSH_COUNT = 16;
 
     public static final String ANONYMOUS = "ANONYMOUS";
-    // Lucene 9+ moved the ClassicAnalyzer from 'analysis.standard' to
-    // 'analysis.classic'
-    public static final String DEFAULT_ANALYZER = "org.apache.lucene.analysis.classic.ClassicAnalyzer";
-    // Lucene 10 can not read Lucene 7 indices - a new default directory forces a
-    // rebuild
-    public static final String DEFAULT_INDEX_DIRECTORY = "imixs-workflow-index-v10";
     public static final String TAXONOMY_INDEXFIELD_PRAFIX = ".taxonomy";
-
-    // Lucene 7 class name of the ClassicAnalyzer, still accepted for backward
-    // compatibility
-    private static final String LEGACY_CLASSIC_ANALYZER = "org.apache.lucene.analysis.standard.ClassicAnalyzer";
 
     @PersistenceContext(unitName = "org.imixs.workflow.jpa")
     private EntityManager manager;
@@ -97,20 +77,12 @@ public class LuceneIndexService {
     private SimpleDateFormat luceneDateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
 
     @Inject
-    @ConfigProperty(name = "lucence.indexDir", defaultValue = DEFAULT_INDEX_DIRECTORY)
-    private String luceneIndexDir;
-
-    @Inject
-    @ConfigProperty(name = "lucence.analyzerClass", defaultValue = DEFAULT_ANALYZER)
-    private String luceneAnalyzerClass;
-
-    @Inject
     private LuceneItemAdapter luceneItemAdapter;
 
     private static final Logger logger = Logger.getLogger(LuceneIndexService.class.getName());
 
     @Inject
-    private AdminPService adminPService;
+    private LuceneIndexManager luceneIndexManager;
 
     @Inject
     private EventLogService eventLogService;
@@ -120,32 +92,6 @@ public class LuceneIndexService {
 
     @Inject
     protected Event<IndexEvent> indexEvents;
-
-    private boolean bRebuildIndex; // indicator if we have triggered a rebuild index job.
-
-    // The index format is verified only once per JVM. The flags are static because
-    // this is a stateless bean with multiple pooled instances.
-    private static volatile boolean indexFormatVerified = false;
-    private static volatile boolean taxonomyFormatVerified = false;
-
-    public String getLuceneIndexDir() {
-        // issue #599
-        return luceneIndexDir.trim();
-    }
-
-    public void setLuceneIndexDir(String luceneIndexDir) {
-        if (luceneIndexDir != null) {
-            this.luceneIndexDir = luceneIndexDir.trim();
-        }
-    }
-
-    public String getLuceneAnalyzerClass() {
-        return luceneAnalyzerClass;
-    }
-
-    public void setLuceneAnalyzerClass(String luceneAnalyzerClass) {
-        this.luceneAnalyzerClass = luceneAnalyzerClass;
-    }
 
     /**
      * Flush the EventLog cache. This method is called by the LuceneSerachService
@@ -203,31 +149,6 @@ public class LuceneIndexService {
     }
 
     /**
-     * This method forces an update of the full text index. The method also creates
-     * the index directory if it does not yet exist.
-     */
-    public void rebuildIndex(Directory indexDir) throws IOException {
-
-        // create a IndexWriter Instance to make sure we have created the index
-        // directory..
-        IndexWriterConfig indexWriterConfig;
-        indexWriterConfig = new IndexWriterConfig(new ClassicAnalyzer());
-        indexWriterConfig.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
-        IndexWriter indexWriter = new IndexWriter(indexDir, indexWriterConfig);
-        indexWriter.close();
-
-        // already triggered?
-        if (bRebuildIndex == false) {
-            // now starting index job....
-            logger.log(Level.INFO, "├── 🔄 rebuild index job created");
-            ItemCollection job = new ItemCollection();
-            job.replaceItemValue("job", AdminPService.JOB_REBUILD_INDEX);
-            adminPService.createJob(job);
-            bRebuildIndex = true;
-        }
-    }
-
-    /**
      * This method adds a collection of documents to the Lucene index. The documents
      * are added immediately to the index. Calling this method within a running
      * transaction leads to a uncommitted reads in the index. For transaction
@@ -240,13 +161,12 @@ public class LuceneIndexService {
      * @throws IndexException
      */
     public void indexDocuments(Collection<ItemCollection> documents) {
-        IndexWriter indexWriter = null;
-        DirectoryTaxonomyWriter taxonomyWriter = null;
         long ltime = System.currentTimeMillis();
         logger.log(Level.FINE, "├── 🔃 indexing {0} document(s)...", documents.size());
         try {
-            indexWriter = createIndexWriter();
-            taxonomyWriter = createTaxonomyWriter();
+            // use the long-lived writers of the LuceneIndexManager
+            IndexWriter indexWriter = luceneIndexManager.getIndexWriter();
+            DirectoryTaxonomyWriter taxonomyWriter = luceneIndexManager.getTaxonomyWriter();
             // add workitem to search index....
             for (ItemCollection workitem : documents) {
 
@@ -260,34 +180,11 @@ public class LuceneIndexService {
                     updateLuceneIndex(term, lucenedoc, indexWriter, taxonomyWriter);
                 }
             }
+            // persist changes - this replaces the former IndexWriter.close()
+            luceneIndexManager.commit();
         } catch (IOException luceneEx) {
             logger.log(Level.WARNING, "├── ⚠️ unable to update index: {0}", luceneEx.getMessage());
             throw new IndexException(IndexException.INVALID_INDEX, "Unable to update lucene search index", luceneEx);
-        } finally {
-            // close writer!
-            if (indexWriter != null) {
-                logger.finest("│   ├── close IndexWriter");
-                try {
-                    indexWriter.close();
-                } catch (CorruptIndexException e) {
-                    throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
-                } catch (IOException e) {
-                    throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene IndexWriter: ", e);
-                }
-            }
-            // close taxonomyWriter!
-            if (taxonomyWriter != null) {
-                logger.finest("│   ├── close TaxonomyWriter");
-                try {
-                    taxonomyWriter.close();
-                } catch (CorruptIndexException e) {
-                    throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene taxonomyWriter: ",
-                            e);
-                } catch (IOException e) {
-                    throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene taxonomyWriter: ",
-                            e);
-                }
-            }
         }
 
         long updateTime = (System.currentTimeMillis() - ltime);
@@ -310,8 +207,6 @@ public class LuceneIndexService {
     protected boolean flushEventLogByCount(int count) {
         Date lastEventDate = null;
         boolean cacheIsEmpty = true;
-        DirectoryTaxonomyWriter taxonomyWriter = null;
-        IndexWriter indexWriter = null;
         long l = System.currentTimeMillis();
 
         List<EventLog> events = eventLogService.findEventsByTopic(count + 1, DocumentService.EVENTLOG_TOPIC_INDEX_ADD,
@@ -320,8 +215,9 @@ public class LuceneIndexService {
         if (events != null && events.size() > 0) {
             logger.log(Level.FINE, "├── 🔃 processing {0} index event(s)....", events.size());
             try {
-                indexWriter = createIndexWriter();
-                taxonomyWriter = createTaxonomyWriter();
+                // use the long-lived writers of the LuceneIndexManager
+                IndexWriter indexWriter = luceneIndexManager.getIndexWriter();
+                DirectoryTaxonomyWriter taxonomyWriter = luceneIndexManager.getTaxonomyWriter();
                 int _counter = 0;
                 for (EventLog eventLogEntry : events) {
                     Term term = new Term("$uniqueid", eventLogEntry.getRef());
@@ -367,31 +263,14 @@ public class LuceneIndexService {
                 // writer.
                 return true;
             } finally {
-                // close writer!
-                if (indexWriter != null) {
-                    logger.finest("│   ├── close IndexWriter");
-                    try {
-                        indexWriter.close();
-                    } catch (CorruptIndexException e) {
-                        throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene IndexWriter: ",
-                                e);
-                    } catch (IOException e) {
-                        throw new IndexException(IndexException.INVALID_INDEX, "Unable to close lucene IndexWriter: ",
-                                e);
-                    }
-                }
-                // close taxonomyWriter!
-                if (taxonomyWriter != null) {
-                    logger.finest("│   ├── close TaxonomyWriter");
-                    try {
-                        taxonomyWriter.close();
-                    } catch (CorruptIndexException e) {
-                        throw new IndexException(IndexException.INVALID_INDEX,
-                                "Unable to close lucene taxonomyWriter: ", e);
-                    } catch (IOException e) {
-                        throw new IndexException(IndexException.INVALID_INDEX,
-                                "Unable to close lucene taxonomyWriter: ", e);
-                    }
+                // persist changes - this replaces the former IndexWriter.close(), which
+                // implicitly committed all changes, even in case of an exception.
+                // If the commit fails, the IndexException rolls back the transaction and
+                // the event log entries will be processed again.
+                try {
+                    luceneIndexManager.commit();
+                } catch (IOException e) {
+                    throw new IndexException(IndexException.INVALID_INDEX, "Unable to commit lucene index: ", e);
                 }
             }
 
@@ -617,146 +496,6 @@ public class LuceneIndexService {
             firstValue = false;
         }
 
-    }
-
-    /**
-     * This method creates a new instance of a lucene IndexWriter.
-     *
-     * The location of the lucene index in the filesystem is read from the
-     * imixs.properties
-     *
-     * @return
-     * @throws IOException
-     */
-    protected IndexWriter createIndexWriter() throws IOException {
-        // create a IndexWriter Instance
-        Directory indexDir = createIndexDirectory();
-        IndexWriterConfig indexWriterConfig;
-        try {
-            // issue #429
-            // Class.newInstance() is deprecated since Java 9
-            Analyzer analyzer = (Analyzer) Class.forName(resolveAnalyzerClassName())
-                    .getDeclaredConstructor().newInstance();
-            indexWriterConfig = new IndexWriterConfig(analyzer);
-        } catch (ReflectiveOperationException e) {
-            throw new IndexException(IndexException.INVALID_INDEX,
-                    "Unable to create analyzer '" + luceneAnalyzerClass + "'", e);
-        }
-        logger.finest("│   ├── open IndexWriter");
-        return new IndexWriter(indexDir, indexWriterConfig);
-    }
-
-    /**
-     * Resolves the configured analyzer class name. Maps the legacy Lucene 7
-     * package name of the ClassicAnalyzer to the new Lucene 9+ package.
-     *
-     * @return analyzer class name
-     */
-    private String resolveAnalyzerClassName() {
-        String className = luceneAnalyzerClass.trim();
-        if (LEGACY_CLASSIC_ANALYZER.equals(className)) {
-            logger.log(Level.WARNING, "├── ⚠️ deprecated analyzer class ''{0}'' ⇢ using ''{1}''"
-                    + " - please update your configuration!", new Object[] { className, DEFAULT_ANALYZER });
-            return DEFAULT_ANALYZER;
-        }
-        return className;
-    }
-
-    /**
-     * Create taxonomyWriter in a separate directory from the main index with the
-     * praefix '_tax'
-     *
-     * @return
-     * @throws IOException
-     */
-    protected DirectoryTaxonomyWriter createTaxonomyWriter() throws IOException {
-        Directory taxoDir = createTaxonomyDirectory();
-        logger.finest("│   ├── open TaxonomyWriter");
-        return new DirectoryTaxonomyWriter(taxoDir);
-    }
-
-    /**
-     * Creates a Lucene FSDirectory Instance. The method uses the property
-     * LockFactory to set a custom LockFactory.
-     *
-     * For example: org.apache.lucene.store.SimpleFSLockFactory
-     *
-     * @return
-     * @throws IOException
-     */
-    public Directory createIndexDirectory() throws IOException {
-        // create Lucene Directory Instance
-        Path luceneIndexDir = Paths.get(getLuceneIndexDir());
-        Directory indexDir = FSDirectory.open(luceneIndexDir);
-        if (!DirectoryReader.indexExists(indexDir)) {
-            logger.log(Level.INFO, "├── 📂 index directory ''{0}'' is empty or does not yet exist"
-                    + " ⇢ rebuild index...", getLuceneIndexDir());
-            rebuildIndex(indexDir);
-        } else if (!indexFormatVerified) {
-            verifyIndexFormat(indexDir, getLuceneIndexDir());
-            indexFormatVerified = true;
-        }
-        return indexDir;
-    }
-
-    /**
-     * Creates a Lucene FSDirectory Instance. The method uses the property
-     * LockFactory to set a custom LockFactory.
-     * <p>
-     * The taxonomy directory is identified by the LuceneIndexDir with the praefix
-     * '_tax'
-     *
-     * @return
-     * @throws IOException
-     */
-    public Directory createTaxonomyDirectory() throws IOException {
-        String sPath = getLuceneIndexDir();
-        if (sPath.endsWith("/")) {
-            sPath = sPath.substring(0, sPath.lastIndexOf("/"));
-        }
-        sPath = sPath + "_tax";
-        // create Lucene Directory Instance
-        Path luceneIndexDir = Paths.get(sPath);
-        Directory indexDir = FSDirectory.open(luceneIndexDir);
-        if (!DirectoryReader.indexExists(indexDir)) {
-            logger.log(Level.INFO, "├── 📂 taxonomy directory ''{0}'' is empty or does not yet exist"
-                    + " ⇢ rebuild taxonomy index...", sPath);
-            rebuildIndex(indexDir);
-        } else if (!taxonomyFormatVerified) {
-            verifyIndexFormat(indexDir, sPath);
-            taxonomyFormatVerified = true;
-        }
-        return indexDir;
-    }
-
-    /**
-     * Verifies that an existing index can be read by the current Lucene version.
-     * Lucene only supports indices created by the current or the previous major
-     * version. An index created by an older version (e.g. Lucene 7) can not be
-     * opened and must be rebuilt.
-     * <p>
-     * The method does not delete an outdated index automatically. Instead it logs
-     * a warning and throws an IndexException, so an administrator can decide how
-     * to handle the existing index (e.g. backup, move or delete).
-     *
-     * @param directory - the index directory to be verified
-     * @param path      - the path of the directory, used for logging
-     * @throws IOException
-     */
-    private void verifyIndexFormat(Directory directory, String path) throws IOException {
-        try {
-            // reads only the latest commit point - a cheap operation
-            SegmentInfos.readLatestCommit(directory);
-        } catch (IndexFormatTooOldException e) {
-            logger.log(Level.WARNING, "├── ⚠️ index directory ''{0}'' was created by an outdated Lucene version!",
-                    path);
-            logger.log(Level.WARNING, "│   ├── the index can not be read by Lucene {0}", Version.LATEST);
-            logger.log(Level.WARNING, "│   ├── {0}", e.getMessage());
-            logger.log(Level.WARNING, "│   └── 👉 remove or move the index directory ''{0}'' and the taxonomy"
-                    + " directory - the index will be rebuilt automatically on next startup", path);
-            throw new IndexException(IndexException.INVALID_INDEX,
-                    "Index directory '" + path + "' was created by an outdated Lucene version", e);
-        }
     }
 
 }
