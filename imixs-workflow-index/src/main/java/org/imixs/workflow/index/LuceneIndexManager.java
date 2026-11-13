@@ -83,7 +83,6 @@ import jakarta.inject.Inject;
  * @author rsoika
  */
 @Singleton
-@Startup
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 public class LuceneIndexManager {
 
@@ -310,6 +309,10 @@ public class LuceneIndexManager {
         // resolve the index directory
         Path path = Paths.get(dir);
         indexPath = path.toAbsolutePath().normalize().toString();
+        if (!path.isAbsolute()) {
+            logger.log(Level.WARNING, "├── ⚠️ relative index directory ''{0}'' ⇢ resolved to ''{1}''"
+                    + " - make sure this location is persistent!", new Object[] { dir, indexPath });
+        }
     }
 
     /**
