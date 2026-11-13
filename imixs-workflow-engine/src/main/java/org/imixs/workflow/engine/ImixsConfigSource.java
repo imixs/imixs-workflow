@@ -75,7 +75,7 @@ public class ImixsConfigSource implements ConfigSource {
                 value = properties.get(keyAlternative);
                 if (value != null && !value.isEmpty()) {
                     logger.log(Level.WARNING, "Deprecated imixs.property ''{0}'' should be replaced by ''{1}''",
-                            new Object[]{keyAlternative, key});
+                            new Object[] { keyAlternative, key });
                 }
             }
 
@@ -129,16 +129,23 @@ public class ImixsConfigSource implements ConfigSource {
      * This method provides key alternatives for deprecated imixs.property values
      * 
      * <ul>
-     * <li>lucence.fulltextFieldList - index.fields</li>
-     * <li>lucence.indexFieldListAnalyze - index.fields.analyze</li>
-     * <li>lucence.indexFieldListNoAnalyze - index.fields.noanalyze</li>
-     * <li>lucence.indexFieldListStore - index.fields.store</li>
-     * 
+     * <li>lucence.fulltextFieldList</li>
+     * <li>lucence.indexFieldListAnalyze</li>
+     * <li>lucence.indexFieldListNoAnalyze</li>
+     * <li>lucence.indexFieldListStore</li>
      * <li>lucence.defaultOperator - index.operator</li>
      * <li>lucence.splitOnWhitespace - index.splitwhitespace</li>
      * </ul>
      * 
-     * @param key
+     * New Field names:
+     * 
+     * <ul>
+     * <li>index.fields</li>
+     * <li>index.fields.analyze</li>
+     * <li>index.fields.noanalyze</li>
+     * <li>index.fields.store</li>
+     * </ul>
+     * 
      * @return
      */
     private String getAlternative(String key) {

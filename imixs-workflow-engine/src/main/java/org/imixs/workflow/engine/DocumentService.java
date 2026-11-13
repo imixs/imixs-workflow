@@ -852,7 +852,7 @@ public class DocumentService {
 	/**
 	 * The method returns a sorted list of Document Stubs from the search-index. A
 	 * document stub contains only the items stored in the search index. These items
-	 * can be defined by the property <code>lucence.indexFieldListStore</code>. See
+	 * can be defined by the property <code>index.fields.store</code>. See
 	 * the LuceneUpdateService for details.
 	 * <p>
 	 * The result list can be sorted by a sortField and a sort direction.

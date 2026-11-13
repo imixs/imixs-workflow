@@ -292,10 +292,10 @@ public class SchemaService {
     public ItemCollection getConfiguration() {
         ItemCollection config = new ItemCollection();
 
-        config.replaceItemValue("lucence.fulltextFieldList", fieldList);
-        config.replaceItemValue("lucence.indexFieldListAnalyze", fieldListAnalyze);
-        config.replaceItemValue("lucence.indexFieldListNoAnalyze", fieldListNoAnalyze);
-        config.replaceItemValue("lucence.indexFieldListStore", fieldListStore);
+        config.replaceItemValue("index.fields", fieldList);
+        config.replaceItemValue("index.fields.analyze", fieldListAnalyze);
+        config.replaceItemValue("index.fields.noanalyze", fieldListNoAnalyze);
+        config.replaceItemValue("index.fields.store", fieldListStore);
 
         return config;
     }

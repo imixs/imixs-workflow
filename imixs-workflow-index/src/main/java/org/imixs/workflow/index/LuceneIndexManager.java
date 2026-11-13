@@ -16,7 +16,13 @@
 package org.imixs.workflow.index;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -30,6 +36,7 @@ import org.apache.lucene.index.SegmentInfos;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
+import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.ItemCollection;
 import org.imixs.workflow.engine.adminp.AdminPService;
@@ -40,6 +47,7 @@ import jakarta.annotation.PreDestroy;
 import jakarta.ejb.ConcurrencyManagement;
 import jakarta.ejb.ConcurrencyManagementType;
 import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
 import jakarta.inject.Inject;
 
 /**
@@ -58,19 +66,43 @@ import jakarta.inject.Inject;
  * On startup the manager verifies the index format. An index created by an
  * outdated Lucene version is not deleted automatically - an IndexException is
  * thrown and an administrator has to decide how to handle the old index.
+ * <p>
+ * The bean is started on deployment ({@link Startup}). A missing or invalid
+ * configuration, or an outdated index, aborts the deployment. This guarantees
+ * that a misconfiguration is detected immediately and not on the first search.
+ * <p>
+ * Configuration:
+ * <ul>
+ * <li>{@code index.directory} (required) - location of the index. The taxonomy
+ * index is stored in {@code <index.directory>_tax}.</li>
+ * <li>{@code index.luceneAnalyzerClass} (optional) - analyzer used for
+ * indexing.</li>
+ * </ul>
  *
- * @version 1.0
+ * @version 1.1
  * @author rsoika
  */
 @Singleton
+@Startup
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 public class LuceneIndexManager {
 
     // Lucene 9+ moved the ClassicAnalyzer from 'analysis.standard' to
     // 'analysis.classic'
     public static final String DEFAULT_ANALYZER = "org.apache.lucene.analysis.classic.ClassicAnalyzer";
-    public static final String DEFAULT_INDEX_DIRECTORY = "imixs-workflow-index-v10";
     public static final String TAXONOMY_DIRECTORY_SUFFIX = "_tax";
+
+    public static final String CONFIG_INDEX_DIRECTORY = "index.directory";
+    public static final String CONFIG_ANALYZER_CLASS = "index.luceneAnalyzerClass";
+
+    // configuration keys of the former module imixs-workflow-index-lucene (incl.
+    // typo)
+    // mapped to the new keys - used to detect an incomplete migration
+    private static final Map<String, String> LEGACY_CONFIG_KEYS = new LinkedHashMap<>();
+    static {
+        LEGACY_CONFIG_KEYS.put("lucence.indexDir", CONFIG_INDEX_DIRECTORY);
+        LEGACY_CONFIG_KEYS.put("lucence.analyzerClass", CONFIG_ANALYZER_CLASS);
+    }
 
     // Lucene 7 class name of the ClassicAnalyzer, still accepted for backward
     // compatibility
@@ -78,13 +110,21 @@ public class LuceneIndexManager {
 
     private static final Logger logger = Logger.getLogger(LuceneIndexManager.class.getName());
 
+    // required - no default value. Optional is used to verify the value in init()
+    // and to provide a meaningful error message
     @Inject
-    @ConfigProperty(name = "lucence.indexDir", defaultValue = DEFAULT_INDEX_DIRECTORY)
-    private String luceneIndexDir;
+    @ConfigProperty(name = CONFIG_INDEX_DIRECTORY)
+    private Optional<String> indexDirectoryConfig;
 
     @Inject
-    @ConfigProperty(name = "lucence.analyzerClass", defaultValue = DEFAULT_ANALYZER)
+    @ConfigProperty(name = CONFIG_ANALYZER_CLASS, defaultValue = DEFAULT_ANALYZER)
     private String luceneAnalyzerClass;
+
+    @Inject
+    private Config config;
+
+    // absolute path of the index directory, resolved in init()
+    private String indexPath;
 
     @Inject
     private AdminPService adminPService;
@@ -101,7 +141,7 @@ public class LuceneIndexManager {
      */
     @PostConstruct
     void init() {
-        String indexPath = getIndexPath();
+        verifyConfiguration();
         String taxonomyPath = getTaxonomyPath();
         logger.log(Level.INFO, "├── 📂 opening index ''{0}'' (Lucene {1})...",
                 new Object[] { indexPath, Version.LATEST });
@@ -195,7 +235,7 @@ public class LuceneIndexManager {
         long l = System.currentTimeMillis();
         getTaxonomyWriter().commit();
         getIndexWriter().commit();
-        logger.log(Level.FINEST, "│   ├── ✓ index committed in {0}ms", System.currentTimeMillis() - l);
+        logger.log(Level.FINEST, "│   ├── 💾 index committed in {0}ms", System.currentTimeMillis() - l);
     }
 
     public Directory getIndexDirectory() {
@@ -206,9 +246,11 @@ public class LuceneIndexManager {
         return taxonomyDirectory;
     }
 
+    /**
+     * Returns the absolute path of the index directory.
+     */
     public String getIndexPath() {
-        // issue #599
-        return luceneIndexDir.trim();
+        return indexPath;
     }
 
     public String getTaxonomyPath() {
@@ -217,6 +259,57 @@ public class LuceneIndexManager {
             path = path.substring(0, path.lastIndexOf("/"));
         }
         return path + TAXONOMY_DIRECTORY_SUFFIX;
+    }
+
+    /**
+     * Verifies the index configuration. The deployment is aborted if
+     * <ul>
+     * <li>the required property 'index.directory' is missing or empty</li>
+     * <li>a property of the former module 'imixs-workflow-index-lucene' is still
+     * in use and the corresponding new property is not set</li>
+     * </ul>
+     * Legacy properties which are already replaced by the new properties are
+     * ignored with a warning. A relative index directory is accepted, but a
+     * warning is logged, because a relative path is resolved against the working
+     * directory of the server, which is usually not a persistent volume.
+     */
+    private void verifyConfiguration() {
+        List<String> errors = new ArrayList<>();
+
+        // check legacy properties
+        for (Map.Entry<String, String> entry : LEGACY_CONFIG_KEYS.entrySet()) {
+            String legacyKey = entry.getKey();
+            String newKey = entry.getValue();
+            if (config.getOptionalValue(legacyKey, String.class).isPresent()) {
+                if (config.getOptionalValue(newKey, String.class).isPresent()) {
+                    logger.log(Level.WARNING, "├── ⚠️ deprecated property ''{0}'' is ignored - replaced by ''{1}''",
+                            new Object[] { legacyKey, newKey });
+                } else {
+                    errors.add("deprecated property '" + legacyKey + "' found ⇢ rename it to '" + newKey + "'");
+                }
+            }
+        }
+
+        // check required index directory
+        String dir = indexDirectoryConfig.map(String::trim).orElse("");
+        if (dir.isEmpty()) {
+            errors.add("missing required property '" + CONFIG_INDEX_DIRECTORY + "' (environment variable "
+                    + "'INDEX_DIRECTORY')");
+        }
+
+        if (!errors.isEmpty()) {
+            logger.log(Level.SEVERE, "├── ❌ invalid index configuration!");
+            for (String error : errors) {
+                logger.log(Level.SEVERE, "│   ├── {0}", error);
+            }
+            logger.log(Level.SEVERE, "│   └── 👉 deployment aborted - please fix the configuration");
+            throw new IndexException(IndexException.INVALID_INDEX,
+                    "Invalid index configuration: " + String.join("; ", errors));
+        }
+
+        // resolve the index directory
+        Path path = Paths.get(dir);
+        indexPath = path.toAbsolutePath().normalize().toString();
     }
 
     /**

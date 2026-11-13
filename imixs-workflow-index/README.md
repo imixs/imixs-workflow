@@ -6,12 +6,14 @@ The index runs embedded in the application server. No external search server is 
 
 ## Configuration
 
-| Property                | Default                                              | Description                                                              |
-| ----------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------ |
-| `lucence.indexDir`      | `imixs-workflow-index`                               | Location of the index. The taxonomy index is stored in `<indexDir>_tax`. |
-| `lucence.analyzerClass` | `org.apache.lucene.analysis.classic.ClassicAnalyzer` | Analyzer used for indexing.                                              |
+| Property                    | Environment variable        | Default                                              | Description                                                                     |
+| --------------------------- | --------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `index.directory`           | `INDEX_DIRECTORY`           | **required**                                         | Location of the index. The taxonomy index is stored in `<index.directory>_tax`. |
+| `index.luceneAnalyzerClass` | `INDEX_LUCENEANALYZERCLASS` | `org.apache.lucene.analysis.classic.ClassicAnalyzer` | Analyzer used for indexing.                                                     |
 
-The property names are kept for backward compatibility. The Lucene 7 class name `org.apache.lucene.analysis.standard.ClassicAnalyzer` is still accepted and mapped to the new package automatically (a warning is logged).
+`index.directory` has no default value. If it is missing or empty, the deployment is aborted. Use an **absolute path on a persistent volume**, e.g. `/opt/jboss/lucene/imixs-workflow-index`. A relative path is resolved against the working directory of the server (e.g. `/opt/jboss/wildfly` in the WildFly container), which is usually not persistent — the index would be lost and rebuilt each time the container is recreated. A warning is logged in this case.
+
+The Lucene 7 class name `org.apache.lucene.analysis.standard.ClassicAnalyzer` is still accepted and mapped to the new package automatically (a warning is logged).
 
 ## Architecture
 
@@ -51,16 +53,61 @@ Changes are persisted by an explicit commit. The taxonomy index is always commit
 
 Lucene supports Near-Real-Time (NRT) search, where changes become visible by a refresh without a commit. We decided against it. With NRT, an EventLog entry could no longer be removed in the same transaction as the index update, because the change is not yet persisted. This would require a two-phase processing of the EventLog (mark, commit, remove) and a recovery on startup. The additional complexity is not justified by the gain (saving one fsync per block).
 
+### Fail fast on startup
+
+The `LuceneIndexManager` is started on deployment. A missing configuration, a deprecated configuration property or an outdated index aborts the deployment immediately. A misconfiguration is detected when the application is deployed, not on the first search.
+
 ### Single node
 
 The index is stored locally. Only one application instance can write to an index directory. Running multiple application instances requires a separate index per instance.
 
-## JVM notes
+## Deployment on WildFly
 
-Lucene 10 uses modern JVM features. The following warnings may appear on startup:
+Lucene 10 uses modern JVM features which are not available to a deployment by default. The index works without additional settings, but Lucene can not detect the JVM correctly and runs without SIMD acceleration. For full text search the impact is small, for vector search it is significant.
 
-- `Use --enable-native-access=ALL-UNNAMED to avoid a warning` — Lucene uses the Foreign Function API for memory mapping. The warning is cosmetic and can be removed by adding the option to the JVM parameters.
-- `Java runtime is not using Hotspot VM; Java vector incubator API can't be enabled` — Lucene can not use SIMD acceleration on non-HotSpot JVMs (e.g. OpenJ9). This has no relevant impact on full text search, but will be important for vector search. On a HotSpot JVM, add `--add-modules jdk.incubator.vector` to enable it.
+On startup the following warnings indicate missing settings:
+
+| Warning                                                      | Cause                                                                                                         |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| `Lucene cannot optimize algorithms ... not based on Hotspot` | WildFly hides the JDK package `com.sun.management` from deployments. Lucene uses it to detect the HotSpot VM. |
+| `Java vector incubator module is not readable`               | The Vector API module is not enabled.                                                                         |
+| `Use --enable-native-access=ALL-UNNAMED to avoid a warning`  | Lucene uses the Foreign Function API for memory mapping.                                                      |
+
+### Recommended JVM options
+
+```
+-Djboss.modules.system.pkgs=org.jboss.byteman,com.sun.management,jdk.incubator.vector
+--add-modules=jdk.incubator.vector
+--enable-native-access=ALL-UNNAMED
+```
+
+`jboss.modules.system.pkgs` makes the JDK packages visible to all deployments. `com.sun.management` is needed for the HotSpot detection, `jdk.incubator.vector` for the Vector API.
+
+On startup the JVM logs `WARNING: Using incubator modules: jdk.incubator.vector`. This is expected.
+
+### Setting JAVA_OPTS
+
+**Important:** If the environment variable `JAVA_OPTS` is set, WildFly ignores all its default JVM options (see `bin/standalone.conf`). In this case the defaults must be included explicitly, together with the memory and GC settings. A complete example for Kubernetes:
+
+```yaml
+- name: JAVA_OPTS
+  value: >
+    -XX:MaxRAMPercentage=75.0
+    -XX:+UseG1GC
+    -XX:MaxGCPauseMillis=200
+    -XX:InitiatingHeapOccupancyPercent=45
+    -Djava.net.preferIPv4Stack=true
+    -Djava.awt.headless=true
+    -Djboss.modules.system.pkgs=org.jboss.byteman,com.sun.management,jdk.incubator.vector
+    --add-modules=jdk.incubator.vector
+    --enable-native-access=ALL-UNNAMED
+```
+
+The lines `-Djava.net.preferIPv4Stack`, `-Djava.awt.headless` and `-Djboss.modules.system.pkgs` replace the WildFly defaults which are dropped when `JAVA_OPTS` is set.
+
+### Non-HotSpot JVMs
+
+On JVMs not based on HotSpot (e.g. Eclipse OpenJ9) the Vector API can not be used by Lucene. Use a HotSpot based JDK (e.g. Eclipse Temurin, as used by the official WildFly images) for vector search.
 
 ## Migration from imixs-workflow-index-lucene
 
@@ -78,6 +125,7 @@ Please note:
 
 - **Only one index module per application.** Both modules implement the same `SearchService` and `UpdateService` interfaces. Deploying both leads to ambiguous CDI dependencies.
 - **Java 21 is required** (Lucene 10).
-- **The index must be rebuilt.** Lucene 10 can not read indices created by Lucene 7. The default index directory changed to `imixs-workflow-index-v10`, so a new index is created and rebuilt automatically on first startup. The old index is not touched.
+- **The configuration properties were renamed.** `lucence.indexDir` is now `index.directory` and `lucence.analyzerClass` is now `index.luceneAnalyzerClass`. If an old property is still in use, the deployment is aborted with a hint which property has to be renamed.
+- **The index must be rebuilt.** Lucene 10 can not read indices created by Lucene 7. Point `index.directory` to a new, empty location. A new index is created and rebuilt automatically on first startup.
 - **Package name changed** from `org.imixs.workflow.engine.lucene` to `org.imixs.workflow.index`. Projects overriding classes like the `LuceneItemAdapter` need to update their imports.
-- **Outdated indices are not deleted automatically.** If the index directory is configured explicitly and still contains a Lucene 7 index, the startup fails with a clear warning. An administrator has to decide how to handle the old index (backup, move or delete). After removing the index directory **and** the taxonomy directory (`<indexDir>_tax`), the index is rebuilt on the next startup.
+- **Outdated indices are not deleted automatically.** If `index.directory` still points to a Lucene 7 index, the deployment is aborted with a clear warning. An administrator has to decide how to handle the old index (backup, move or delete). After removing the index directory **and** the taxonomy directory (`<indexDir>_tax`), the index is rebuilt on the next startup.

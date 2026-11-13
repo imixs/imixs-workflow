@@ -173,7 +173,7 @@ will search exactly for the keyword 'rs/82550/201618'. Also the phrase
 
     europe/berlin
 
-will start a search for the keyword 'europe/berlin'. This sometimes leads to an unexpected search result, because the Imixs LuceneUpdateService is using the 'ClassicAnalyzer' per default to create the luncene index. And this analyzer will splitt 'europe/berlin' into ''europe' and 'berlin'. If you need to seach for an exact keyoword you need to add the corresponding field into the imixs.property value 'lucence.indexFieldListNoAnalyze'. This will create a document field with the exact keyword independent form the content and it will not be split up by the ClassicAnalyzer. But in this case you need to specify the document field also in your query. See the following example:
+will start a search for the keyword 'europe/berlin'. This sometimes leads to an unexpected search result, because the Imixs LuceneUpdateService is using the 'ClassicAnalyzer' per default to create the luncene index. And this analyzer will splitt 'europe/berlin' into ''europe' and 'berlin'. If you need to seach for an exact keyoword you need to add the corresponding field into the imixs.property value 'index.fields.noanalyze'. This will create a document field with the exact keyword independent form the content and it will not be split up by the ClassicAnalyzer. But in this case you need to specify the document field also in your query. See the following example:
 
     (_country:europe\/berlin)
 
@@ -218,48 +218,16 @@ To activate the Lucene Core Engine you just have to add the following dependency
     	<version>${org.imixs.workflow.version}</version>
     </dependency>
 
-The index location in the local file system can be defined by the imixs.property '_lucence.indexDir_'. The property can set in the imixs.properies file together with the index schema configuration:
+The index location in the local file system can be defined by the imixs.property `index.directory`. The property can set in the imixs.properties file together with the index schema configuration:
 
     # Fields to be added into the searchindex
-    index.fields=txtsearchstring,txtSubject,txtname,txtEmail,txtWorkflowAbstract,txtWorkflowSummary
+    index.fields=project.name,project.description
     index.fields.analyze=
-    index.fields.noanalyze=datDate,txtWorkflowGroup,txtemail, datdate, datfrom, datto, numsequencenumber, txtUsername
+    index.fields.noanalyze=project.date
     # Search Index Direcotry
-    lucence.indexDir=${imixs-office.IndexDir}
+    index.directory=${imixs-office.IndexDir}
 
 The default location will be the directory 'imixs-workflow-index'
-
-### Apache Solr
-
-[Apache Solr](https://lucene.apache.org/solr/) is a highly reliable, scalable and fault tolerant search engine.
-Solr is providing distributed indexing and replication and can be deployed in a microservice architecture as well in large distributed cloud environments.
-
-You need to setup a Solr server environment to use the Solr Search Engine. To activate the Solr Engine you need to add the following dependency:
-
-    <dependency>
-    	<groupId>org.imixs.workflow</groupId>
-    	<artifactId>imixs-workflow-solr</artifactId>
-    	<version>${org.imixs.workflow.version}</version>
-    </dependency>
-
-Apache Solr provides a lot of flexibility in configuration and offers additional features like translation or suggestion. In this way you can control the Imixs Search Index in a more fine grained way.
-
-There is a set of optional properties which can be set to access the solr instance:
-
-- _solr.api_ - solr api endpoint (default host=http://solr:8983);
-- _solr.core_ - the solr core (default 'imixs-workflow')
-- _solr.configset_ - an optional solr config set (default set is '\_default')
-- _solr.user_ - optional user id to login
-- _solr.password_ - optional user password to login
-
-The optional parameter can be set together with the the index schema configuration:
-
-    # Fields to be added into the searchindex
-    index.fields=txtsearchstring,txtSubject,txtname,txtEmail,txtWorkflowAbstract,txtWorkflowSummary
-    index.fields.analyze=
-    index.fields.noanalyze=datDate,txtWorkflowGroup,txtemail, datdate, datfrom, datto, numsequencenumber, txtUsername
-    # Solr configuration
-    solr.api=http://my-solr-host:8983
 
 ### Build Your Custom Search Engine
 
