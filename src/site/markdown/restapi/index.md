@@ -91,6 +91,38 @@ The typed JSON format is supported only by the [workflow resource](workflowservi
 
 **Note:** Depending on the Rest Service Implementation the JSON format for response object can vary.
 
+### Upload a File Data Objects
+
+Files are attached to a workitem via the item `$file` in a FileData object. The item contains a nested item
+for each file. The name of the nested item is the filename and its values are the
+content type and the file content as a Base64 encoded string.
+
+    POST /api/workflow/workitem/<UNIQUEID>
+
+Example:
+
+```xml
+  <document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <item name="$eventid">
+      <value xsi:type="xs:int">1</value>
+    </item>
+    <item name="$file">
+      <value xsi:type="xmlItemArray">
+        <item name="invoice_4711.pdf">
+          <value xsi:type="xs:string">application/pdf</value>
+          <value xsi:type="xs:base64Binary">JVBERi0xLjQKJcfsj6IKNSAwIG9iago8PC9MZW5n...</value>
+        </item>
+      </value>
+    </item>
+  </document>
+```
+
+**Notes:**
+
+- The file content must be Base64 encoded without line breaks.
+- The content type must match to a valid file type (e.g. `application/pdf`, `application/xml`).
+- Posting the item `$file` will not replace other existing file data objects.
+
 The following sections gives an detailed description of all resource groups defined by the Imixs-Workflow REST Service API:
 
 - [Workflow Service](./workflowservice.html)
