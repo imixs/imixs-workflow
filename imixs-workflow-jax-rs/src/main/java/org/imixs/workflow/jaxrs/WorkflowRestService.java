@@ -26,25 +26,8 @@ import java.text.ParseException;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import jakarta.inject.Inject;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DefaultValue;
-import jakarta.ws.rs.Encoded;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.StreamingOutput;
-import jakarta.ws.rs.core.UriInfo;
 
 import org.imixs.workflow.FileData;
 import org.imixs.workflow.ItemCollection;
@@ -61,8 +44,24 @@ import org.imixs.workflow.xml.XMLDocument;
 import org.imixs.workflow.xml.XMLDocumentAdapter;
 
 import jakarta.ejb.Stateless;
+import jakarta.inject.Inject;
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.logging.Level;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.Encoded;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.WebApplicationException;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.StreamingOutput;
+import jakarta.ws.rs.core.UriInfo;
 
 /**
  * The WorkflowService Handler supports methods to process different kind of
@@ -192,26 +191,26 @@ public class WorkflowRestService {
                     return builder.build();
                 } else {
                     logger.log(Level.WARNING, "WorkflowRestService unable to open file: ''{0}''"
-                            + " in workitem ''{1}'' - error: Filename not found!", new Object[]{file, uniqueid});
+                            + " in workitem ''{1}'' - error: Filename not found!", new Object[] { file, uniqueid });
                     // workitem not found
                     return Response.status(Response.Status.NOT_FOUND).build();
                 }
 
             } else {
                 logger.log(Level.WARNING, "WorkflowRestService unable to open file: ''{0}''"
-                        + " in workitem ''{1}'' - error: Workitem not found!", new Object[]{file, uniqueid});
+                        + " in workitem ''{1}'' - error: Workitem not found!", new Object[] { file, uniqueid });
                 // workitem not found
                 return Response.status(Response.Status.NOT_FOUND).build();
             }
 
         } catch (Exception e) {
             logger.log(Level.SEVERE, "WorkflowRestService unable to open file: ''{0}''"
-                    + " in workitem ''{1}'' - error: {2}", new Object[]{file, uniqueid, e.getMessage()});
+                    + " in workitem ''{1}'' - error: {2}", new Object[] { file, uniqueid, e.getMessage() });
             e.printStackTrace();
         }
 
         logger.log(Level.SEVERE, "WorkflowRestService unable to open file: ''{0}''"
-                + " in workitem ''{1}''", new Object[]{file, uniqueid});
+                + " in workitem ''{1}''", new Object[] { file, uniqueid });
         return Response.status(Response.Status.NOT_FOUND).build();
 
     }
@@ -282,7 +281,8 @@ public class WorkflowRestService {
     }
 
     /**
-     * Returns a collection of workitems for which the specified user has explicit write permission.
+     * Returns a collection of workitems for which the specified user has explicit
+     * write permission.
      * 
      * @param start
      * @param count
@@ -315,8 +315,10 @@ public class WorkflowRestService {
     }
 
     /**
-     * Returns a collection of workitems where the current user has a write permission.
-     * This means that the current userID or at least one of its roles is contained in
+     * Returns a collection of workitems where the current user has a write
+     * permission.
+     * This means that the current userID or at least one of its roles is contained
+     * in
      * the $writeaccess property.
      * 
      * @param start
@@ -326,7 +328,7 @@ public class WorkflowRestService {
      */
     @GET
     @Path("/tasklist/writeaccess")
-    public Response getTaskListByWriteAccess( @QueryParam("type") String type,
+    public Response getTaskListByWriteAccess(@QueryParam("type") String type,
             @DefaultValue("0") @QueryParam("pageIndex") int pageIndex,
             @DefaultValue("10") @QueryParam("pageSize") int pageSize,
             @DefaultValue("") @QueryParam("sortBy") String sortBy,
@@ -766,12 +768,12 @@ public class WorkflowRestService {
                                 List v = workitem.getItemValue(fieldName);
                                 v.add(fieldValue);
                                 logger.log(Level.FINE, "[WorkflowRestService] multivalue for ''{0}'' = ''{1}''",
-                                        new Object[]{fieldName, fieldValue});
+                                        new Object[] { fieldName, fieldValue });
                                 workitem.replaceItemValue(fieldName, v);
                             } else {
                                 // first single value....
                                 logger.log(Level.FINE, "[WorkflowRestService] value for ''{0}'' = ''{1}''",
-                                        new Object[]{fieldName, fieldValue});
+                                        new Object[] { fieldName, fieldValue });
                                 workitem.replaceItemValue(fieldName, fieldValue);
                                 vMultiValueFieldNames.add(fieldName);
                             }
@@ -835,6 +837,15 @@ public class WorkflowRestService {
             workitem.replaceItemValue(WorkflowKernel.UNIQUEID, uid);
         }
 
+        // --- $file merge (only if $file is available) ---
+        if (workitem.hasItem("$file")) {
+            ItemCollection currentInstance = this.workflowService.getDocumentService()
+                    .load(workitem.getItemValueString(WorkflowKernel.UNIQUEID));
+            if (currentInstance != null) {
+                workitem.mergeFileData(currentInstance);
+            }
+        }
+
         try {
             // remove old error code and message
             workitem.removeItem("$error_code");
@@ -856,7 +867,8 @@ public class WorkflowRestService {
         try {
             if (workitem.hasItem("$error_code")) {
                 logger.log(Level.SEVERE, "{0}: {1}",
-                        new Object[]{workitem.getItemValueString("$error_code"), workitem.getItemValueString("$error_message")});
+                        new Object[] { workitem.getItemValueString("$error_code"),
+                                workitem.getItemValueString("$error_message") });
                 return Response.ok(XMLDataCollectionAdapter.getDataCollection(workitem))
                         .status(Response.Status.NOT_ACCEPTABLE).build();
             } else {

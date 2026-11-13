@@ -365,11 +365,14 @@ public class DocumentRestService {
             // try to load current instance of this entity
             ItemCollection currentInstance = documentService.load(workitem.getItemValueString(WorkflowKernel.UNIQUEID));
             if (currentInstance != null) {
-                // merge entity into current instance
-                // an instance of this Entity still exists! so we update the
-                // new values here....
-                currentInstance.replaceAllItems(workitem.getAllItems());
-                workitem = currentInstance;
+                // --- $file merge ---
+                if (workitem.hasItem("$file")) {
+                    // --- $file merge (only if $file is available) ---
+                    workitem.mergeFileData(currentInstance);
+                }
+                // merge workitem from the current instance (issue #86, issue #507)
+                workitem.mergeItems(currentInstance.getAllItems());
+
             }
 
             workitem.removeItem("$error_code");

@@ -1226,6 +1226,23 @@ public class ItemCollection implements Cloneable {
     }
 
     /**
+     * This method merges fileData objects from a source ItemCollection.
+     * Existing FileData object will be kept unchanged. This method call is useful
+     * for Rest API calls like postDocument
+     * 
+     * @param source
+     */
+    public void mergeFileData(ItemCollection source) {
+        if (!source.hasItem("$file")) {
+            return;
+        }
+        List<FileData> sourceFileDataList = source.getFileData();
+        for (FileData sourceFileData : sourceFileDataList) {
+            this.addFileData(sourceFileData);
+        }
+    }
+
+    /**
      * This method removes duplicates and null or empty values from an item list
      * 
      * @param itemName - item to be processed
