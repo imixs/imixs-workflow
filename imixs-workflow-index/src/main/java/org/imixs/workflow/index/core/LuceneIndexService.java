@@ -13,7 +13,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0-or-later
  ****************************************************************************/
 
-package org.imixs.workflow.index;
+package org.imixs.workflow.index.core;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;

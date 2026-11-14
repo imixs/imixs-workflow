@@ -13,7 +13,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0-or-later
  ****************************************************************************/
 
-package org.imixs.workflow.index;
+package org.imixs.workflow.index.core;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -83,6 +83,7 @@ import jakarta.inject.Inject;
  * @author rsoika
  */
 @Singleton
+@Startup
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 public class LuceneIndexManager {
 
@@ -384,7 +385,7 @@ public class LuceneIndexManager {
      * @param path      - the path of the directory, used for logging
      * @throws IOException
      */
-    private void verifyIndexFormat(Directory directory, String path) throws IOException {
+    public static void verifyIndexFormat(Directory directory, String path) throws IOException {
         try {
             // reads only the latest commit point - a cheap operation
             SegmentInfos.readLatestCommit(directory);
