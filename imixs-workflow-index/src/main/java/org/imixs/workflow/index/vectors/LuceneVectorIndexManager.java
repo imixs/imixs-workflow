@@ -31,6 +31,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.imixs.workflow.exceptions.IndexException;
+import org.imixs.workflow.index.core.IndexUtil;
 import org.imixs.workflow.index.core.LuceneIndexManager;
 
 import jakarta.annotation.PostConstruct;
@@ -96,7 +97,7 @@ public class LuceneVectorIndexManager {
     private boolean vectorEnabled;
 
     @Inject
-    @ConfigProperty(name = CONFIG_VECTOR_DIMENSION)
+    @ConfigProperty(name = CONFIG_VECTOR_DIMENSION, defaultValue = "768")
     private Optional<Integer> vectorDimensionConfig;
 
     @Inject
@@ -136,7 +137,7 @@ public class LuceneVectorIndexManager {
         try {
             vectorDirectory = FSDirectory.open(Paths.get(vectorPath));
             if (DirectoryReader.indexExists(vectorDirectory)) {
-                LuceneIndexManager.verifyIndexFormat(vectorDirectory, vectorPath);
+                IndexUtil.verifyIndexFormat(vectorDirectory, vectorPath);
                 verifyDimension();
             }
 
