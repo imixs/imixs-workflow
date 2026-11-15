@@ -29,10 +29,8 @@ import java.util.logging.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.facet.taxonomy.directory.DirectoryTaxonomyWriter;
 import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexFormatTooOldException;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.SegmentInfos;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
@@ -154,10 +152,10 @@ public class LuceneIndexManager {
 
             // verify existing indices before opening a writer
             if (indexExists) {
-                verifyIndexFormat(indexDirectory, indexPath);
+                IndexUtil.verifyIndexFormat(indexDirectory, indexPath);
             }
             if (taxonomyExists) {
-                verifyIndexFormat(taxonomyDirectory, taxonomyPath);
+                IndexUtil.verifyIndexFormat(taxonomyDirectory, taxonomyPath);
             }
 
             openWriters();
@@ -369,36 +367,6 @@ public class LuceneIndexManager {
             return DEFAULT_ANALYZER;
         }
         return className;
-    }
-
-    /**
-     * Verifies that an existing index can be read by the current Lucene version.
-     * Lucene only supports indices created by the current or the previous major
-     * version. An index created by an older version (e.g. Lucene 7) can not be
-     * opened and must be rebuilt.
-     * <p>
-     * The method does not delete an outdated index automatically. Instead it logs
-     * a warning and throws an IndexException, so an administrator can decide how
-     * to handle the existing index (e.g. backup, move or delete).
-     *
-     * @param directory - the index directory to be verified
-     * @param path      - the path of the directory, used for logging
-     * @throws IOException
-     */
-    public static void verifyIndexFormat(Directory directory, String path) throws IOException {
-        try {
-            // reads only the latest commit point - a cheap operation
-            SegmentInfos.readLatestCommit(directory);
-        } catch (IndexFormatTooOldException e) {
-            logger.log(Level.WARNING, "├── ⚠️ index directory ''{0}'' was created by an outdated Lucene version!",
-                    path);
-            logger.log(Level.WARNING, "│   ├── the index can not be read by Lucene {0}", Version.LATEST);
-            logger.log(Level.WARNING, "│   ├── {0}", e.getMessage());
-            logger.log(Level.WARNING, "│   └── 👉 remove or move the index directory ''{0}'' and the taxonomy"
-                    + " directory - the index will be rebuilt automatically on next startup", path);
-            throw new IndexException(IndexException.INVALID_INDEX,
-                    "Index directory '" + path + "' was created by an outdated Lucene version", e);
-        }
     }
 
     private void closeQuietly(AutoCloseable closeable, String name) {

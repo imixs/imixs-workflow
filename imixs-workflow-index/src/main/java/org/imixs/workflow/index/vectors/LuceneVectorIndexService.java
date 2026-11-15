@@ -47,8 +47,8 @@ import org.imixs.workflow.engine.index.DefaultOperator;
 import org.imixs.workflow.engine.index.SchemaService;
 import org.imixs.workflow.exceptions.IndexException;
 import org.imixs.workflow.exceptions.QueryException;
+import org.imixs.workflow.index.core.IndexUtil;
 import org.imixs.workflow.index.core.LuceneIndexManager;
-import org.imixs.workflow.index.core.LuceneSearchService;
 
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
@@ -219,7 +219,7 @@ public class LuceneVectorIndexService {
         DirectoryReader fullTextReader = null;
         DirectoryReader vectorReader = null;
         try {
-            Query filterQuery = LuceneSearchService.createQueryParser(DefaultOperator.AND).parse(extendedTerm);
+            Query filterQuery = IndexUtil.createQueryParser(DefaultOperator.AND).parse(extendedTerm);
             fullTextReader = DirectoryReader.open(luceneIndexManager.getIndexDirectory());
             vectorReader = DirectoryReader.open(vectorIndexManager.getDirectory());
             IndexSearcher fullTextSearcher = new IndexSearcher(fullTextReader);

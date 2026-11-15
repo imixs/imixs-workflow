@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.facet.FacetResult;
 import org.apache.lucene.facet.Facets;
@@ -157,7 +156,7 @@ public class LuceneSearchService implements SearchService {
         IndexSearcher searcher = null;
         try {
             searcher = createIndexSearcher();
-            QueryParser parser = createQueryParser(defaultOperator);
+            QueryParser parser = IndexUtil.createQueryParser(defaultOperator);
             parser.setAllowLeadingWildcard(true);
 
             int startIndex = pageIndex * pageSize;
@@ -272,7 +271,7 @@ public class LuceneSearchService implements SearchService {
                 query = new MatchAllDocsQuery();
             } else {
                 searchTerm = schemaService.getExtendedSearchTerm(searchTerm);
-                QueryParser parser = createQueryParser(DefaultOperator.OR);
+                QueryParser parser = IndexUtil.createQueryParser(DefaultOperator.OR);
                 query = parser.parse(searchTerm);
             }
             // Lucene 10: the FacetsCollector is created by a FacetsCollectorManager
@@ -341,7 +340,7 @@ public class LuceneSearchService implements SearchService {
         IndexSearcher searcher = null;
         try {
             searcher = createIndexSearcher();
-            QueryParser parser = createQueryParser(defaultOperator);
+            QueryParser parser = IndexUtil.createQueryParser(defaultOperator);
             parser.setAllowLeadingWildcard(true);
 
             Query query = parser.parse(sSearchTerm);
@@ -410,29 +409,6 @@ public class LuceneSearchService implements SearchService {
         // the directory is provided by the LuceneIndexManager
         Directory taxoDir = luceneIndexManager.getTaxonomyDirectory();
         return new DirectoryTaxonomyReader(taxoDir);
-    }
-
-    /**
-     * Returns in instance of a QueyParser based on a KeywordAnalyzer. The method
-     * set the lucene DefaultOperator to 'OR' if not specified otherwise.
-     *
-     * @see issue #28 - normalizeSearchTerm
-     * @param defaultOperator
-     * @return QueryParser
-     */
-    public static QueryParser createQueryParser(DefaultOperator defaultOperator) {
-        // use the keywordAnalyzer for searching a search term.
-        QueryParser parser = new QueryParser("content", new KeywordAnalyzer());
-        if (defaultOperator == DefaultOperator.OR) {
-            parser.setDefaultOperator(QueryParser.Operator.OR);
-        } else {
-            parser.setDefaultOperator(QueryParser.Operator.AND);
-        }
-
-        // set setSplitOnWhitespace (issue #438)
-        // we do no longer support a config parameter here!
-        parser.setSplitOnWhitespace(true);
-        return parser;
     }
 
     /**
