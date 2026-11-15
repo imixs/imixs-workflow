@@ -15,7 +15,6 @@
 
 package org.imixs.workflow.engine.plugins;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,8 +46,6 @@ import org.imixs.workflow.exceptions.PluginException;
  */
 public class ResultPlugin extends AbstractPlugin {
 
-    public static List<String> SPPORTED_KERNEL_ITEMS = Arrays.asList("$file", "$snapshot.history", "$migration");
-
     private static final Logger logger = Logger.getLogger(ResultPlugin.class.getName());
 
     public ItemCollection run(ItemCollection documentContext, ItemCollection event) throws PluginException {
@@ -60,12 +57,10 @@ public class ResultPlugin extends AbstractPlugin {
         if (evalItemCollection != null) {
             List<String> itemNameList = evalItemCollection.getItemNames();
             for (String itemName : itemNameList) {
-                // do not accept items starting with $
-                // allow $file - Issue #644
+                // do not accept items starting with $ (see #993, #644)
                 if (!isValidItemName(itemName)) {
-                    logger.log(Level.WARNING, "<item> tag contains unsupported item name ''{0}''"
-                            + " - verify event result definition!", itemName);
-
+                    logger.log(Level.WARNING, "<item> tag ''{0}'' is immutable - verify BPMN event result definition",
+                            itemName);
                     evalItemCollection.removeItem(itemName);
                 }
             }
@@ -84,10 +79,7 @@ public class ResultPlugin extends AbstractPlugin {
     public boolean isValidItemName(String itemName) {
         // only if name starts with $ we need to check the SUPPORTED_KERNEL_ITEMS
         if (itemName.startsWith("$")) {
-            if (!SPPORTED_KERNEL_ITEMS.contains(itemName.toLowerCase())) {
-                logger.log(Level.WARNING, "<item> tag ''{0}'' is immutable", itemName);
-                return false;
-            }
+            return false;
         }
         return true;
     }
