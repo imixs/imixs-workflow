@@ -236,7 +236,7 @@ public class EventLogRestService {
     @Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
     public Response countAllEventLogEntries(@QueryParam("format") String format) {
         XMLCount xmlcount = new XMLCount();
-        logger.log(Level.INFO, "......count all eventLogEntries");
+        logger.log(Level.FINE, "......count all eventLogEntries");
         xmlcount.count = eventLogService.countAllEvents();
         if ("json".equals(format)) {
             return Response
