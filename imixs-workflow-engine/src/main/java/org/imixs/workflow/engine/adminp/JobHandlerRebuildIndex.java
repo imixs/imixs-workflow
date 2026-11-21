@@ -169,6 +169,13 @@ public class JobHandlerRebuildIndex implements JobHandler {
                 // move the syncpoint only after the group was indexed successfully
                 syncPoint = nextSyncPoint;
                 runCount += documents.size();
+                // progress log - a run with a large block size can take several minutes
+                if (runCount / 1000 > (runCount - documents.size()) / 1000) {
+                    long elapsed = System.currentTimeMillis() - lProfiler;
+                    logger.log(Level.INFO,
+                            "│   ├── ⚙ {0,number,#} documents indexed in {1,number,#} ms ({2,number,#} docs/s)...",
+                            new Object[] { runCount, elapsed, elapsed > 0 ? runCount * 1000L / elapsed : 0 });
+                }
                 indexCount += resultList.size();
             }
         } catch (Exception e) {
