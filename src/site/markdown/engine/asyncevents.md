@@ -46,6 +46,8 @@ The AsyncEventProcessor runs on a scheduled base defined by the following enviro
 
 To prevent concurrent processes to handle the same workitems the batch process uses a Optimistic lock strategy. The expiration time on the lock can be set by the environment variable ASYNCEVENT_PROCESSOR_DEADLOCK.
 
+**Note:** The AsyncEventProcessor also processes the completion signals of [Meta Workflows](./metaworkflows.html). If you use meta workflows, the processor must be enabled.
+
 ## The EventLogService and Rest API
 
 You can create, read or remove events with thes `EventLogService`. This service provides methods to programmatically manage events. See the section [EventLogService](eventlogservice.html) for details.

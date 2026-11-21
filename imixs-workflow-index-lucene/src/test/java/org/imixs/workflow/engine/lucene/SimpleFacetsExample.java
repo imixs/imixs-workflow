@@ -21,11 +21,8 @@ import java.util.List;
 
 import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.facet.DrillDownQuery;
-import org.apache.lucene.facet.DrillSideways.DrillSidewaysResult;
-import org.apache.lucene.facet.DrillSideways;
+import org.apache.lucene.document.StringField;
 import org.apache.lucene.facet.FacetField;
 import org.apache.lucene.facet.FacetResult;
 import org.apache.lucene.facet.Facets;
@@ -65,35 +62,35 @@ public class SimpleFacetsExample {
 		DirectoryTaxonomyWriter taxoWriter = new DirectoryTaxonomyWriter(taxoDir);
 
 		Document doc = new Document();
-	
-		doc.add(new StringField("author", "Bob",  Store.YES));
-    	doc.add(new FacetField("Author", "Bob"));
+
+		doc.add(new StringField("author", "Bob", Store.YES));
+		doc.add(new FacetField("Author", "Bob"));
 		doc.add(new FacetField("Publish Date", "2010", "10", "15"));
 		indexWriter.addDocument(config.build(taxoWriter, doc));
 
 		doc = new Document();
-		doc.add(new StringField("author", "Lisa",  Store.YES));
-    	doc.add(new FacetField("Author", "Lisa"));
+		doc.add(new StringField("author", "Lisa", Store.YES));
+		doc.add(new FacetField("Author", "Lisa"));
 		doc.add(new FacetField("Publish Date", "2010", "10", "20"));
 		indexWriter.addDocument(config.build(taxoWriter, doc));
 
 		doc = new Document();
-		doc.add(new StringField("author", "Lisa",  Store.YES));
-    	
+		doc.add(new StringField("author", "Lisa", Store.YES));
+
 		doc.add(new FacetField("Author", "Lisa"));
 		doc.add(new FacetField("Publish Date", "2012", "1", "1"));
 		indexWriter.addDocument(config.build(taxoWriter, doc));
 
 		doc = new Document();
-		doc.add(new StringField("author", "Susan",  Store.YES));
-    	
+		doc.add(new StringField("author", "Susan", Store.YES));
+
 		doc.add(new FacetField("Author", "Susan"));
 		doc.add(new FacetField("Publish Date", "2012", "1", "7"));
 		indexWriter.addDocument(config.build(taxoWriter, doc));
 
 		doc = new Document();
-		doc.add(new StringField("author", "Frank",  Store.YES));
-    	
+		doc.add(new StringField("author", "Frank", Store.YES));
+
 		doc.add(new FacetField("Author", "Frank"));
 		doc.add(new FacetField("Publish Date", "1999", "5", "5"));
 		indexWriter.addDocument(config.build(taxoWriter, doc));
@@ -131,7 +128,7 @@ public class SimpleFacetsExample {
 		taxoReader.close();
 
 		return results;
-	} 
+	}
 
 	/** Runs the search example. */
 	public List<FacetResult> runFacetOnly() throws IOException {
@@ -139,18 +136,15 @@ public class SimpleFacetsExample {
 		return facetsOnly();
 	}
 
-	
-
 	/** Runs the search and drill-down examples and prints the results. */
 	public static void main(String[] args) throws Exception {
-		System.out.println("Facet counting example:"); 
+		System.out.println("Facet counting example:");
 		System.out.println("-----------------------");
 		SimpleFacetsExample example = new SimpleFacetsExample();
 		List<FacetResult> results1 = example.runFacetOnly();
 		System.out.println("Author: " + results1.get(0));
 		System.out.println("Publish Date: " + results1.get(1));
 
-	
 	}
 
 }

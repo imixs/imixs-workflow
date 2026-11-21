@@ -29,6 +29,7 @@
 		<!-- test dependencies -->
 		<junit.jupiter.version>5.9.2</junit.jupiter.version>
 		<mockito.version>5.8.0</mockito.version>
+		<maven.javadoc.failOnError>false</maven.javadoc.failOnError>
 	</properties>
 
 

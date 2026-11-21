@@ -73,6 +73,7 @@
 					<item name="EventLog Service" href="./engine/eventlogservice.html" />
 					<item name="Async Events" href="./engine/asyncevents.html" />
 				</item>
+				<item name="Meta Worklfows" href="./engine/metaworkflows.html" />
 				<item name="AdminP" href="./engine/adminp.html" />
 				<item name="Scheduling" href="./engine/scheduling.html"
 					collapse="true">

@@ -15,25 +15,28 @@
 
 package org.imixs.workflow.engine;
 
+import static org.imixs.workflow.engine.AsyncEventSchedulerConfig.ASYNCEVENT_PROCESSOR_DEADLOCK;
+import static org.imixs.workflow.engine.AsyncEventSchedulerConfig.ASYNCEVENT_PROCESSOR_ENABLED;
+import static org.imixs.workflow.engine.AsyncEventSchedulerConfig.ASYNCEVENT_PROCESSOR_INITIALDELAY;
+import static org.imixs.workflow.engine.AsyncEventSchedulerConfig.ASYNCEVENT_PROCESSOR_INTERVAL;
+import static org.imixs.workflow.engine.AsyncEventSchedulerConfig.EVENTLOG_TOPIC_ASYNC_EVENT;
+
+import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import jakarta.annotation.security.DeclareRoles;
 import jakarta.annotation.security.RunAs;
-import jakarta.inject.Inject;
-
-import org.eclipse.microprofile.config.inject.ConfigProperty;
-
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
 import jakarta.ejb.Timeout;
 import jakarta.ejb.Timer;
 import jakarta.ejb.TimerConfig;
 import jakarta.ejb.TimerService;
-import java.util.logging.Level;
-
-import static org.imixs.workflow.engine.AsyncEventSchedulerConfig.*;
+import jakarta.inject.Inject;
 
 /**
  * The AsyncEventScheduler starts a scheduler service to process async events in
@@ -59,8 +62,6 @@ import static org.imixs.workflow.engine.AsyncEventSchedulerConfig.*;
 @Startup
 @Singleton
 public class AsyncEventScheduler {
-
-
 
     // enabled
     @Inject
@@ -91,13 +92,16 @@ public class AsyncEventScheduler {
     AsyncEventService asyncEventService;
 
     @Inject
+    MetaWorkflowHandler metaWorkflowHandler;
+
+    @Inject
     EventLogService eventLogService;
 
     @PostConstruct
     public void init() {
         if (enabled) {
             logger.log(Level.INFO, "Starting AsyncEventScheduler - initalDelay={0}  inverval={1} ....",
-                    new Object[]{initialDelay, interval});
+                    new Object[] { initialDelay, interval });
 
             // Registering a non-persistent Timer Service.
             final TimerConfig timerConfig = new TimerConfig();
@@ -117,8 +121,11 @@ public class AsyncEventScheduler {
      */
     @Timeout
     public void run(Timer timer) {
-        eventLogService.releaseDeadLocks(deadLockInterval, EVENTLOG_TOPIC_ASYNC_EVENT);
+        eventLogService.releaseDeadLocks(deadLockInterval, EVENTLOG_TOPIC_ASYNC_EVENT,
+                MetaWorkflowHandler.EVENTLOG_TOPIC_COMPLETED);
         asyncEventService.processEventLog();
+        // process completion signals of meta workflow subprocesses
+        metaWorkflowHandler.processEventLog();
     }
 
 }
