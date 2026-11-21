@@ -40,8 +40,8 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 
 /**
- * The JobHandlerRebuildIndex rebuilds the search index for all documents
- * stored in the database.
+ * The JobHandlerRebuildIndex rebuilds the search index for all documents stored
+ * in the database.
  * <p>
  * The search index can not be used to select the documents because the index
  * itself is the subject of this job. Therefore the documents are read directly
@@ -52,9 +52,9 @@ import jakarta.persistence.Query;
  * <li>numBlockSize - number of documents per timer run (default 1000)</li>
  * </ul>
  * The interval between two runs is controlled by the AdminPService with the
- * attribute 'numInterval'. The throughput of the job is therefore
- * numBlockSize / numInterval. Note that each run is executed in one
- * transaction, so a very large block size can exceed the transaction timeout.
+ * attribute 'numInterval'. The throughput of the job is therefore numBlockSize
+ * / numInterval. Note that each run is executed in one transaction, so a very
+ * large block size can exceed the transaction timeout.
  * <p>
  * <strong>Paging:</strong> After each run the creation timestamp of the last
  * indexed document is stored in the item '_syncpoint'. The next run continues
@@ -83,7 +83,7 @@ public class JobHandlerRebuildIndex implements JobHandler {
 
     // internal resume position of the job
     private static final String ITEM_RESUME_SYNCPOINT = "_syncpoint";
-    private static final int DEFAULT_BLOCK_SIZE = 1000;
+    private static final int DEFAULT_BLOCK_SIZE = 10000;
     private static final int READ_AHEAD = 32;
 
     private static final String SELECT_DOCUMENTS = "SELECT document FROM Document AS document";
@@ -99,11 +99,11 @@ public class JobHandlerRebuildIndex implements JobHandler {
     private static final Logger logger = Logger.getLogger(JobHandlerRebuildIndex.class.getName());
 
     /**
-     * Reads the next block of documents after the current syncpoint and updates
-     * the search index.
+     * Reads the next block of documents after the current syncpoint and updates the
+     * search index.
      * <p>
-     * The method runs in an isolated new transaction because it flushes the
-     * local persistence manager.
+     * The method runs in an isolated new transaction because it flushes the local
+     * persistence manager.
      *
      * @param adminp the job description
      * @return the updated job description
@@ -207,8 +207,8 @@ public class JobHandlerRebuildIndex implements JobHandler {
     }
 
     /**
-     * Counts all documents created after the given syncpoint which are relevant
-     * for the search index.
+     * Counts all documents created after the given syncpoint which are relevant for
+     * the search index.
      *
      * @param syncPoint timestamp in milliseconds
      * @return number of remaining documents
@@ -219,13 +219,13 @@ public class JobHandlerRebuildIndex implements JobHandler {
     }
 
     /**
-     * Loads the next documents after a given syncpoint (timestamp in
-     * milliseconds) compared with the creation timestamp of a document entity.
+     * Loads the next documents after a given syncpoint (timestamp in milliseconds)
+     * compared with the creation timestamp of a document entity.
      * <p>
-     * More than one document can share the same creation timestamp. A group of
-     * such documents is never split, because the next call continues after the
-     * timestamp of the last returned document. If the read ahead ends inside such
-     * a group, the whole group is reloaded without a size limit.
+     * More than one document can share the same creation timestamp. A group of such
+     * documents is never split, because the next call continues after the timestamp
+     * of the last returned document. If the read ahead ends inside such a group,
+     * the whole group is reloaded without a size limit.
      *
      * @param syncPoint timestamp in milliseconds
      * @return list of documents ordered by creation date, empty if no more

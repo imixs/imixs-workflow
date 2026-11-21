@@ -92,6 +92,9 @@ public class LuceneIndexManager {
 
     public static final String CONFIG_INDEX_DIRECTORY = "index.directory";
     public static final String CONFIG_ANALYZER_CLASS = "index.luceneAnalyzerClass";
+    // rebuild job: documents per run and interval between two runs (seconds)
+    public static final String CONFIG_REBUILD_BLOCKSIZE = "index.rebuild.blocksize";
+    public static final String CONFIG_REBUILD_INTERVAL = "index.rebuild.interval";
 
     // configuration keys of the former module imixs-workflow-index-lucene (incl.
     // typo)
@@ -119,6 +122,14 @@ public class LuceneIndexManager {
     private String luceneAnalyzerClass;
 
     @Inject
+    @ConfigProperty(name = CONFIG_REBUILD_BLOCKSIZE, defaultValue = "10000")
+    private int rebuildBlockSize;
+
+    @Inject
+    @ConfigProperty(name = CONFIG_REBUILD_INTERVAL, defaultValue = "5")
+    private int rebuildInterval;
+
+    @Inject
     private Config config;
 
     // absolute path of the index directory, resolved in init()
@@ -133,9 +144,9 @@ public class LuceneIndexManager {
     private DirectoryTaxonomyWriter taxonomyWriter;
 
     /**
-     * Opens the index and taxonomy directories, verifies the index format and
-     * opens the long-lived writers. If no index exists yet, a new empty index is
-     * created and a rebuild job is triggered.
+     * Opens the index and taxonomy directories, verifies the index format and opens
+     * the long-lived writers. If no index exists yet, a new empty index is created
+     * and a rebuild job is triggered.
      */
     @PostConstruct
     void init() {
@@ -263,13 +274,13 @@ public class LuceneIndexManager {
      * Verifies the index configuration. The deployment is aborted if
      * <ul>
      * <li>the required property 'index.directory' is missing or empty</li>
-     * <li>a property of the former module 'imixs-workflow-index-lucene' is still
-     * in use and the corresponding new property is not set</li>
+     * <li>a property of the former module 'imixs-workflow-index-lucene' is still in
+     * use and the corresponding new property is not set</li>
      * </ul>
      * Legacy properties which are already replaced by the new properties are
-     * ignored with a warning. A relative index directory is accepted, but a
-     * warning is logged, because a relative path is resolved against the working
-     * directory of the server, which is usually not a persistent volume.
+     * ignored with a warning. A relative index directory is accepted, but a warning
+     * is logged, because a relative path is resolved against the working directory
+     * of the server, which is usually not a persistent volume.
      */
     private void verifyConfiguration() {
         List<String> errors = new ArrayList<>();
@@ -345,17 +356,24 @@ public class LuceneIndexManager {
     /**
      * Creates a rebuild index job. Because this bean is a singleton, the job is
      * created only once per JVM.
+     * <p>
+     * The block size and the interval are set explicitly. The AdminPService default
+     * (1000 documents every 60 seconds) is too slow to rebuild the index of a large
+     * system after a migration.
      */
     private void createRebuildJob() {
-        logger.log(Level.INFO, "│   ├── 🔄 rebuild index job created");
+        logger.log(Level.INFO, "│   ├── 🔄 rebuild index job created (blocksize={0}, interval={1}s)",
+                new Object[] { rebuildBlockSize, rebuildInterval });
         ItemCollection job = new ItemCollection();
         job.replaceItemValue("job", AdminPService.JOB_REBUILD_INDEX);
+        job.replaceItemValue("numBlockSize", rebuildBlockSize);
+        job.replaceItemValue("numInterval", rebuildInterval);
         adminPService.createJob(job);
     }
 
     /**
-     * Resolves the configured analyzer class name. Maps the legacy Lucene 7
-     * package name of the ClassicAnalyzer to the new Lucene 9+ package.
+     * Resolves the configured analyzer class name. Maps the legacy Lucene 7 package
+     * name of the ClassicAnalyzer to the new Lucene 9+ package.
      *
      * @return analyzer class name
      */

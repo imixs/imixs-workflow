@@ -77,7 +77,7 @@ public class AdminPService {
     public static final String JOB_UPDATE_WORKITEMS = "UPDATE_WORKITEMS";
     public static final String JOB_UPGRADE = "UPGRADE";
     public static final String JOB_MIGRATION = "MIGRATION";
-    public static final int DEFAULT_INTERVAL = 60;
+    public static final int DEFAULT_INTERVAL = 10;
 
     @Resource
     SessionContext ctx;
