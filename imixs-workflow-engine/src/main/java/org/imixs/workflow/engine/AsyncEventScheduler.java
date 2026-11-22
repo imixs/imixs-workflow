@@ -122,9 +122,9 @@ public class AsyncEventScheduler {
     @Timeout
     public void run(Timer timer) {
         eventLogService.releaseDeadLocks(deadLockInterval, EVENTLOG_TOPIC_ASYNC_EVENT,
-                MetaWorkflowHandler.EVENTLOG_TOPIC_SIGNAL);
+                MetaWorkflowHandler.EVENTLOG_TOPIC_MESSAGE);
         asyncEventService.processEventLog();
-        // process signals of meta workflow subprocesses
+        // process messages of meta workflow subprocesses
         metaWorkflowHandler.processEventLog();
     }
 

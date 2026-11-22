@@ -35,6 +35,7 @@ import org.openbpmn.bpmn.BPMNTypes;
 import org.openbpmn.bpmn.elements.Activity;
 import org.openbpmn.bpmn.elements.BPMNProcess;
 import org.openbpmn.bpmn.elements.Event;
+import org.openbpmn.bpmn.elements.Message;
 import org.openbpmn.bpmn.elements.Participant;
 import org.openbpmn.bpmn.elements.SequenceFlow;
 import org.openbpmn.bpmn.elements.core.BPMNElement;
@@ -506,7 +507,7 @@ public class ModelManager {
                     "model is null!");
         }
         if (processGroup == null || processGroup.isEmpty()) {
-            logger.warning("findEndTasks processGroup is empty!");
+            logger.warning("findTasks processGroup is empty!");
             return result;
         }
 
@@ -601,7 +602,7 @@ public class ModelManager {
                     "model is null!");
         }
         if (processGroup == null || processGroup.isEmpty()) {
-            logger.warning("findEndTasks processGroup is empty!");
+            logger.warning("findStartTasks processGroup is empty!");
             return result;
         }
 
@@ -679,6 +680,68 @@ public class ModelManager {
     }
 
     /**
+     * Returns the names of all BPMN Messages thrown by a given Task. A Task throws
+     * a Message if it is directly followed by a BPMN Message Throw Event
+     * (intermediateThrowEvent with a messageEventDefinition).
+     * <p>
+     * Example:
+     * 
+     * <pre>
+     * [Task] → (Message Throw Event) - messageRef → Message "Offer released"
+     * </pre>
+     * 
+     * @param model  - the BPMN model
+     * @param taskID - the task id
+     * @return list of message names - can be empty
+     */
+    public List<String> findMessagesByTask(final BPMNModel model, int taskID) {
+        List<String> result = new ArrayList<>();
+        String key = BPMNUtil.getVersion(model) + "~" + taskID;
+        Activity task = (Activity) bpmnElementCache.computeIfAbsent(key, k -> lookupTaskElementByID(model, taskID));
+        if (task == null) {
+            return result;
+        }
+        for (SequenceFlow flow : task.getOutgoingSequenceFlows()) {
+            BPMNElementNode target = flow.getTargetElement();
+            if (target != null && BPMNTypes.THROW_EVENT.equals(target.getType())) {
+                result.addAll(lookupMessageNames(model, target));
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the names of all BPMN Messages referred by the
+     * messageEventDefinitions of a given Event (e.g. an Intermediate Message Catch
+     * Event).
+     * 
+     * @param model - the BPMN model
+     * @param event - the event entity
+     * @return list of message names - can be empty
+     */
+    public List<String> findMessagesByEvent(final BPMNModel model, ItemCollection event) {
+        BPMNElementNode eventNode = model.findElementNodeById(event.getItemValueString("id"));
+        return lookupMessageNames(model, eventNode);
+    }
+
+    /**
+     * Returns the names of all BPMN Messages thrown by the Tasks of a given Process
+     * Group. The result is sorted by name.
+     * 
+     * @param model        - the BPMN model
+     * @param processGroup - the name of the process group to match
+     * @return sorted set of message names - can be empty
+     * @throws ModelException if model is undefined
+     */
+    public Set<String> findAllMessagesByGroup(final BPMNModel model, String processGroup) throws ModelException {
+        Set<String> result = new TreeSet<>();
+        for (ItemCollection task : findTasks(model, processGroup)) {
+            result.addAll(findMessagesByTask(model, task.getItemValueInteger(BPMNUtil.TASK_ITEM_TASKID)));
+        }
+        return result;
+    }
+
+    /**
      * Returns a list of all Events assigned to a Task. The event can be either
      * connected by an outgoing sequence flow or by an ingoing sequence flow
      * (init-event-node).
@@ -734,8 +797,8 @@ public class ModelManager {
 
     /**
      * Adds the given event to the result list only if no event with the same
-     * eventID already exists in the list. If a duplicate is found, a warning
-     * is logged and the event is skipped.
+     * eventID already exists in the list. If a duplicate is found, a warning is
+     * logged and the event is skipped.
      *
      * @param result the current result list
      * @param event  the event to add
@@ -1049,6 +1112,33 @@ public class ModelManager {
 
         // not found!
         return null;
+    }
+
+    /**
+     * Returns the names of all BPMN Messages referred by the
+     * messageEventDefinitions of a given event node. Messages without a name are
+     * ignored.
+     * 
+     * @param model - the BPMN model
+     * @param node  - the event node
+     * @return list of message names - can be empty
+     */
+    private List<String> lookupMessageNames(final BPMNModel model, BPMNElementNode node) {
+        List<String> result = new ArrayList<>();
+        if (!(node instanceof Event)) {
+            return result;
+        }
+        Set<Element> definitions = ((Event) node).getEventDefinitionsByType(BPMNTypes.EVENT_DEFINITION_MESSAGE);
+        for (Element definition : definitions) {
+            String messageRef = definition.getAttribute("messageRef");
+            for (Message message : model.getMessages()) {
+                String name = message.getName();
+                if (message.getId().equals(messageRef) && name != null && !name.isBlank()) {
+                    result.add(name.trim());
+                }
+            }
+        }
+        return result;
     }
 
     /**

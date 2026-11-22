@@ -58,25 +58,20 @@ import jakarta.inject.Inject;
  * <p>
  * <strong>Subprocess → Meta</strong>
  * <p>
- * A subprocess sends signals to its meta instance in two cases:
+ * A subprocess sends messages to its meta instance in two cases:
  * <ul>
- * <li>The event defines a signal in its workflow result:
- *
- * <pre>
- * {@code
- * <metaworkflow name="SIGNAL">
- *   <name>Initial sampling requested</name>
- * </metaworkflow>
- * }
- * </pre>
- *
+ * <li>The event leads into a task followed by a BPMN Message Throw Event
+ * (intermediateThrowEvent with a messageEventDefinition). The name of the
+ * referred BPMN Message is sent as a message - each time the task is reached,
+ * also if the event leads back into the same task. Whether the message is
+ * relevant is decided by the meta model.
  * <li>The event leads into an end task (a task followed by a BPMN end event).
- * The name of the end task is sent as a signal. A completed subprocess is
+ * The name of the end task is sent as a message. A completed subprocess is
  * marked with the items {@code $metaprocess.completed} and
- * {@code $metaprocess.result} and sends its completion signal only once.
+ * {@code $metaprocess.result} and sends its completion message only once.
  * </ul>
- * Each signal is stored as an EventLog entry with the topic
- * {@code metaworkflow.signal} and processed asynchronously by the
+ * Each message is stored as an EventLog entry with the topic
+ * {@code metaworkflow.message} and processed asynchronously by the
  * {@link MetaWorkflowHandler}.
  *
  * @author rsoika
@@ -88,15 +83,11 @@ public class MetaWorkflowPlugin extends AbstractPlugin {
     // Event item defining the workflow group of the subprocess to be started
     public static final String EVENT_ITEM_SUBPROCESS_GROUP = "metaworkflow.subprocess.group";
 
-    // Workflow result definition of a signal
-    public static final String RESULT_TAG = "metaworkflow";
-    public static final String RESULT_NAME_SIGNAL = "SIGNAL";
-
     // Item stored in a subprocess pointing to its meta instance
     public static final String ITEM_REF = "$metaprocess.ref";
     // Item stored in the meta instance holding all subprocesses created so far
     public static final String ITEM_SUBPROCESSES = "$metaprocess.subprocesses";
-    // Items stored in a subprocess after its completion signal was sent
+    // Items stored in a subprocess after its completion message was sent
     public static final String ITEM_COMPLETED = "$metaprocess.completed";
     public static final String ITEM_RESULT = "$metaprocess.result";
 
@@ -123,8 +114,7 @@ public class MetaWorkflowPlugin extends AbstractPlugin {
 
             // Subprocess → Meta
             if (!workitem.getItemValueString(ITEM_REF).isEmpty()) {
-                sendPublishedSignals(workitem, event, modelManager);
-                sendCompletionSignal(workitem, event, modelManager);
+                sendMessages(workitem, event, modelManager);
             }
 
         } catch (ModelException e) {
@@ -135,58 +125,59 @@ public class MetaWorkflowPlugin extends AbstractPlugin {
     }
 
     /**
-     * Sends all signals defined in the workflow result of the current event.
+     * Sends the messages of the target task of the current event. As plugins run
+     * before the kernel updates $taskID, the target task is resolved from the
+     * model.
+     * <ul>
+     * <li>For each BPMN Message Throw Event following the target task, the name of
+     * the referred BPMN Message is sent.
+     * <li>If the target task is an end task, its name is sent as the completion
+     * message (only once).
+     * </ul>
      */
-    private void sendPublishedSignals(ItemCollection subprocess, ItemCollection event, ModelManager modelManager)
-            throws PluginException, ModelException {
-        List<ItemCollection> signalDefinitions = getWorkflowService().evalWorkflowResultXML(event, RESULT_TAG,
-                RESULT_NAME_SIGNAL, subprocess, true);
-        for (ItemCollection signalDefinition : signalDefinitions) {
-            sendSignal(subprocess, signalDefinition.getItemValueString("name"), modelManager);
-        }
-    }
-
-    /**
-     * Sends the completion signal if the current event leads into an end task. As
-     * plugins run before the kernel updates $taskID, the target task is resolved
-     * from the model.
-     */
-    private void sendCompletionSignal(ItemCollection subprocess, ItemCollection event, ModelManager modelManager)
+    private void sendMessages(ItemCollection subprocess, ItemCollection event, ModelManager modelManager)
             throws ModelException {
-        if (subprocess.getItemValueBoolean(ITEM_COMPLETED)) {
-            // completion signal was already sent
-            return;
-        }
         BPMNModel model = modelManager.getModelByWorkitem(subprocess);
         ItemCollection nextElement = modelManager.nextModelElement(model, event, subprocess);
         if (nextElement == null || !BPMNTypes.BPMN_TASKS.contains(nextElement.getType())) {
-            // a follow-up event - the end task is verified by the next event
+            // a follow-up event - the target task is verified by the next event
             return;
         }
+
         int nextTaskID = nextElement.getItemValueInteger(BPMNUtil.TASK_ITEM_TASKID);
+
+        // messages thrown by the target task
+        for (String message : modelManager.findMessagesByTask(model, nextTaskID)) {
+            sendMessage(subprocess, message, modelManager);
+        }
+
+        // completion message
+        if (subprocess.getItemValueBoolean(ITEM_COMPLETED)) {
+            return;
+        }
         String group = resolveWorkflowGroup(subprocess, modelManager);
         for (ItemCollection endTask : modelManager.findEndTasks(model, group)) {
             if (endTask.getItemValueInteger(BPMNUtil.TASK_ITEM_TASKID) == nextTaskID) {
                 String result = endTask.getItemValueString(BPMNUtil.TASK_ITEM_NAME);
                 subprocess.replaceItemValue(ITEM_COMPLETED, true);
                 subprocess.replaceItemValue(ITEM_RESULT, result);
-                sendSignal(subprocess, result, modelManager);
+                sendMessage(subprocess, result, modelManager);
                 return;
             }
         }
     }
 
     /**
-     * Sends a signal from a subprocess to its meta instance by creating a new
-     * EventLog entry with the topic {@code metaworkflow.signal}.
+     * Sends a message from a subprocess to its meta instance by creating a new
+     * EventLog entry with the topic {@code metaworkflow.message}.
      *
-     * @param subprocess   - the subprocess sending the signal
-     * @param signal       - name of the signal
+     * @param subprocess   - the subprocess sending the message
+     * @param message      - name of the message
      * @param modelManager - model manager instance
      */
-    protected void sendSignal(ItemCollection subprocess, String signal, ModelManager modelManager)
+    protected void sendMessage(ItemCollection subprocess, String message, ModelManager modelManager)
             throws ModelException {
-        if (signal == null || signal.isBlank()) {
+        if (message == null || message.isBlank()) {
             return;
         }
         String metaRef = subprocess.getItemValueString(ITEM_REF);
@@ -194,11 +185,11 @@ public class MetaWorkflowPlugin extends AbstractPlugin {
         data.replaceItemValue(MetaWorkflowHandler.ITEM_SUBPROCESS_REF, subprocess.getUniqueID());
         data.replaceItemValue(MetaWorkflowHandler.ITEM_SUBPROCESS_GROUP,
                 resolveWorkflowGroup(subprocess, modelManager));
-        data.replaceItemValue(MetaWorkflowHandler.ITEM_SIGNAL, signal.trim());
-        eventLogService.createEvent(MetaWorkflowHandler.EVENTLOG_TOPIC_SIGNAL, metaRef, data);
+        data.replaceItemValue(MetaWorkflowHandler.ITEM_MESSAGE, message.trim());
+        eventLogService.createEvent(MetaWorkflowHandler.EVENTLOG_TOPIC_MESSAGE, metaRef, data);
 
-        logger.log(Level.INFO, "├── subprocess {0} sent signal ''{1}'' to metaworkflow {2}",
-                new Object[] { subprocess.getUniqueID(), signal.trim(), metaRef });
+        logger.log(Level.INFO, "├── subprocess {0} sent message ''{1}'' to metaworkflow {2}",
+                new Object[] { subprocess.getUniqueID(), message.trim(), metaRef });
     }
 
     /**

@@ -17,12 +17,12 @@ A meta workflow consists of two levels:
 
 The two levels communicate in two directions:
 
-| Direction         | Mechanism                                           |
-| ----------------- | --------------------------------------------------- |
-| Meta → Subprocess | The meta instance **starts** subprocesses           |
-| Subprocess → Meta | A subprocess sends **signals** to its meta instance |
+| Direction         | Mechanism                                            |
+| ----------------- | ---------------------------------------------------- |
+| Meta → Subprocess | The meta instance **starts** subprocesses            |
+| Subprocess → Meta | A subprocess sends **messages** to its meta instance |
 
-A technical model publishes signals, similar to the public methods of an API. The meta model decides which signals it reacts to. If the meta model does not define a reaction, a signal is ignored and the meta instance remains unchanged.
+A technical model publishes messages, similar to the public methods of an API. The meta model decides which messages it reacts to. If the meta model does not define a reaction, a message is ignored and the meta instance remains unchanged.
 
 ### One Plugin for both Models
 
@@ -31,25 +31,25 @@ On the model level, the only component is the `MetaWorkflowPlugin`. It must be r
 | Model           | The plugin is used to...                             |
 | --------------- | ---------------------------------------------------- |
 | Meta model      | start subprocesses (`metaworkflow.subprocess.group`) |
-| Technical model | send signals (published signals and end tasks)       |
+| Technical model | send messages (published messages and end tasks)     |
 
-The receiving side is part of the engine and is not registered in any model: the `AsyncEventScheduler` collects the signals and the `MetaWorkflowHandler` processes the signal events of the meta instance.
+The receiving side is part of the engine and is not registered in any model: the `AsyncEventScheduler` collects the messages and the `MetaWorkflowHandler` processes the message events of the meta instance.
 
 ### Roles and Responsibilities
 
-| Who                                 | Does                                                               | Knows about the meta workflow            |
-| ----------------------------------- | ------------------------------------------------------------------ | ---------------------------------------- |
-| Process modeler (technical model)   | Models end tasks and, if needed, published signals                 | nothing                                  |
-| User working on a subprocess        | Processes the subprocess with his own access rights                | nothing - not even read access is needed |
-| `MetaWorkflowPlugin`                | Writes an EventLog entry with the `$uniqueID` of the meta instance | only the reference (`$metaprocess.ref`)  |
-| Process owner (meta model)          | Starts subprocesses and defines signal events for relevant signals | everything                               |
-| `MetaWorkflowHandler` (system user) | Loads the meta instance and processes the matching signal event    | everything                               |
+| Who                                 | Does                                                                 | Knows about the meta workflow            |
+| ----------------------------------- | -------------------------------------------------------------------- | ---------------------------------------- |
+| Process modeler (technical model)   | Models end tasks and, if needed, published messages                  | nothing                                  |
+| User working on a subprocess        | Processes the subprocess with his own access rights                  | nothing - not even read access is needed |
+| `MetaWorkflowPlugin`                | Writes an EventLog entry with the `$uniqueID` of the meta instance   | only the reference (`$metaprocess.ref`)  |
+| Process owner (meta model)          | Starts subprocesses and defines message events for relevant messages | everything                               |
+| `MetaWorkflowHandler` (system user) | Loads the meta instance and processes the matching message event     | everything                               |
 
 This design keeps both levels strictly decoupled:
 
-- **No access rights needed.** The plugin does not read the meta instance to send a signal. The reference is already stored in the subprocess. So a signal is sent even if the user is not allowed to see the meta instance.
-- **Transactional consistency.** The EventLog entry is created in the same transaction as the processing of the subprocess. If the processing fails, no signal is sent. So a signal never refers to a step that did not happen.
-- **The meta model decides.** Whether a signal has any effect is defined in the meta model only. Without a matching signal event the meta instance remains unchanged.
+- **No access rights needed.** The plugin does not read the meta instance to send a message. The reference is already stored in the subprocess. So a message is sent even if the user is not allowed to see the meta instance.
+- **Transactional consistency.** The EventLog entry is created in the same transaction as the processing of the subprocess. If the processing fails, no message is sent. So a message never refers to a step that did not happen.
+- **The meta model decides.** Whether a message has any effect is defined in the meta model only. Without a matching message event the meta instance remains unchanged.
 
 ## Starting a Subprocess
 
@@ -79,97 +79,120 @@ Events without this item (e.g. a _Save_ event) are ignored by the plugin.
 
 An event can be processed several times. So a meta instance can hold any number of subprocesses of the same workflow group, for example a second offer or a list of requirements collected for a project.
 
-## Signals
+## Messages
 
-A subprocess communicates with its meta instance by signals. A signal has a name and is sent in two cases.
+A subprocess communicates with its meta instance by messages. A message has a name and is sent in two cases.
 
-### Published Signals
+The term follows the BPMN semantics: a BPMN _Message_ is sent from one process to a specific other process, while a BPMN _Signal_ is a broadcast to any listener. A message of a subprocess is always addressed to exactly one meta instance (`$metaprocess.ref`).
 
-The process modeler can publish a signal on any event of a technical model. The signal is defined in the workflow result of the event, in the same way as other plugin configurations:
+**Note:** Meta workflow messages are not related to the [Signal Adapters](../core/adapter-api.html) of Imixs-Workflow. A BPMN Signal Event in an Imixs model always refers to a Java adapter class and must not be used for meta workflows.
 
-```xml
-<metaworkflow name="SIGNAL">
-  <name>Initial sampling requested</name>
-</metaworkflow>
+### Published Messages
+
+The process modeler can publish a message on any task of a technical model by attaching a BPMN **Message Throw Event** to the task. The Message Throw Event refers to a BPMN **Message**, whose name is the name of the message.
+
+```
+[Check offer] → (release) → [Offer released] → ✉ Message Throw Event "Offer released"
 ```
 
-When the event is processed, the signal is sent to the meta instance, just as the event may send an e-mail or update the history. An event can define several signals.
-
-Published signals allow a meta instance to react while the subprocess is still running. For example, a customer may request an initial sampling for an offer. The offer is not accepted yet, but from the business point of view the project moves on into the initial sampling phase.
-
-The process modeler does not need to know which meta workflows are using a signal. The published signals are the public interface of a technical model, similar to the public methods of an API. A signal name should therefore be stable and should describe the business meaning, independent of the names of tasks and events.
-
-### Completion Signals
-
-A subprocess is completed when it reaches an **end task** of its workflow group. An end task is a task followed by a BPMN End Event. When a subprocess reaches an end task, the name of the end task is sent as a signal. For example, the workflow _Offer_ may define the end tasks _Accepted_ and _Rejected_.
-
-End tasks always send a signal. No further configuration is needed, so a subprocess never ends without notice. A completed subprocess is marked with the items `$metaprocess.completed=true` and `$metaprocess.result` (the name of the end task) and sends its completion signal only once.
-
-### Delivery
-
-Each signal is stored as an EventLog entry with the topic `metaworkflow.signal` and the `$uniqueID` of the meta instance as reference. The signals are processed asynchronously in the order they were sent.
-
-## Signal Events
-
-The reaction of a meta instance to a signal is defined by _Signal Events_ in the meta model. In BPMN terms, a signal event is an _Intermediate Signal Catch Event_: it is not triggered by a user but waits for a signal of a subprocess. A signal event defines the following Imixs extension items:
-
-| Item                        | Description                                                    |
-| --------------------------- | -------------------------------------------------------------- |
-| `metaworkflow.signal.group` | Workflow group of the subprocess sending the signal (required) |
-| `metaworkflow.signal.name`  | Name of the signal (optional, empty matches any signal)        |
+Each time a subprocess reaches the task, the message is sent to the meta instance - also if an event leads back into the same task (e.g. a _Save_ event). Whether a message is relevant is decided by the meta model alone.
 
 **BPMN 2.0 Definition**
 
 ```xml
+<bpmn2:message id="Message_1" name="Initial sampling requested"/>
+...
+<bpmn2:task id="Task_5" name="Initial sampling requested">
+  <bpmn2:outgoing>SequenceFlow_9</bpmn2:outgoing>
+</bpmn2:task>
+<bpmn2:intermediateThrowEvent id="ThrowEvent_1" name="Initial sampling requested">
+  <bpmn2:incoming>SequenceFlow_9</bpmn2:incoming>
+  <bpmn2:messageEventDefinition id="MessageEventDefinition_1" messageRef="Message_1"/>
+</bpmn2:intermediateThrowEvent>
+<bpmn2:sequenceFlow id="SequenceFlow_9" sourceRef="Task_5" targetRef="ThrowEvent_1"/>
+```
+
+The Message Throw Event has no outgoing sequence flow and does not affect the processing of the subprocess.
+
+Published messages allow a meta instance to react while the subprocess is still running. For example, a customer may request an initial sampling for an offer. The offer is not accepted yet, but from the business point of view the project moves on into the initial sampling phase.
+
+The process modeler does not need to know which meta workflows are using a message. The published messages are the public interface of a technical model, similar to the public methods of an API. A message name should therefore be stable and should describe the business meaning.
+
+The BPMN Message element can also hold additional data (`itemRef`), which can be used for detailed configurations in future scenarios.
+
+### Completion Messages
+
+A subprocess is completed when it reaches an **end task** of its workflow group. An end task is a task followed by a BPMN End Event. When a subprocess reaches an end task, the name of the end task is sent as a message. For example, the workflow _Offer_ may define the end tasks _Accepted_ and _Rejected_.
+
+End tasks always send a message. No further configuration is needed, so a subprocess never ends without notice. A completed subprocess is marked with the items `$metaprocess.completed=true` and `$metaprocess.result` (the name of the end task) and sends its completion message only once.
+
+### Delivery
+
+Each message is stored as an EventLog entry with the topic `metaworkflow.message` and the `$uniqueID` of the meta instance as reference. The messages are processed asynchronously in the order they were sent.
+
+## Message Events
+
+The reaction of a meta instance to a message is defined by _Message Events_ in the meta model. In BPMN terms, a message event is an _Intermediate Message Catch Event_: it is not triggered by a user but waits for a message of a subprocess.
+
+A message event is an Imixs event with:
+
+- a BPMN **messageEventDefinition** referring to a BPMN Message with the name of the expected message,
+- the Imixs extension item `metaworkflow.message.group` with the workflow group of the subprocess sending the message.
+
+The message name must match exactly - there is no wildcard. Both the meta model and the technical model define a BPMN Message with the same name. Messages are matched by name, not by their BPMN id.
+
+**BPMN 2.0 Definition**
+
+```xml
+<bpmn2:message id="Message_2" name="Accepted"/>
+...
 <bpmn2:intermediateCatchEvent id="CatchEvent_2" name="Offer accepted">
   <bpmn2:extensionElements>
-    <imixs:item name="metaworkflow.signal.group" type="xs:string">
+    <imixs:item name="metaworkflow.message.group" type="xs:string">
       <imixs:value><![CDATA[Offer]]></imixs:value>
     </imixs:item>
-    <imixs:item name="metaworkflow.signal.name" type="xs:string">
-      <imixs:value><![CDATA[Accepted]]></imixs:value>
-    </imixs:item>
   </bpmn2:extensionElements>
+  <bpmn2:messageEventDefinition id="MessageEventDefinition_2" messageRef="Message_2"/>
 </bpmn2:intermediateCatchEvent>
 ```
 
-Signals are processed asynchronously by the `AsyncEventScheduler`, running as a system user. This is necessary because the user who processed the subprocess may not have write access to the meta instance.
+Messages are processed asynchronously by the `AsyncEventScheduler`, running as a system user. This is necessary because the user who processed the subprocess may not have write access to the meta instance.
 
-For each signal, the `MetaWorkflowHandler` looks for a signal event **in the current task** of the meta instance that matches the workflow group and the name of the signal. If a matching event is found, the meta instance is processed by this event. Otherwise the signal is ignored.
+For each message, the `MetaWorkflowHandler` looks for a message event **in the current task** of the meta instance that matches the workflow group and the name of the message. If a matching event is found, the meta instance is processed by this event. Otherwise the message is ignored.
 
-Signal events should be modeled as non-public events (`workflow.public=false`), so they are not shown to the user.
+Message events should be modeled as non-public events (`workflow.public=false`), so they are not shown to the user.
 
-**Note:** A signal event without `metaworkflow.signal.name` reacts to **any** signal of the workflow group, including published signals of a running subprocess. To react only to the completion of a subprocess, define the names of its end tasks as signals.
+A meta modeler can offer the process owner the list of available messages for each workflow group: the names of all BPMN Messages thrown by tasks of the technical model, and the names of all end tasks. The `ModelManager` provides the methods `findAllMessagesByGroup()` and `findEndTasks()` to resolve these lists.
 
-A meta modeler can offer the process owner the list of available signals for each workflow group: all signals defined in the workflow results of the technical model, and the names of all end tasks.
-
-**Note:** A signal only takes effect if the meta instance is in a task with a matching signal event at the time the signal is processed. If the meta instance has moved on to another task, the process owner must define the signal event in that task as well. The result of a completed subprocess is still stored in the subprocess itself (`$metaprocess.completed`, `$metaprocess.result`).
+**Note:** A message only takes effect if the meta instance is in a task with a matching message event at the time the message is processed. If the meta instance has moved on to another task, the process owner must define the message event in that task as well. The result of a completed subprocess is still stored in the subprocess itself (`$metaprocess.completed`, `$metaprocess.result`).
 
 ## Example: Project Order
 
-The technical workflow _Offer_ publishes the signal _Initial sampling requested_ on its event _Customer requests initial sampling_ and defines the end tasks _Accepted_ and _Rejected_.
+The technical workflow _Offer_ throws the message _Initial sampling requested_ on its task _Initial sampling requested_ and defines the end tasks _Accepted_ and _Rejected_.
 
 The meta model _Project Order_ could define the following tasks and events:
 
-| Task             | Event                      | Type                | Configuration                                                                                                 |
-| ---------------- | -------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------------- |
-| (Start)          | Create                     | public              | `metaworkflow.subprocess.group=Inquiry`                                                                       |
-| Inquiry          | Inquiry completed          | signal (not public) | `metaworkflow.signal.group=Inquiry`                                                                           |
-| Offer            | Create Offer               | public              | `metaworkflow.subprocess.group=Offer`                                                                         |
-| Offer            | Initial sampling requested | signal (not public) | `metaworkflow.signal.group=Offer`, `metaworkflow.signal.name=Initial sampling requested`                      |
-| Offer            | Offer accepted             | signal (not public) | `metaworkflow.signal.group=Offer`, `metaworkflow.signal.name=Accepted`, `metaworkflow.subprocess.group=Order` |
-| Initial Sampling | Offer accepted             | signal (not public) | `metaworkflow.signal.group=Offer`, `metaworkflow.signal.name=Accepted`, `metaworkflow.subprocess.group=Order` |
-| Order            | Order completed            | signal (not public) | `metaworkflow.signal.group=Order`, `metaworkflow.subprocess.group=Invoice`                                    |
+| Task             | Event                      | Type                 | BPMN Message               | Configuration                                                               |
+| ---------------- | -------------------------- | -------------------- | -------------------------- | --------------------------------------------------------------------------- |
+| (Start)          | Create                     | public               |                            | `metaworkflow.subprocess.group=Inquiry`                                     |
+| Inquiry          | Inquiry completed          | message (not public) | Completed                  | `metaworkflow.message.group=Inquiry`                                        |
+| Offer            | Create Offer               | public               |                            | `metaworkflow.subprocess.group=Offer`                                       |
+| Offer            | Initial sampling requested | message (not public) | Initial sampling requested | `metaworkflow.message.group=Offer`                                          |
+| Offer            | Offer accepted             | message (not public) | Accepted                   | `metaworkflow.message.group=Offer`, `metaworkflow.subprocess.group=Order`   |
+| Initial Sampling | Offer accepted             | message (not public) | Accepted                   | `metaworkflow.message.group=Offer`, `metaworkflow.subprocess.group=Order`   |
+| Order            | Order completed            | message (not public) | Completed                  | `metaworkflow.message.group=Order`, `metaworkflow.subprocess.group=Invoice` |
 
-When the customer requests an initial sampling, the meta instance moves from _Offer_ to _Initial Sampling_, although the offer is still running. When the offer is accepted later, the signal event in _Initial Sampling_ moves the meta instance on to _Order_.
+In this example the workflows _Inquiry_ and _Order_ define an end task named _Completed_.
 
-The event _Create Offer_ can be triggered by the process owner several times, for example to create a second offer. A rejected offer does not change the meta instance, because there is no signal event for the signal _Rejected_.
+When the customer requests an initial sampling, the meta instance moves from _Offer_ to _Initial Sampling_, although the offer is still running. When the offer is accepted later, the message event in _Initial Sampling_ moves the meta instance on to _Order_.
 
-As a signal event can also define the item `metaworkflow.subprocess.group`, a signal can start the next subprocess automatically.
+The event _Create Offer_ can be triggered by the process owner several times, for example to create a second offer. A rejected offer does not change the meta instance, because there is no message event for the message _Rejected_.
+
+As a message event can also define the item `metaworkflow.subprocess.group`, a message can start the next subprocess automatically.
 
 ## Configuration
 
-Signals are processed by the `AsyncEventScheduler`. The scheduler must be enabled:
+Messages are processed by the `AsyncEventScheduler`. The scheduler must be enabled:
 
     ASYNCEVENT_PROCESSOR_ENABLED - must be set to true (default=false)
     ASYNCEVENT_PROCESSOR_INTERVAL - timeout period in milliseconds
@@ -184,14 +207,15 @@ See the section [Async Events](./asyncevents.html) for details.
 | Item                            | Model      | Description                                             |
 | ------------------------------- | ---------- | ------------------------------------------------------- |
 | `metaworkflow.subprocess.group` | Meta model | Event starts a new subprocess of this workflow group    |
-| `metaworkflow.signal.group`     | Meta model | Signal event reacts to signals of this workflow group   |
-| `metaworkflow.signal.name`      | Meta model | Signal event reacts to this signal (empty = any signal) |
+| `metaworkflow.message.group`    | Meta model | Message event reacts to messages of this workflow group |
 
-**Workflow result** (technical model)
+**BPMN elements**
 
-| Definition                                                  | Description                             |
-| ----------------------------------------------------------- | --------------------------------------- |
-| `<metaworkflow name="SIGNAL"><name>…</name></metaworkflow>` | Event publishes a signal with this name |
+| Element                                      | Model           | Description                                                      |
+| -------------------------------------------- | --------------- | ---------------------------------------------------------------- |
+| Message Throw Event (following a task)       | Technical model | The task sends the referred BPMN Message each time it is reached |
+| End Event (following a task)                 | Technical model | The task sends its own name as completion message (once)         |
+| Message Catch Event (messageEventDefinition) | Meta model      | The event reacts to the referred BPMN Message                    |
 
 **Workitem items**
 
@@ -199,23 +223,23 @@ See the section [Async Events](./asyncevents.html) for details.
 | --------------------------- | ------------- | ----------------------------------------------------- |
 | `$metaprocess.ref`          | Subprocess    | `$uniqueID` of the meta instance                      |
 | `$metaprocess.subprocesses` | Meta instance | List of all subprocesses created by the meta instance |
-| `$metaprocess.completed`    | Subprocess    | `true` if the completion signal was sent              |
+| `$metaprocess.completed`    | Subprocess    | `true` if the completion message was sent             |
 | `$metaprocess.result`       | Subprocess    | Result of the subprocess (name of the end task)       |
 
-**EventLog entry** (topic `metaworkflow.signal`, reference = `$uniqueID` of the meta instance):
+**EventLog entry** (topic `metaworkflow.message`, reference = `$uniqueID` of the meta instance):
 
 | Item                            | Description                      |
 | ------------------------------- | -------------------------------- |
 | `$metaprocess.subprocess.ref`   | `$uniqueID` of the subprocess    |
 | `$metaprocess.subprocess.group` | Workflow group of the subprocess |
-| `$metaprocess.signal`           | Name of the signal               |
+| `$metaprocess.message`          | Name of the message              |
 
 ## Limitations
 
 The current implementation supports the following scenarios:
 
-- sequences of subprocesses, controlled by completion signals,
-- branches of the meta instance, controlled by published signals of running subprocesses,
+- sequences of subprocesses, controlled by completion messages,
+- branches of the meta instance, controlled by published messages of running subprocesses,
 - multiple subprocesses of the same workflow group, started manually by the process owner.
 
 The following scenarios are not supported yet:

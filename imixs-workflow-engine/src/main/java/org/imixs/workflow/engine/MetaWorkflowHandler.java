@@ -36,32 +36,32 @@ import jakarta.inject.Inject;
 import jakarta.persistence.OptimisticLockException;
 
 /**
- * The MetaWorkflowHandler processes the signals sent by subprocesses to their
+ * The MetaWorkflowHandler processes the messages sent by subprocesses to their
  * meta instance (Subprocess → Meta direction).
  * <p>
- * Signals are created by the {@link MetaWorkflowPlugin} as EventLog entries
- * with the topic {@code metaworkflow.signal}. The EventLog refID is the
+ * Messages are created by the {@link MetaWorkflowPlugin} as EventLog entries
+ * with the topic {@code metaworkflow.message}. The EventLog refID is the
  * $uniqueID of the meta instance. The data of the EventLog entry contains:
  * <ul>
  * <li>{@code $metaprocess.subprocess.ref} - $uniqueID of the subprocess
  * <li>{@code $metaprocess.subprocess.group} - workflow group of the subprocess
- * <li>{@code $metaprocess.signal} - name of the signal
+ * <li>{@code $metaprocess.message} - name of the message
  * </ul>
  * <p>
  * The method {@link #processEventLog()} is called by the
  * {@link AsyncEventScheduler} running as a system user, because the user who
  * processed the subprocess may not have write access to the meta instance. For
- * each signal the handler looks for an event in the current task of the meta
- * instance defining the following Imixs extension items:
+ * each message the handler looks for a message event in the current task of the
+ * meta instance:
  * <ul>
- * <li>{@code metaworkflow.signal.group} - workflow group of the subprocess
- * (required)
- * <li>{@code metaworkflow.signal.name} - name of the signal (optional, an empty
- * value matches any signal)
+ * <li>The event defines the Imixs extension item
+ * {@code metaworkflow.message.group} with the workflow group of the subprocess.
+ * <li>The event refers to a BPMN Message with the name of the message
+ * (messageEventDefinition of an Intermediate Message Catch Event).
  * </ul>
- * If a matching signal event is found, the meta instance is processed by this
- * event. Otherwise the signal is ignored and the meta instance remains
- * unchanged. Signal events should be modeled with
+ * If a matching message event is found, the meta instance is processed by this
+ * event. Otherwise the message is ignored and the meta instance remains
+ * unchanged. Message events should be modeled with
  * {@code workflow.public=false}, so they are not shown to the user.
  *
  * @author rsoika
@@ -78,16 +78,15 @@ import jakarta.persistence.OptimisticLockException;
 @Stateless
 public class MetaWorkflowHandler {
 
-    public static final String EVENTLOG_TOPIC_SIGNAL = "metaworkflow.signal";
+    public static final String EVENTLOG_TOPIC_MESSAGE = "metaworkflow.message";
 
-    // Event items of a meta model defining a signal event
-    public static final String EVENT_ITEM_SIGNAL_GROUP = "metaworkflow.signal.group";
-    public static final String EVENT_ITEM_SIGNAL_NAME = "metaworkflow.signal.name";
+    // Event item of a meta model defining the workflow group of a message event
+    public static final String EVENT_ITEM_MESSAGE_GROUP = "metaworkflow.message.group";
 
     // EventLog data items
     public static final String ITEM_SUBPROCESS_REF = "$metaprocess.subprocess.ref";
     public static final String ITEM_SUBPROCESS_GROUP = "$metaprocess.subprocess.group";
-    public static final String ITEM_SIGNAL = "$metaprocess.signal";
+    public static final String ITEM_MESSAGE = "$metaprocess.message";
 
     private static final Logger logger = Logger.getLogger(MetaWorkflowHandler.class.getName());
 
@@ -99,15 +98,15 @@ public class MetaWorkflowHandler {
 
     /**
      * Processes all open EventLog entries with the topic
-     * {@code metaworkflow.signal} in the order of their creation. This method is
+     * {@code metaworkflow.message} in the order of their creation. This method is
      * expected to be called by the {@link AsyncEventScheduler} running as a system
      * user.
      * <p>
-     * Each EventLog entry is removed after processing - also if no matching signal
+     * Each EventLog entry is removed after processing - also if no matching message
      * event exists or the processing failed.
      */
     public void processEventLog() {
-        List<EventLog> eventLogEntries = eventLogService.findEventsByTopic(100, EVENTLOG_TOPIC_SIGNAL);
+        List<EventLog> eventLogEntries = eventLogService.findEventsByTopic(100, EVENTLOG_TOPIC_MESSAGE);
 
         for (EventLog eventLogEntry : eventLogEntries) {
             try {
@@ -117,42 +116,42 @@ public class MetaWorkflowHandler {
                 ItemCollection data = new ItemCollection(eventLogEntry.getData());
                 ItemCollection metaWorkitem = workflowService.getWorkItem(eventLogEntry.getRef());
                 if (metaWorkitem == null) {
-                    logger.log(Level.WARNING, "metaworkflow {0} not found - signal of subprocess {1} ignored",
+                    logger.log(Level.WARNING, "metaworkflow {0} not found - message of subprocess {1} ignored",
                             new Object[] { eventLogEntry.getRef(), data.getItemValueString(ITEM_SUBPROCESS_REF) });
                 } else {
-                    processSignal(metaWorkitem, data);
+                    processMessage(metaWorkitem, data);
                 }
                 eventLogService.removeEvent(eventLogEntry.getId());
 
             } catch (OptimisticLockException e) {
                 // lock was not possible - continue....
-                logger.log(Level.INFO, "...unable to lock metaworkflow signal: {0}", e.getMessage());
+                logger.log(Level.INFO, "...unable to lock metaworkflow message: {0}", e.getMessage());
             }
         }
     }
 
     /**
-     * Processes the meta instance by the signal event matching the given signal. If
-     * no signal event matches, the meta instance remains unchanged.
+     * Processes the meta instance by the message event matching the given message.
+     * If no message event matches, the meta instance remains unchanged.
      *
      * @param metaWorkitem - the meta instance
-     * @param data         - EventLog data of the signal
+     * @param data         - EventLog data of the message
      */
-    private void processSignal(ItemCollection metaWorkitem, ItemCollection data) {
+    private void processMessage(ItemCollection metaWorkitem, ItemCollection data) {
         String group = data.getItemValueString(ITEM_SUBPROCESS_GROUP);
-        String signal = data.getItemValueString(ITEM_SIGNAL);
+        String message = data.getItemValueString(ITEM_MESSAGE);
         try {
-            ItemCollection signalEvent = findSignalEvent(metaWorkitem, group, signal);
-            if (signalEvent == null) {
-                logger.log(Level.FINE, "...no signal event for ''{0}/{1}'' in metaworkflow {2} - signal ignored",
-                        new Object[] { group, signal, metaWorkitem.getUniqueID() });
+            ItemCollection messageEvent = findMessageEvent(metaWorkitem, group, message);
+            if (messageEvent == null) {
+                logger.log(Level.FINE, "...no message event for ''{0}/{1}'' in metaworkflow {2} - message ignored",
+                        new Object[] { group, message, metaWorkitem.getUniqueID() });
                 return;
             }
-            metaWorkitem.event(signalEvent.getItemValueInteger(BPMNUtil.EVENT_ITEM_EVENTID));
+            metaWorkitem.event(messageEvent.getItemValueInteger(BPMNUtil.EVENT_ITEM_EVENTID));
             workflowService.processWorkItemByNewTransaction(metaWorkitem);
             logger.log(Level.INFO, "├── metaworkflow {0} triggered by subprocess {1} (''{2}/{3}'')",
                     new Object[] { metaWorkitem.getUniqueID(), data.getItemValueString(ITEM_SUBPROCESS_REF),
-                            group, signal });
+                            group, message });
 
         } catch (WorkflowException | InvalidAccessException | EJBException e) {
             // we also catch EJBExceptions here because we do not want to cancel the timer
@@ -163,22 +162,23 @@ public class MetaWorkflowHandler {
 
     /**
      * Returns the first event of the current task of the meta instance matching the
-     * given workflow group and signal. An empty signal name matches any signal.
+     * given workflow group and message. The message name is resolved from the BPMN
+     * Message referred by the event. There is no wildcard - the message name must
+     * match exactly.
      *
      * @return matching event or null if no event matches
      */
-    private ItemCollection findSignalEvent(ItemCollection metaWorkitem, String group, String signal)
+    private ItemCollection findMessageEvent(ItemCollection metaWorkitem, String group, String message)
             throws ModelException {
         ModelManager modelManager = new ModelManager(workflowService);
         BPMNModel model = modelManager.getModelByWorkitem(metaWorkitem);
         List<ItemCollection> events = modelManager.findEventsByTask(model, metaWorkitem.getTaskID());
         for (ItemCollection event : events) {
-            String signalGroup = event.getItemValueString(EVENT_ITEM_SIGNAL_GROUP).trim();
-            if (signalGroup.isEmpty() || !signalGroup.equals(group)) {
+            String messageGroup = event.getItemValueString(EVENT_ITEM_MESSAGE_GROUP).trim();
+            if (messageGroup.isEmpty() || !messageGroup.equals(group)) {
                 continue;
             }
-            String signalName = event.getItemValueString(EVENT_ITEM_SIGNAL_NAME).trim();
-            if (signalName.isEmpty() || signalName.equals(signal)) {
+            if (modelManager.findMessagesByEvent(model, event).contains(message)) {
                 return event;
             }
         }
