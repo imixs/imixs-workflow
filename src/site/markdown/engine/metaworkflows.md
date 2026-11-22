@@ -105,7 +105,7 @@ When the meta instance is processed by an event with such a message, the plugin:
 5. stores the `$uniqueID` of the meta instance in the item `$metaprocess.ref` of the core process,
 6. appends the `$uniqueID` of the core process to the item `$metaprocess.subprocesses` of the meta instance.
 
-If the core model defines no matching Message Start Event, the processing of the meta instance fails.
+If the core model defines no matching Message Start Event, the message is not a start message but a message to be received from a running core process (see [Starting and Receiving](#starting-and-receiving)). If the workflow group does not exist at all, the processing of the meta instance fails.
 
 Events without a message (e.g. a _Save_ event) do not start a core process. An event can be processed several times, so a meta instance can hold any number of core processes of the same workflow group, for example a second offer or a list of requirements collected for a project.
 
