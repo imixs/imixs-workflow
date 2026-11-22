@@ -1,57 +1,57 @@
 # Meta Workflows
 
-A _Meta Workflow_ combines several independent technical workflows into one business process. It allows a process owner to define the business-level flow of a project, while the technical workflows (forms, ACLs, plugins, integrations) are still designed by the process modeler with Open-BPMN.
+A **Meta Workflow** can be used to combine several independent core processes into one higher-level business process. It allows a process owner to define the business-level flow of a project, while the core processes — including their technical realization (forms, ACLs, plugins, integrations) — are still designed by the process modeler with Open-BPMN.
 
-**Example:** A company runs the technical workflows _Inquiry_, _Offer_, _Order_ and _Invoice_. The process owner defines a meta workflow _Project Order_ that combines these workflows in exactly this sequence:
+**Example:** A company runs the core processes _Inquiry, Offer, Order and Invoice_. The process owner defines a new meta workflow _"Project Order"_ that combines these core processes in exactly this sequence:
 
-    Project Order:  Inquiry → Offer → Order → Invoice
+    Project Order: Inquiry → Offer → Order → Invoice
 
-Neither side needs to know the internals of the other. The technical workflows do not know which meta workflows are using them, and the meta workflow does not need to know task or event IDs of the technical workflows.
+Neither side needs to know the internals of the other. The core processes do not know which meta workflows are using them, and the meta workflow does not need to know task or event IDs of the core processes.
 
 ## The Concept
 
 A meta workflow consists of two levels:
 
-- **The meta instance** is a normal process instance based on a meta model. It holds the business-level status, project-wide data, its own ACL and the list of all subprocesses.
-- **The subprocesses** are normal process instances based on the technical models. They run independently in the system with their own forms, events, ACLs and plugins.
+- **The meta workflow instance** is a high-level business process instance based on a meta model. It holds the business-level status, project-wide data, its own ACL and the list of all subprocesses.
+- **The core workflow instances** are independent technical process instances. They run independently in the system with their own forms, events, ACLs and plugins.
 
 The two levels communicate in two directions:
 
-| Direction         | Mechanism                                            |
-| ----------------- | ---------------------------------------------------- |
-| Meta → Subprocess | The meta instance **starts** subprocesses            |
-| Subprocess → Meta | A subprocess sends **messages** to its meta instance |
+| Direction   | Mechanism                                                       |
+| ----------- | --------------------------------------------------------------- |
+| Meta → Core | The meta process instance **starts** core processes             |
+| Core → Meta | A core process instance sends **messages** to its meta instance |
 
-A technical model publishes messages, similar to the public methods of an API. The meta model decides which messages it reacts to. If the meta model does not define a reaction, a message is ignored and the meta instance remains unchanged.
+A core process model publishes messages, similar to the public methods of an API. The meta model decides which messages it reacts to. If the meta model does not define a reaction, a message is ignored and the meta instance remains unchanged.
 
-### One Plugin for both Models
+### The `MetaWorkflowPlugin`
 
-On the model level, the only component is the `MetaWorkflowPlugin`. It must be registered in the meta model and in all technical models used as subprocesses:
+On the model level, the connector component between these two model types is the `MetaWorkflowPlugin`. It must be registered in both workflow models - the meta model and the core models:
 
-| Model           | The plugin is used to...                             |
-| --------------- | ---------------------------------------------------- |
-| Meta model      | start subprocesses (`metaworkflow.subprocess.group`) |
-| Technical model | send messages (published messages and end tasks)     |
+| Model      | The plugin is used to...                             |
+| ---------- | ---------------------------------------------------- |
+| Meta model | start subprocesses (`metaworkflow.subprocess.group`) |
+| Core model | send messages (published messages and end tasks)     |
 
-The receiving side is part of the engine and is not registered in any model: the `AsyncEventScheduler` collects the messages and the `MetaWorkflowHandler` processes the message events of the meta instance.
+The messages are received and dispatched by the `MetaWorkflowHandler` called by teh `AsyncEventScheduler`.
 
 ### Roles and Responsibilities
 
-| Who                                 | Does                                                                 | Knows about the meta workflow            |
-| ----------------------------------- | -------------------------------------------------------------------- | ---------------------------------------- |
-| Process modeler (technical model)   | Models end tasks and, if needed, published messages                  | nothing                                  |
-| User working on a subprocess        | Processes the subprocess with his own access rights                  | nothing - not even read access is needed |
-| `MetaWorkflowPlugin`                | Writes an EventLog entry with the `$uniqueID` of the meta instance   | only the reference (`$metaprocess.ref`)  |
-| Process owner (meta model)          | Starts subprocesses and defines message events for relevant messages | everything                               |
-| `MetaWorkflowHandler` (system user) | Loads the meta instance and processes the matching message event     | everything                               |
+| Who                                 | Does                                                                   | Knows about the meta workflow            |
+| ----------------------------------- | ---------------------------------------------------------------------- | ---------------------------------------- |
+| Process modeler (core model)        | Models end tasks and, if needed, published messages                    | nothing                                  |
+| User working on a subprocess        | Processes the subprocess with his own access rights                    | nothing - not even read access is needed |
+| `MetaWorkflowPlugin`                | Writes an EventLog entry with the `$uniqueID` of the meta instance     | only the reference (`$metaprocess.ref`)  |
+| Process owner (meta model)          | Starts core processes and defines message events for relevant messages | everything                               |
+| `MetaWorkflowHandler` (system user) | Loads the meta instance and processes the matching message event       | everything                               |
 
 This design keeps both levels strictly decoupled:
 
-- **No access rights needed.** The plugin does not read the meta instance to send a message. The reference is already stored in the subprocess. So a message is sent even if the user is not allowed to see the meta instance.
-- **Transactional consistency.** The EventLog entry is created in the same transaction as the processing of the subprocess. If the processing fails, no message is sent. So a message never refers to a step that did not happen.
+- **No access rights needed.** The plugin does not read the meta instance to send a message. The reference is already stored in the core process. So a message is sent even if the user is not allowed to see the meta instance.
+- **Transactional consistency.** The EventLog entry used by the `MetaWorkflowPlugin` is created in the same transaction as the processing of the core process. If the processing fails, no message is sent. So a message never refers to a step that did not happen.
 - **The meta model decides.** Whether a message has any effect is defined in the meta model only. Without a matching message event the meta instance remains unchanged.
 
-## Starting a Subprocess
+## Starting a new Core Process
 
 An event of the meta model starts a new subprocess if it defines the Imixs extension item `metaworkflow.subprocess.group`. The value is the name of the workflow group of the technical model to be started.
 
