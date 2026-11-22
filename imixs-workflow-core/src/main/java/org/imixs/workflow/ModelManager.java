@@ -680,6 +680,66 @@ public class ModelManager {
     }
 
     /**
+     * Returns the names of all BPMN Messages of the Message Start Events of a given
+     * Process Group. A Message Start Event is a BPMN Start Event with a
+     * messageEventDefinition. The result is sorted by name.
+     * 
+     * @param model        - the BPMN model
+     * @param processGroup - the name of the process group to match
+     * @return sorted set of message names - can be empty
+     * @throws ModelException if model is undefined
+     */
+    public Set<String> findStartMessagesByGroup(final BPMNModel model, String processGroup) throws ModelException {
+        Set<String> result = new TreeSet<>();
+        BPMNProcess process = lookupProcessByGroup(model, processGroup);
+        if (process != null) {
+            for (Event event : process.getEvents()) {
+                if (BPMNTypes.START_EVENT.equals(event.getType())) {
+                    result.addAll(lookupMessageNames(model, event));
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the init event following the Message Start Event with the given
+     * message in a Process Group.
+     * <p>
+     * Example:
+     * 
+     * <pre>
+     * (Message Start Event "create") → (Init Event) → [Start Task]
+     * </pre>
+     * 
+     * @param model        - the BPMN model
+     * @param processGroup - the name of the process group to match
+     * @param message      - the name of the start message
+     * @return the init event or null if no matching Message Start Event exists
+     * @throws ModelException if model is undefined
+     */
+    public ItemCollection findInitEventByStartMessage(final BPMNModel model, String processGroup, String message)
+            throws ModelException {
+        BPMNProcess process = lookupProcessByGroup(model, processGroup);
+        if (process == null) {
+            return null;
+        }
+        for (Event event : process.getEvents()) {
+            if (!BPMNTypes.START_EVENT.equals(event.getType())
+                    || !lookupMessageNames(model, event).contains(message)) {
+                continue;
+            }
+            for (SequenceFlow flow : event.getOutgoingSequenceFlows()) {
+                BPMNElementNode target = flow.getTargetElement();
+                if (target != null && BPMNUtil.isImixsEventElement(target)) {
+                    return BPMNEntityBuilder.build(target);
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns the names of all BPMN Messages thrown by a given Task. A Task throws
      * a Message if it is directly followed by a BPMN Message Throw Event
      * (intermediateThrowEvent with a messageEventDefinition).
@@ -1111,6 +1171,30 @@ public class ModelManager {
         }
 
         // not found!
+        return null;
+    }
+
+    /**
+     * Returns the Imixs process (Pool) of a given Process Group or null if no
+     * process with this name exists.
+     * 
+     * @param model        - the BPMN model
+     * @param processGroup - the name of the process group to match
+     * @return the BPMN process or null
+     * @throws ModelException if model is undefined
+     */
+    private BPMNProcess lookupProcessByGroup(final BPMNModel model, String processGroup) throws ModelException {
+        if (model == null) {
+            throw new ModelException(ModelException.INVALID_MODEL, "model is null!");
+        }
+        if (processGroup == null || processGroup.isEmpty()) {
+            return null;
+        }
+        for (BPMNProcess _process : model.getBpmnProcessList()) {
+            if (isImixsProcess(_process) && processGroup.equals(_process.getName())) {
+                return _process;
+            }
+        }
         return null;
     }
 

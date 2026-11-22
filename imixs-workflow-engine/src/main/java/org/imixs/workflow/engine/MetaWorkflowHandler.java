@@ -36,33 +36,29 @@ import jakarta.inject.Inject;
 import jakarta.persistence.OptimisticLockException;
 
 /**
- * The MetaWorkflowHandler processes the messages sent by subprocesses to their
- * meta instance (Subprocess → Meta direction).
+ * The MetaWorkflowHandler processes the messages sent by core processes to
+ * their meta instance (Core process → Meta direction).
  * <p>
  * Messages are created by the {@link MetaWorkflowPlugin} as EventLog entries
  * with the topic {@code metaworkflow.message}. The EventLog refID is the
  * $uniqueID of the meta instance. The data of the EventLog entry contains:
  * <ul>
- * <li>{@code $metaprocess.subprocess.ref} - $uniqueID of the subprocess
- * <li>{@code $metaprocess.subprocess.group} - workflow group of the subprocess
+ * <li>{@code $metaprocess.subprocess.ref} - $uniqueID of the core process
+ * <li>{@code $metaprocess.subprocess.group} - workflow group of the core
+ * process
  * <li>{@code $metaprocess.message} - name of the message
  * </ul>
  * <p>
  * The method {@link #processEventLog()} is called by the
  * {@link AsyncEventScheduler} running as a system user, because the user who
- * processed the subprocess may not have write access to the meta instance. For
- * each message the handler looks for a message event in the current task of the
- * meta instance:
- * <ul>
- * <li>The event defines the Imixs extension item
- * {@code metaworkflow.message.group} with the workflow group of the subprocess.
- * <li>The event refers to a BPMN Message with the name of the message
- * (messageEventDefinition of an Intermediate Message Catch Event).
- * </ul>
- * If a matching message event is found, the meta instance is processed by this
- * event. Otherwise the message is ignored and the meta instance remains
- * unchanged. Message events should be modeled with
- * {@code workflow.public=false}, so they are not shown to the user.
+ * processed the core process may not have write access to the meta instance.
+ * For each message the handler looks for a message event in the current task of
+ * the meta instance. A message event refers to a BPMN Message in the form
+ * {@code <workflow group>:<message>} (e.g. 'Offer:Accepted'). If a matching
+ * message event is found, the meta instance is processed by this event.
+ * Otherwise the message is ignored and the meta instance remains unchanged.
+ * Message events should be modeled with {@code workflow.public=false}, so they
+ * are not shown to the user.
  *
  * @author rsoika
  * @version 1.0
@@ -79,9 +75,6 @@ import jakarta.persistence.OptimisticLockException;
 public class MetaWorkflowHandler {
 
     public static final String EVENTLOG_TOPIC_MESSAGE = "metaworkflow.message";
-
-    // Event item of a meta model defining the workflow group of a message event
-    public static final String EVENT_ITEM_MESSAGE_GROUP = "metaworkflow.message.group";
 
     // EventLog data items
     public static final String ITEM_SUBPROCESS_REF = "$metaprocess.subprocess.ref";
@@ -116,7 +109,7 @@ public class MetaWorkflowHandler {
                 ItemCollection data = new ItemCollection(eventLogEntry.getData());
                 ItemCollection metaWorkitem = workflowService.getWorkItem(eventLogEntry.getRef());
                 if (metaWorkitem == null) {
-                    logger.log(Level.WARNING, "metaworkflow {0} not found - message of subprocess {1} ignored",
+                    logger.log(Level.WARNING, "metaworkflow {0} not found - message of core process {1} ignored",
                             new Object[] { eventLogEntry.getRef(), data.getItemValueString(ITEM_SUBPROCESS_REF) });
                 } else {
                     processMessage(metaWorkitem, data);
@@ -149,7 +142,7 @@ public class MetaWorkflowHandler {
             }
             metaWorkitem.event(messageEvent.getItemValueInteger(BPMNUtil.EVENT_ITEM_EVENTID));
             workflowService.processWorkItemByNewTransaction(metaWorkitem);
-            logger.log(Level.INFO, "├── metaworkflow {0} triggered by subprocess {1} (''{2}/{3}'')",
+            logger.log(Level.INFO, "├── metaworkflow {0} triggered by core process {1} (''{2}/{3}'')",
                     new Object[] { metaWorkitem.getUniqueID(), data.getItemValueString(ITEM_SUBPROCESS_REF),
                             group, message });
 
@@ -162,9 +155,9 @@ public class MetaWorkflowHandler {
 
     /**
      * Returns the first event of the current task of the meta instance matching the
-     * given workflow group and message. The message name is resolved from the BPMN
-     * Message referred by the event. There is no wildcard - the message name must
-     * match exactly.
+     * given workflow group and message. The event must refer to a BPMN Message with
+     * the name {@code <workflow group>:<message>}. There is no wildcard - the
+     * message name must match exactly.
      *
      * @return matching event or null if no event matches
      */
@@ -173,12 +166,9 @@ public class MetaWorkflowHandler {
         ModelManager modelManager = new ModelManager(workflowService);
         BPMNModel model = modelManager.getModelByWorkitem(metaWorkitem);
         List<ItemCollection> events = modelManager.findEventsByTask(model, metaWorkitem.getTaskID());
+        String metaMessage = group + MetaWorkflowPlugin.MESSAGE_SEPARATOR + message;
         for (ItemCollection event : events) {
-            String messageGroup = event.getItemValueString(EVENT_ITEM_MESSAGE_GROUP).trim();
-            if (messageGroup.isEmpty() || !messageGroup.equals(group)) {
-                continue;
-            }
-            if (modelManager.findMessagesByEvent(model, event).contains(message)) {
+            if (modelManager.findMessagesByEvent(model, event).contains(metaMessage)) {
                 return event;
             }
         }
