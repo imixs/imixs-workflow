@@ -30,10 +30,10 @@ On the model level, the connector component between these two model types is the
 
 | Model      | The plugin is used to...                             |
 | ---------- | ---------------------------------------------------- |
-| Meta model | start subprocesses (`metaworkflow.subprocess.group`) |
-| Core model | send messages (published messages and end tasks)     |
+| Meta model | start subprocesses (by sending a message event)      |
+| Core model | publishes messages (by message events and end tasks) |
 
-The messages are received and dispatched by the `MetaWorkflowHandler` called by teh `AsyncEventScheduler`.
+The messages are received and dispatched by the `MetaWorkflowHandler` called by the `AsyncEventScheduler`.
 
 ### Roles and Responsibilities
 
@@ -193,7 +193,24 @@ In the meta model, both starting a core process and receiving a message use the 
 
 For this reason, a core model must not use the same name for a start message and a published message.
 
-An event can refer to several messages. For example, the event _Offer accepted_ can receive the message `Offer:Accepted` and at the same time start a new order with the message `Order:create`.
+An event can refer to several messages. Each message is evaluated on its own: a start message starts a new core process, a receive message makes the event a message event. This allows to receive a message and start a new core process in one step:
+
+```
+[Offer] → (Offer accepted: "Offer:Accepted", "Order:create") → [Order]
+```
+
+The event _Offer accepted_ is triggered by the message `Accepted` of the core process _Offer_. When the event is processed, the message `Order:create` starts a new core process _Order_ and the meta instance moves on to the task _Order_.
+
+Step by step, the event _Offer accepted_ works like this:
+
+1. **Waiting** - The event is a non-public event, so the user does not see it. The meta instance is in the task _Offer_ and waits for the message `Offer:Accepted`.
+2. **Triggering** - The core process _Offer_ reaches its end task _Accepted_ and sends the message `Accepted`. The `MetaWorkflowHandler` finds the event _Offer accepted_ in the current task of the meta instance and processes it as a system user.
+3. **Starting** - During this processing, the `MetaWorkflowPlugin` evaluates the second message `Order:create`. As the core model _Order_ defines a Message Start Event `create`, the plugin starts a new core process _Order_.
+4. **Moving on** - The meta instance moves on to the task _Order_.
+
+In BPMN terms, the meta instance sends the message `Order:create` to the Message Start Event of the core model, which creates a new process instance. A meta instance never sends a message to a **running** core process - the communication from the meta level down to the core level consists of starting core processes only.
+
+**Note:** The setting `workflow.public=false` hides an event in the user interface. A user with write access could still trigger the event through the API. For the regular user, however, a message event is an event that is triggered by the engine only.
 
 ### Available Messages
 
@@ -209,17 +226,17 @@ The core process _Offer_ defines the Message Start Event `create`, publishes the
 
 The meta model _Project Order_ could define the following tasks and events:
 
-| Task             | Event                      | Type                 | BPMN Messages                       |
-| ---------------- | -------------------------- | -------------------- | ----------------------------------- |
-| (Start)          | Create                     | public               | `Inquiry:create`                    |
-| Inquiry          | Inquiry completed          | message (not public) | `Inquiry:Completed`                 |
-| Offer            | Create Offer               | public               | `Offer:create`                      |
-| Offer            | Initial sampling requested | message (not public) | `Offer:Initial sampling requested`  |
-| Offer            | Offer accepted             | message (not public) | `Offer:Accepted`, `Order:create`    |
-| Initial Sampling | Offer accepted             | message (not public) | `Offer:Accepted`, `Order:create`    |
-| Order            | Order completed            | message (not public) | `Order:Completed`, `Invoice:create` |
+| Task             | Event                      | Type                 | BPMN Messages                       | Next Task        |
+| ---------------- | -------------------------- | -------------------- | ----------------------------------- | ---------------- |
+| (Start)          | Create                     | public               | `Inquiry:create`                    | Inquiry          |
+| Inquiry          | Inquiry completed          | message (not public) | `Inquiry:Completed`                 | Offer            |
+| Offer            | Create Offer               | public               | `Offer:create`                      | Offer            |
+| Offer            | Initial sampling requested | message (not public) | `Offer:Initial sampling requested`  | Initial Sampling |
+| Offer            | Offer accepted             | message (not public) | `Offer:Accepted`, `Order:create`    | Order            |
+| Initial Sampling | Offer accepted             | message (not public) | `Offer:Accepted`, `Order:create`    | Order            |
+| Order            | Order completed            | message (not public) | `Order:Completed`, `Invoice:create` | Invoice          |
 
-When the customer requests an initial sampling, the meta instance moves from _Offer_ to _Initial Sampling_, although the offer is still running. When the offer is accepted later, the message event in _Initial Sampling_ moves the meta instance on to _Order_ and starts a new order.
+When the customer requests an initial sampling, the meta instance moves from _Offer_ to _Initial Sampling_, although the offer is still running. When the offer is accepted later, the message event _Offer accepted_ in _Initial Sampling_ starts a new order and moves the meta instance on to _Order_.
 
 The event _Create Offer_ can be triggered by the process owner several times, for example to create a second offer. A rejected offer does not change the meta instance, because there is no message event for the message `Offer:Rejected`.
 
@@ -239,12 +256,12 @@ Meta workflows use BPMN elements only. No Imixs extension items are needed.
 
 **BPMN elements**
 
-| Element                                | Model      | Description                                                                    |
-| -------------------------------------- | ---------- | ------------------------------------------------------------------------------ |
-| Message Start Event                    | Core model | The core process can be started by this message                                |
-| Message Throw Event (following a task) | Core model | The task sends the referred message each time it is reached                    |
-| End Event (following a task)           | Core model | The task sends its own name as completion message (once)                       |
-| Event with message `<group>:<message>` | Meta model | Starts a core process (start message) or reacts to a message of a core process |
+| Element                                | Model      | Description                                                                                                             |
+| -------------------------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Message Start Event                    | Core model | The core process can be started by this message                                                                         |
+| Message Throw Event (following a task) | Core model | The task sends the referred message each time it is reached                                                             |
+| End Event (following a task)           | Core model | The task sends its own name as completion message (once)                                                                |
+| Event with message `<group>:<message>` | Meta model | Starts a core process (start message) or reacts to a message of a core process - an event can refer to several messages |
 
 **Workitem items**
 
